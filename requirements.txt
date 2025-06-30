@@ -1,0 +1,6 @@
+streamlit
+google-genai
+google-adk
+python-dotenv
+pytest
+pytest-html
