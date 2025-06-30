@@ -11,7 +11,7 @@ from google.adk.tools import google_search # Ferramenta de busca pré-construíd
 
 # Importações do google.generativeai (para types.Content e configuração da API Key)
 import google.generativeai as genai
-from google.generativeai import types # Especificamente para types.Content e types.Part
+from google.generativeai import types 
 
 load_dotenv()
 
@@ -27,37 +27,30 @@ genai.configure(api_key=GOOGLE_API_KEY)
 NOME_MODELO_ADK = 'gemini-1.5-flash-latest' # Use o modelo desejado
 
 # ==========================
-# Função Auxiliar para Chamar Agentes ADK (AJUSTADA CONFORME EXEMPLO DO CURSO)
+# Função Auxiliar para Chamar Agentes ADK 
 # ==========================
 def call_adk_agent(agent_instance: Agent, full_prompt_text: str, agente_nome_log: str) -> str: # Renomeado para full_prompt_text
-    """
-    Envia um prompt completo para um agente ADK via um Runner criado sob demanda
-    e retorna a resposta final em texto.
-    """
+   
     try:
         session_service = InMemorySessionService()
-        # A criação explícita de 'session' pode não ser estritamente necessária se
-        # o runner.run com um session_id único para InMemorySessionService for suficiente.
-        # Mas, para alinhar com o exemplo, vamos mantê-la se não causar problemas.
-        # session_service.create_session(app_name=agent_instance.name, user_id="user_pipeline", session_id=session_id_str)
-
+        
         runner = Runner(agent=agent_instance, app_name=agent_instance.name, session_service=session_service)
         content_input = types.Content(role="user", parts=[types.Part(text=full_prompt_text)]) # O prompt completo é o input
         final_response_text = ""
 
-        # Usando IDs de usuário e sessão como no exemplo do curso para consistência
-        user_id_adk = "user_pipeline_main" # Pode ser um ID genérico para o sistema
-        # Um session_id único por chamada para simular uma nova interação limpa
+       
+        user_id_adk = "user_pipeline_main" 
+        
         session_id_adk = f"{agente_nome_log}_session_{os.urandom(4).hex()}"
 
 
-        # Iterar pelos eventos retornados durante a execução do agente
+        
         for event in runner.run(user_id=user_id_adk, session_id=session_id_adk, new_message=content_input):
             if event.is_final_response():
                 for part in event.content.parts:
                     if hasattr(part, 'text') and part.text is not None:
                         final_response_text += part.text
-                        final_response_text += "\n" # Adiciona nova linha entre partes
+                        final_response_text += "\n" 
 
         if final_response_text:
             return final_response_text.strip()
@@ -79,7 +72,7 @@ ASSISTENTE_ACESSIBILIDADE_AGENT_DEF = Agent( # Renomeado para _DEF para indicar 
     instruction="""Você é um especialista em acessibilidade digital. Responda à pergunta do usuário abaixo,
 considerando o contexto de acessibilidade digital, especialmente se a pergunta for genérica.
 Use busca (Google Search) para informações recentes e cite fontes."""
-    # O {input} não é mais necessário aqui se o prompt completo é passado para call_adk_agent
+    
 )
 
 VALIDADOR_RESPOSTA_AGENT_DEF = Agent(
@@ -116,11 +109,11 @@ Use busca (Google Search) para recursos relevantes."""
 # Funções Wrapper que preparam o prompt completo e usam call_adk_agent
 # ==========================
 def assistente_acessibilidade(mensagem: str) -> str:
-    # O prompt completo é construído aqui, como no exemplo do curso
+    
     prompt_completo = f"""Pergunta do usuário: {mensagem}
 ---
 Instruções para o agente:
-{ASSISTENTE_ACESSIBILIDADE_AGENT_DEF.instruction}""" # Reutiliza a instrução base
+{ASSISTENTE_ACESSIBILIDADE_AGENT_DEF.instruction}""" 
     return call_adk_agent(ASSISTENTE_ACESSIBILIDADE_AGENT_DEF, prompt_completo, "assistente_acessibilidade")
 
 def validador_resposta(texto_para_validar: str) -> str:
@@ -164,8 +157,6 @@ Instruções para o agente:
     return call_adk_agent(APROFUNDADOR_AGENT_DEF, prompt_completo, "aprofundador")
 
 
-# ... (validador_links, _eh_erro_adk e pipeline_acessibilidade permanecem os mesmos)
-# A função _eh_erro_adk já deve cobrir os erros de call_adk_agent.
 
 def validador_links(texto_com_links: str) -> str:
     if texto_com_links.startswith(("Erro ao executar agente ADK", "Erro no agente ADK", "Agente ADK")):
