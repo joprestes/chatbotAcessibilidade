@@ -1,242 +1,211 @@
 import os
-import re
-import requests
+import asyncio
 from dotenv import load_dotenv
 
-# Importações do google-adk
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.adk.tools import google_search # Ferramenta de busca pré-construída do ADK
+from google.adk.tools import google_search
 
-# Importações do google.generativeai (para types.Content e configuração da API Key)
-import google.generativeai as genai
-from google.generativeai import types # Especificamente para types.Content e types.Part
+from google import genai
+from google.genai import types
 
+# Carrega variáveis do .env
 load_dotenv()
-
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
     raise ValueError("Chave API do Google não encontrada no .env.")
 
-genai.configure(api_key=GOOGLE_API_KEY)
+genai.Client()
+NOME_MODELO_ADK = 'gemini-2.0-flash'
 
-# ==========================
-# Configurações
-# ==========================
-NOME_MODELO_ADK = 'gemini-1.5-flash-latest' # Use o modelo desejado
+# Função genérica para execução de agentes
+async def rodar_agente(agent: Agent, prompt: str, user_id="user", session_prefix="sessao") -> str:
+    session_service = InMemorySessionService()
+    runner = Runner(agent=agent, app_name=agent.name, session_service=session_service)
+    session_id = f"{session_prefix}_{os.urandom(4).hex()}"
 
-# ==========================
-# Função Auxiliar para Chamar Agentes ADK (AJUSTADA CONFORME EXEMPLO DO CURSO)
-# ==========================
-def call_adk_agent(agent_instance: Agent, full_prompt_text: str, agente_nome_log: str) -> str: # Renomeado para full_prompt_text
-    """
-    Envia um prompt completo para um agente ADK via um Runner criado sob demanda
-    e retorna a resposta final em texto.
-    """
-    try:
-        session_service = InMemorySessionService()
-        # A criação explícita de 'session' pode não ser estritamente necessária se
-        # o runner.run com um session_id único para InMemorySessionService for suficiente.
-        # Mas, para alinhar com o exemplo, vamos mantê-la se não causar problemas.
-        # session_service.create_session(app_name=agent_instance.name, user_id="user_pipeline", session_id=session_id_str)
+    await session_service.create_session(user_id=user_id, session_id=session_id, app_name=agent.name)
+    content = types.Content(role="user", parts=[types.Part(text=prompt)])
+    resultado = ""
 
-        runner = Runner(agent=agent_instance, app_name=agent_instance.name, session_service=session_service)
-        content_input = types.Content(role="user", parts=[types.Part(text=full_prompt_text)]) # O prompt completo é o input
-        final_response_text = ""
+    async for evento in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
+        if evento.is_final_response():
+            resultado += "".join(parte.text + "\n" for parte in evento.content.parts if getattr(parte, "text", None))
 
-        # Usando IDs de usuário e sessão como no exemplo do curso para consistência
-        user_id_adk = "user_pipeline_main" # Pode ser um ID genérico para o sistema
-        # Um session_id único por chamada para simular uma nova interação limpa
-        session_id_adk = f"{agente_nome_log}_session_{os.urandom(4).hex()}"
+    return resultado.strip()
 
+# Fábrica de agentes com prompts ajustados
+def criar_agentes():
+    return {
+        "assistente": Agent(
+            name="assistente_acessibilidade_digital",
+            model=NOME_MODELO_ADK,
+            tools=[google_search],
+            instruction=(
+                "Você é um(a) especialista em acessibilidade digital. Receberá uma pergunta real feita por um usuário. "
+                "Responda de forma clara, objetiva e didática, como se estivesse explicando diretamente para alguém que busca aprender sobre o tema. "
+                "Use exemplos simples, linguagem acessível e organize a resposta com boas práticas de comunicação. "
+                "Evite frases introdutórias genéricas ou comentários sobre a qualidade do conteúdo."
+            )
+        ),
+        "validador": Agent(
+            name="validador_resposta_acessibilidade",
+            model=NOME_MODELO_ADK,
+            instruction=(
+                "Você é um(a) especialista técnico(a) em acessibilidade digital. "
+                "Receberá uma resposta escrita para uma dúvida real de um usuário. "
+                "Corrija apenas se houver imprecisão técnica com base nas diretrizes WCAG, ARIA e boas práticas. "
+                "Reescreva a resposta corrigida diretamente, sem explicar que foi corrigida, e sem usar frases como 'sua resposta está boa, mas...'"
+            )
+        ),
+        "revisor": Agent(
+            name="revisor_clareza_acessibilidade",
+            model=NOME_MODELO_ADK,
+            instruction=(
+                "Você é um(a) comunicador(a) acessível. Reescreva a resposta recebida com foco em clareza, organização e didatismo. "
+                "Trate o conteúdo como resposta final para uma pergunta real de um usuário. "
+                "Não use linguagem que sugira revisão ou comentários sobre o texto original. Apenas reescreva de forma direta, fluida e acessível."
+            )
+        ),
+        "testador": Agent(
+            name="sugestor_testabilidade_acessibilidade",
+            model=NOME_MODELO_ADK,
+            tools=[google_search],
+            instruction=(
+                "Você é um(a) especialista em testes de acessibilidade. Com base em uma pergunta e na resposta, "
+                "sugira formas práticas de testá-la. Mencione ferramentas como axe, NVDA, VoiceOver, Lighthouse e testes com teclado, contraste etc."
+            )
+        ),
+        "aprofundador": Agent(
+            name="guia_aprofundamento_acessibilidade",
+            model=NOME_MODELO_ADK,
+            tools=[google_search],
+            instruction=(
+                "Você é um(a) curador(a) de conteúdo especializado em acessibilidade digital. "
+                "Com base em uma dúvida real e uma resposta, sugira materiais de estudo aprofundado como cursos, artigos, livros ou ferramentas confiáveis."
+            )
+        ),
+    }
 
-        # Iterar pelos eventos retornados durante a execução do agente
-        for event in runner.run(user_id=user_id_adk, session_id=session_id_adk, new_message=content_input):
-            if event.is_final_response():
-                for part in event.content.parts:
-                    if hasattr(part, 'text') and part.text is not None:
-                        final_response_text += part.text
-                        final_response_text += "\n" # Adiciona nova linha entre partes
+AGENTES = criar_agentes()
 
-        if final_response_text:
-            return final_response_text.strip()
-        else:
-            return f"Agente ADK '{agente_nome_log}': Não houve resposta final ou a resposta estava vazia."
-    except AttributeError as e:
-        return f"Erro de atributo ao executar agente ADK '{agente_nome_log}': {e}. Verifique a API do Runner/Event do ADK."
-    except Exception as e:
-        return f"Erro ao executar agente ADK '{agente_nome_log}': {type(e).__name__} - {e}"
+# Função de execução por tipo
+async def executar_agente_por_tipo(tipo: str, prompt: str, prefixo: str) -> str:
+    return await rodar_agente(AGENTES[tipo], prompt, session_prefix=prefixo)
 
-# ==========================
-# Definições dos Agentes ADK (Instâncias de Agent)
-# As 'instructions' agora são mais genéricas, pois o prompt completo será construído antes da chamada.
-# ==========================
-ASSISTENTE_ACESSIBILIDADE_AGENT_DEF = Agent( # Renomeado para _DEF para indicar que é a definição
-    name="assistente_acessibilidade_digital",
-    model=NOME_MODELO_ADK,
-    tools=[google_search],
-    instruction="""Você é um especialista em acessibilidade digital. Responda à pergunta do usuário abaixo,
-considerando o contexto de acessibilidade digital, especialmente se a pergunta for genérica.
-Use busca (Google Search) para informações recentes e cite fontes."""
-    # O {input} não é mais necessário aqui se o prompt completo é passado para call_adk_agent
-)
+# Utilitários
+def eh_erro(texto: str) -> bool:
+    return texto.startswith("Erro") or "falha" in texto.lower()
 
-VALIDADOR_RESPOSTA_AGENT_DEF = Agent(
-    name="validador_resposta_acessibilidade",
-    model=NOME_MODELO_ADK,
-    instruction="""Valide a correção técnica da resposta fornecida sobre acessibilidade digital (WCAG, ARIA).
-Corrija ou complemente. Se correta, confirme. Se for erro anterior, não prossiga."""
-)
+def gerar_dica_final(pergunta: str, resposta: str) -> str:
+    p = pergunta.lower()
+    if "teclado" in p:
+        return "Verifique se é possível navegar usando apenas o teclado, com foco visível e ordem lógica."
+    if "contraste" in p:
+        return "Use ferramentas como WebAIM ou axe para validar o contraste entre elementos visuais."
+    if "leitor de tela" in p:
+        return "Use o NVDA ou VoiceOver para testar se o conteúdo é lido corretamente por leitores de tela."
+    return "A acessibilidade é um processo contínuo. Teste, colete feedback real e melhore sempre."
 
-REVISOR_CLAREZA_AGENT_DEF = Agent(
-    name="revisor_clareza_acessibilidade",
-    model=NOME_MODELO_ADK,
-    instruction="""Revise a resposta para clareza e simplicidade na linguagem de acessibilidade.
-Explique jargões. Se clara, confirme. Se for erro anterior, não prossiga."""
-)
-
-TESTABILIDADE_AGENT_DEF = Agent(
-    name="sugestor_testabilidade_acessibilidade",
-    model=NOME_MODELO_ADK,
-    tools=[google_search],
-    instruction="""Com base na pergunta e resposta fornecidas, sugira como testar os conceitos de acessibilidade.
-Recomende ferramentas online e passos práticos. Use busca (Google Search)."""
-)
-
-APROFUNDADOR_AGENT_DEF = Agent(
-    name="guia_aprofundamento_acessibilidade",
-    model=NOME_MODELO_ADK,
-    tools=[google_search],
-    instruction="""Com base na pergunta e resposta fornecidas, sugira materiais para aprofundamento em acessibilidade digital.
-Use busca (Google Search) para recursos relevantes."""
-)
-
-# ==========================
-# Funções Wrapper que preparam o prompt completo e usam call_adk_agent
-# ==========================
-def assistente_acessibilidade(mensagem: str) -> str:
-    # O prompt completo é construído aqui, como no exemplo do curso
-    prompt_completo = f"""Pergunta do usuário: {mensagem}
----
-Instruções para o agente:
-{ASSISTENTE_ACESSIBILIDADE_AGENT_DEF.instruction}""" # Reutiliza a instrução base
-    return call_adk_agent(ASSISTENTE_ACESSIBILIDADE_AGENT_DEF, prompt_completo, "assistente_acessibilidade")
-
-def validador_resposta(texto_para_validar: str) -> str:
-    prompt_completo = f"""Resposta a ser validada:
----
-{texto_para_validar}
----
-Instruções para o agente:
-{VALIDADOR_RESPOSTA_AGENT_DEF.instruction}"""
-    return call_adk_agent(VALIDADOR_RESPOSTA_AGENT_DEF, prompt_completo, "validador_resposta")
-
-def revisor_clareza(texto_para_revisar: str) -> str:
-    prompt_completo = f"""Texto a ser revisado:
----
-{texto_para_revisar}
----
-Instruções para o agente:
-{REVISOR_CLAREZA_AGENT_DEF.instruction}"""
-    return call_adk_agent(REVISOR_CLAREZA_AGENT_DEF, prompt_completo, "revisor_clareza")
-
-def testabilidade(pergunta_original: str, contexto_resposta: str) -> str:
-    prompt_completo = f"""Contexto:
-Pergunta original do usuário: "{pergunta_original}"
-Resposta fornecida ao usuário:
----
-{contexto_resposta}
----
-Instruções para o agente:
-{TESTABILIDADE_AGENT_DEF.instruction}"""
-    return call_adk_agent(TESTABILIDADE_AGENT_DEF, prompt_completo, "testabilidade")
-
-def aprofundador(pergunta_original: str, contexto_resposta: str) -> str:
-    prompt_completo = f"""Contexto:
-Pergunta original do usuário: "{pergunta_original}"
-Resposta fornecida ao usuário:
----
-{contexto_resposta}
----
-Instruções para o agente:
-{APROFUNDADOR_AGENT_DEF.instruction}"""
-    return call_adk_agent(APROFUNDADOR_AGENT_DEF, prompt_completo, "aprofundador")
-
-
-# ... (validador_links, _eh_erro_adk e pipeline_acessibilidade permanecem os mesmos)
-# A função _eh_erro_adk já deve cobrir os erros de call_adk_agent.
-
-def validador_links(texto_com_links: str) -> str:
-    if texto_com_links.startswith(("Erro ao executar agente ADK", "Erro no agente ADK", "Agente ADK")):
-        return "Validação de links não realizada devido a erro na etapa anterior."
-    links = re.findall(r'https?://\S+', texto_com_links)
-    if not links: return "Nenhum link encontrado para validação."
-    resultados = []
-    for link in links:
-        link_limpo = re.sub(r'[.,)!?]$', '', link)
-        try:
-            response = requests.head(link_limpo, timeout=7, allow_redirects=True)
-            status_emoji = "✅" if 200 <= response.status_code < 400 else "❌"
-            resultados.append(f"{status_emoji} {link_limpo} (Status: {response.status_code})")
-        except requests.exceptions.Timeout: resultados.append(f"⚠️ {link_limpo} (Timeout)")
-        except requests.exceptions.RequestException: resultados.append(f"❌ {link_limpo} (Quebrado/inacessível)")
-    return "\n".join(resultados) if resultados else "Nenhum link encontrado."
-
-def _eh_erro_adk(resultado_agente: str) -> bool:
-    return resultado_agente.startswith(("Erro ao executar agente ADK", "Erro no agente ADK", "Agente ADK")) or \
-           "Resposta em formato inesperado" in resultado_agente
-
-def pipeline_acessibilidade(pergunta: str) -> str:
-    if not pergunta or pergunta.strip() == "":
-        return "Por favor, digite uma pergunta sobre acessibilidade digital."
-
-    resposta_inicial = assistente_acessibilidade(pergunta)
-    if _eh_erro_adk(resposta_inicial):
-        return f"Falha ao processar sua pergunta.\nDetalhes: {resposta_inicial}"
-
-    texto_para_validacao = resposta_inicial
-    resposta_revisada_clareza = revisor_clareza(resposta_inicial)
-    if not _eh_erro_adk(resposta_revisada_clareza) and "não pode prosseguir" not in resposta_revisada_clareza:
-        texto_para_validacao = resposta_revisada_clareza
-
-    resposta_final_principal = texto_para_validacao
-    resposta_validada_tecnicamente = validador_resposta(texto_para_validacao)
-    if not _eh_erro_adk(resposta_validada_tecnicamente) and "não pode prosseguir" not in resposta_validada_tecnicamente:
-        resposta_final_principal = resposta_validada_tecnicamente
-
-    resultado_validacao_links = validador_links(resposta_final_principal)
-
-    sugestoes_testabilidade = testabilidade(pergunta, resposta_final_principal)
-    if _eh_erro_adk(sugestoes_testabilidade):
-        sugestoes_testabilidade = "Não foi possível gerar sugestões de teste desta vez."
-
-    sugestoes_aprofundamento = aprofundador(pergunta, resposta_final_principal)
-    if _eh_erro_adk(sugestoes_aprofundamento):
-        sugestoes_aprofundamento = "Não foi possível gerar sugestões de aprofundamento desta vez."
-
+def formatar_resposta_final(resumo: str, conceitos: str, testes: str, aprofundar: str, dica: str) -> str:
     return f"""
-🧠 Resposta Principal:
-{resposta_final_principal}
+📘 **Introdução**  
+{resumo.strip()}
 
-🔗 Verificação de Links:
-{resultado_validacao_links}
+---
 
-🧪 Como Testar ou Experimentar:
-{sugestoes_testabilidade}
+🔍 **Conceitos Essenciais**  
+{conceitos.strip()}
 
-📚 Quer se Aprofundar?
-{sugestoes_aprofundamento}
+---
+
+🧪 **Como Testar na Prática**  
+{testes.strip()}
+
+---
+
+📚 **Quer se Aprofundar?**  
+{aprofundar.strip()}
+
+---
+
+👋 **Dica Final**  
+{dica.strip()}
 """.strip()
 
+def extrair_primeiro_paragrafo(texto: str) -> str:
+    paragrafos = [p.strip() for p in texto.split("\n\n") if len(p.strip()) > 30]
+    if paragrafos:
+        return paragrafos[0]
+    return texto[:300].rsplit('.', 1)[0] + '.' if '.' in texto[:300] else texto[:300] + "..."
+
+# Pipeline principal
+async def pipeline_acessibilidade(pergunta: str) -> str:
+    if not pergunta.strip():
+        return "Por favor, digite uma pergunta sobre acessibilidade digital."
+
+    # ASSISTENTE
+    prompt_assistente = (
+        f"Pergunta do usuário sobre acessibilidade digital:\n\n{pergunta}\n\n"
+        "Responda com clareza e didatismo, como se estivesse ensinando esse conceito para alguém leigo. "
+        "Inclua exemplos práticos quando possível, e use uma linguagem simples, sem parecer que está avaliando um texto ou comentário anterior."
+    )
+    resposta = await executar_agente_por_tipo("assistente", prompt_assistente, "assistente")
+    if eh_erro(resposta):
+        return f"❌ Falha ao processar sua pergunta: {resposta}"
+
+    # VALIDADOR
+    prompt_validador = (
+        f"Abaixo está uma resposta sobre acessibilidade digital para uma pergunta real de um usuário.\n\n{resposta}\n\n"
+        "Verifique se está tecnicamente correta com base em WCAG, ARIA e boas práticas. "
+        "Se necessário, corrija diretamente o texto para que ele possa ser entregue ao usuário, como uma resposta final clara e confiável."
+    )
+    validada = await executar_agente_por_tipo("validador", prompt_validador, "validador")
+    base = resposta if eh_erro(validada) else validada
+
+    # REVISOR
+    prompt_revisor = (
+        f"Reescreva a seguinte resposta de forma clara, acessível e bem estruturada, como se estivesse explicando diretamente ao usuário que fez a pergunta:\n\n{base}"
+    )
+    revisada = await executar_agente_por_tipo("revisor", prompt_revisor, "revisor")
+    final = base if eh_erro(revisada) else revisada
+
+    # TESTADOR
+    prompt_testes = (
+        f"Um usuário fez a seguinte pergunta: {pergunta}\n\nE recebeu esta resposta: {final}\n\n"
+        f"Com base nos conceitos apresentados, sugira formas práticas de testar a acessibilidade relacionada a esse tema."
+    )
+    testes = await executar_agente_por_tipo("testador", prompt_testes, "teste")
+    if eh_erro(testes):
+        testes = "Não foi possível gerar sugestões de testes desta vez."
+
+    # APROFUNDADOR
+    prompt_aprofundar = (
+        f"Um usuário perguntou: {pergunta}\n\nE recebeu esta resposta: {final}\n\n"
+        f"Sugira materiais confiáveis e práticos para quem deseja estudar mais sobre esse tema."
+    )
+    aprofundar = await executar_agente_por_tipo("aprofundador", prompt_aprofundar, "aprofundar")
+    if eh_erro(aprofundar):
+        aprofundar = "Não foi possível gerar sugestões de aprofundamento desta vez."
+
+    introducao = extrair_primeiro_paragrafo(final)
+    dica = gerar_dica_final(pergunta, final)
+
+    return formatar_resposta_final(introducao, final, testes, aprofundar, dica)
+
+# Execução local para testes
 if __name__ == "__main__":
-    if not GOOGLE_API_KEY:
-        print("A variável GOOGLE_API_KEY não está definida. Crie um arquivo .env.")
-    else:
-        print("ADK configurado com call_adk_agent. Tentando executar o pipeline...")
-        perguntas_teste = ["O que é contraste de cores?", "WCAG", "Fale sobre leitores de tela e como testá-los."]
-        for pergunta_teste in perguntas_teste:
-            print(f"\n--- Testando Pergunta: '{pergunta_teste}' ---")
-            resposta_completa = pipeline_acessibilidade(pergunta_teste)
-            print(resposta_completa)
-            print("--------------------------------------")
+    async def testar():
+        perguntas = [
+            "O que é contraste de cores?",
+            "Como usar leitor de tela?",
+            "Navegação por teclado",
+        ]
+        for p in perguntas:
+            print(f"\n🟡 Pergunta: {p}")
+            r = await pipeline_acessibilidade(p)
+            print(r)
+            print("\n" + "=" * 60)
+
+    asyncio.run(testar())

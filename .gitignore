@@ -1,1 +1,23 @@
+
 .env
+
+# Ambiente Virtual do Python
+/venv/
+
+# Arquivos de cache e compilados do Python
+__pycache__/
+*.pyc
+
+# Pasta de cache dos testes
+.pytest_cache/
+
+# Arquivos e pastas de configuração de editores de código
+.vscode/
+
+# Relatórios e arquivos gerados
+# Impede que o relatório de teste seja enviado
+relatorio_testes.html
+
+# Arquivos do sistema operacional (macOS, Windows)
+.DS_Store
+Thumbs.db
