@@ -24,37 +24,55 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ========================
+# Carregamento do estilo
+# ========================
+with open("assets/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# ========================
+# Cabeçalho e introdução
+# ========================
 st.title("♿ Chatbot de Acessibilidade Digital")
+st.image("assets/banner.png", caption="Banner com título e ícones de acessibilidade", use_container_width=True)
 st.markdown("Digite abaixo uma pergunta sobre acessibilidade digital. O chatbot vai responder com base nas melhores práticas e diretrizes como WCAG, ARIA, entre outras.")
 
 # ========================
-# Entrada do usuário
+# Exibir resposta anterior (se houver)
 # ========================
-pergunta = st.text_area("💬 Sua pergunta:", height=100, placeholder="Exemplo: Como garantir contraste suficiente entre cores em um site?")
+if "resposta" in st.session_state:
+    st.markdown("---")
+    st.markdown(st.session_state.resposta)
+
+# Espaço reservado para não esconder a resposta
+st.markdown("<div style='height: 150px;'></div>", unsafe_allow_html=True)
+
+# ========================
+# Campo de entrada fixo no rodapé
+# ========================
+st.markdown("<div class='input-container'>", unsafe_allow_html=True)
+
+with st.form("pergunta_form"):
+    pergunta = st.text_input("Digite sua pergunta sobre acessibilidade digital:", label_visibility="collapsed")
+    enviar = st.form_submit_button("Enviar")
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ========================
 # Geração da resposta
 # ========================
-if st.button("Responder"):
-    if not pergunta.strip():
-        st.warning("Por favor, digite uma pergunta antes de continuar.")
-    else:
-        with st.spinner("🔎 Gerando resposta..."):
+if enviar and pergunta.strip():
+    with st.spinner("🔎 Gerando resposta..."):
+        try:
+            resposta = asyncio.run(pipeline_acessibilidade(pergunta))
+        except RuntimeError:
+            loop = asyncio.get_event_loop()
+            resposta = loop.run_until_complete(pipeline_acessibilidade(pergunta))
+        except Exception as e:
+            resposta = f"❌ Ocorreu um erro ao processar sua pergunta: {e}"
 
-            try:
-                resposta = asyncio.run(pipeline_acessibilidade(pergunta))
-                st.markdown("---")
-                st.markdown(resposta)
-
-            except RuntimeError:
-                # Para compatibilidade com ambientes que já têm loop ativo (ex: Streamlit Cloud, Jupyter)
-                loop = asyncio.get_event_loop()
-                resposta = loop.run_until_complete(pipeline_acessibilidade(pergunta))
-                st.markdown("---")
-                st.markdown(resposta)
-
-            except Exception as e:
-                st.error(f"❌ Ocorreu um erro ao processar sua pergunta: {e}")
+        st.session_state.resposta = resposta
+        st.rerun()
 
 # ========================
 # Rodapé
