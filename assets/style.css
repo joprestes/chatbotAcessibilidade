@@ -1,9 +1,8 @@
 body {
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 12px;
-  /* do not increase min-width as some may use split screens */
+  font-size: 14px;
   min-width: 800px;
-  color: #999;
+  color: #333;
 }
 
 h1 {
@@ -21,7 +20,7 @@ p {
 }
 
 a {
-  color: #999;
+  color: #005fcc;;
 }
 
 table {
@@ -73,18 +72,17 @@ span.xpassed,
 .col-links__extra {
   margin-right: 3px;
 }
-
 /******************************
- * RESULTS TABLE
+ * TABELA DE RESULTADOS
  *
- * 1. Table Layout
- * 2. Extra
- * 3. Sorting items
+ * 1. Layout da Tabela
+ * 2. Extras
+ * 3. Ordenação dos Itens
  *
  ******************************/
-/*------------------
- * 1. Table Layout
- *------------------*/
+/*----------------------------
+ * 1. Layout da Tabela
+ *----------------------------*/
 #results-table {
   border: 1px solid #e6e6e6;
   color: #999;
@@ -233,9 +231,9 @@ div.media {
   font-size: 12px;
 }
 
-/*------------------
- * 3. Sorting items
- *------------------*/
+/*----------------------------
+ * 3. Ordenação de Itens
+ *----------------------------*/
 .sortable {
   cursor: pointer;
 }
@@ -316,4 +314,26 @@ div.media {
 
 .filter__label {
   margin-right: 10px;
+}
+
+
+/* Acessibilidade: foco visível */
+*:focus {
+  outline: 2px solid #005fcc;
+}
+
+
+/* ===============================
+   INPUT FIXO NO RODAPÉ DO CHAT
+================================== */
+.input-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  padding: 15px 25px;
+  border-top: 1px solid #ccc;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+  z-index: 9999;
 }
