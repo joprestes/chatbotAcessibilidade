@@ -1,7 +1,9 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Banner com o título Chatbot de Acessibilidade Digital, ilustração de interface e ícones de acessibilidade como teclado, contraste e leitor de tela" width="100%">
+  <img
+    src="assets/banner.webp"
+    alt="Banner com fundo escuro e ícone azul de acessibilidade representando uma pessoa estilizada com braços abertos em círculos conectados. À direita, o texto: 'Acessibilidade com Qualidade', seguido por 'Desenvolvido por: Joelma De O. Prestes Ferreira' e, abaixo, a frase: 'Assistente inteligente com arquitetura multiagente utilizando Gemini 2.0 Flash'."
+    width="100%">
 </p>
-<p align="center">
   <strong>Um assistente inteligente para tornar a web mais acessível. 💡</strong>
 </p>
 
@@ -162,9 +164,11 @@ Distribuído sob a [MIT License](LICENSE).
 ## 🌐 English Version
 
 <p align="center">
-  <img src="assets/banner.png" alt="Banner titled Digital Accessibility Chatbot with illustrations and accessibility icons such as keyboard, contrast, and screen reader" width="100%">
+  <img
+    src="assets/banner.webp"
+    alt="Banner with dark background and a blue accessibility icon representing a stylized person with outstretched arms in connected circles. On the right, the text reads: 'Accessibility with Quality', followed by 'Developed by: Joelma De O. Prestes Ferreira', and below, the phrase: 'Intelligent assistant with multi-agent architecture using Gemini 2.0 Flash'."
+    width="100%">
 </p>
-<p align="center">
   <strong>An intelligent assistant to make the web more accessible. 💡</strong>
 </p>
 

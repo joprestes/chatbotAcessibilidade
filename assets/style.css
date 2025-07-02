@@ -1,8 +1,9 @@
 body {
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
   min-width: 800px;
-  color: #333;
+  color: #999;
 }
 
 h1 {
@@ -20,7 +21,7 @@ p {
 }
 
 a {
-  color: #005fcc;;
+  color: #999;
 }
 
 table {
@@ -72,17 +73,18 @@ span.xpassed,
 .col-links__extra {
   margin-right: 3px;
 }
+
 /******************************
- * TABELA DE RESULTADOS
+ * RESULTS TABLE
  *
- * 1. Layout da Tabela
- * 2. Extras
- * 3. Ordenação dos Itens
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
  *
  ******************************/
-/*----------------------------
- * 1. Layout da Tabela
- *----------------------------*/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
 #results-table {
   border: 1px solid #e6e6e6;
   color: #999;
@@ -231,9 +233,9 @@ div.media {
   font-size: 12px;
 }
 
-/*----------------------------
- * 3. Ordenação de Itens
- *----------------------------*/
+/*------------------
+ * 3. Sorting items
+ *------------------*/
 .sortable {
   cursor: pointer;
 }
@@ -317,23 +319,46 @@ div.media {
 }
 
 
-/* Acessibilidade: foco visível */
-*:focus {
-  outline: 2px solid #005fcc;
+/* Melhorias de layout no input com avatar */
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-container .element-container {
+  align-items: center;
+}
+
+/* Ajuste fino de padding interno */
+.input-container input[type="text"] {
+  padding: 10px 14px;
+  font-size: 16px;
+  border-radius: 6px;
 }
 
 
-/* ===============================
-   INPUT FIXO NO RODAPÉ DO CHAT
-================================== */
-.input-container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: white;
-  padding: 15px 25px;
-  border-top: 1px solid #ccc;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-  z-index: 9999;
+/* Responsividade para telas menores */
+@media screen and (max-width: 768px) {
+  .input-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .input-container img {
+    margin: 0 auto;
+  }
+
+  .input-container input[type="text"] {
+    width: 100%;
+  }
+}
+
+/* Foco visível personalizado para navegação por teclado */
+input:focus, button:focus, textarea:focus {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
