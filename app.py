@@ -31,11 +31,28 @@ with open("assets/style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # ========================
-# Cabeçalho e introdução
+# Banner com descrição via caption (renderizado com st.image)
 # ========================
-st.title("♿ Chatbot de Acessibilidade Digital")
-st.image("assets/banner.png", caption="Banner com título e ícones de acessibilidade", use_container_width=True)
-st.markdown("Digite abaixo uma pergunta sobre acessibilidade digital. O chatbot vai responder com base nas melhores práticas e diretrizes como WCAG, ARIA, entre outras.")
+st.image(
+    "assets/banner.webp",
+    caption="Acessibilidade com Qualidade — desenvolvido por Joelma De O. Prestes Ferreira",
+    use_container_width=True
+)
+
+# ========================
+# Instrução
+# ========================
+col1, col2 = st.columns([7.5, 2.5])
+with col1:
+    st.markdown("""
+    <div style='padding: 12px; background-color: #f5f5f5; border-radius: 10px; margin-top: 10px; font-size: 16px'>
+      👋 Olá! Meu nome é <strong>Jota</strong> e estou aqui para te ajudar a entender mais sobre <strong>acessibilidade digital</strong>, com foco em <strong>qualidade de software</strong>.  
+      O que vamos pesquisar hoje?
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.image("assets/avatar.webp", width=150)
 
 # ========================
 # Exibir resposta anterior (se houver)
@@ -45,10 +62,10 @@ if "resposta" in st.session_state:
     st.markdown(st.session_state.resposta)
 
 # Espaço reservado para não esconder a resposta
-st.markdown("<div style='height: 150px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
 
 # ========================
-# Campo de entrada fixo no rodapé
+# Campo de entrada com avatar fixo no rodapé
 # ========================
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
 
