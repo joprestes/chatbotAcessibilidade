@@ -1,305 +1,206 @@
+
+# ♿ Chatbot de Acessibilidade Digital | Digital Accessibility Chatbot
+
+<p align="center">
+  <a href="#-versão-em-português">Português 🇧🇷</a> | 
+  <a href="#-english-version">English 🇺🇸</a>
+</p>
+
 <p align="center">
   <img
     src="assets/banner.webp"
     alt="Banner com fundo escuro e ícone azul de acessibilidade representando uma pessoa estilizada com braços abertos em círculos conectados. À direita, o texto: 'Acessibilidade com Qualidade', seguido por 'Desenvolvido por: Joelma De O. Prestes Ferreira' e, abaixo, a frase: 'Assistente inteligente com arquitetura multiagente utilizando Gemini 2.0 Flash'."
     width="100%">
 </p>
+
+<p align="center">
   <strong>Um assistente inteligente para tornar a web mais acessível. 💡</strong>
 </p>
-
-# ♿ Chatbot de Acessibilidade Digital
-
-Um assistente inteligente para responder dúvidas sobre acessibilidade digital, com foco em qualidade de software e usabilidade para pessoas com deficiência.
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ---
 
-## ✨ Visão Geral
+## 🇧🇷 Versão em Português
+
+### ✨ Visão Geral
 
 Este projeto é um chatbot acessível e didático, voltado para profissionais, desenvolvedores e equipes de qualidade que desejam tirar dúvidas sobre acessibilidade digital. A solução utiliza a API Gemini da Google (via Google ADK) para gerar respostas completas, testáveis e com referências confiáveis.
 
-💬 Exemplos de perguntas:
+💬 **Exemplos de perguntas:**
 - Como testar contraste de cores?
 - O que é navegação por teclado?
 - Como tornar um site acessível a leitores de tela?
 
----
-
-## 🔍 Funcionalidades
+### 🔍 Funcionalidades
 
 ✅ Respostas claras com exemplos práticos  
 ✅ Validação técnica com base em WCAG e ARIA  
 ✅ Reescrita para linguagem acessível e inclusiva  
 ✅ Sugestões de testes práticos com ferramentas como axe, NVDA, Lighthouse  
-✅ Recomendações de estudo com links úteis, cursos e livros
+✅ Recomendações de estudo com links úteis, cursos e livros  
 
----
-
-## 🧠 Arquitetura
-
-O projeto é organizado em módulos, com agentes especializados para cada etapa da resposta:
+### 🧠 Arquitetura
 
 ```
-chatbot_acessibilidade/
-│
-├── agents/               # Define os agentes (assistente, revisor, etc.)
-├── core/                 # Funções utilitárias (ex: validadores, formatadores)
-├── pipeline.py           # Pipeline principal que orquestra todos os agentes
-├── app.py                # Frontend com Streamlit
-├── assets/               # Imagens e CSS customizado
-│   ├── banner.webp
-│   └── avatar.webp
-│   └── style.css
-├── setup.sh              # Script de instalação automática
+chatbot-acessibilidade/
+├── chatbot_acessibilidade/
+│   ├── agents/           # Define os agentes (assistente, revisor, etc.)
+│   ├── core/             # Funções utilitárias (formatadores, etc.)
+│   └── pipeline.py       # Orquestra os agentes para gerar a resposta
+├── tests/                # Testes unitários com pytest
+├── assets/               # Imagens e CSS
+├── app.py                # Interface com Streamlit
 ├── requirements.txt      # Dependências do projeto
+├── setup.sh              # Script de instalação
 └── .env                  # Chave da API Google (não versionar)
 ```
 
----
-
-## 🚀 Como Executar Localmente
-
-1. Clone o repositório:
+### 🚀 Como Executar Localmente
 
 ```bash
-git clone https://github.com/seuusuario/chatbot-acessibilidade.git
+git clone https://github.com/seu-usuario/chatbot-acessibilidade.git
 cd chatbot-acessibilidade
-```
-
-2. Crie e ative o ambiente virtual:
-
-```bash
 python3 -m venv .venv
 source .venv/bin/activate
-```
-
-3. Instale as dependências:
-
-```bash
 pip install -r requirements.txt
 ```
 
-4. Configure sua chave da API:
-
-Crie um arquivo `.env` com o seguinte conteúdo:
-
+Crie um arquivo `.env` com sua chave:
 ```env
 GOOGLE_API_KEY="sua_chave_aqui"
 ```
 
-5. Rode o projeto com o Streamlit:
-
+Execute:
 ```bash
 streamlit run app.py
 ```
 
----
-
-## 🔧 Instalação Rápida com Script
-
-Você também pode usar o script `setup.sh`:
+### ✅ Testes Unitários
 
 ```bash
-chmod +x setup.sh
-./setup.sh
+pytest -v
+pytest --html=relatorio_testes.html --self-contained-html
 ```
 
----
+### 🧑‍🦽 Acessibilidade Otimizada
 
-## 🧑‍🦽 Acessibilidade Otimizada (Lighthouse 100/100)
+- Contraste reforçado e fontes legíveis  
+- Foco visível para teclado  
+- Labels e descrições para leitores de tela  
 
-Este projeto segue as melhores práticas de acessibilidade:
+### ☁️ Deploy com Streamlit Cloud
 
-- Contraste de cores reforçado
-- Foco visível para navegação por teclado
-- Campo de entrada fixo no rodapé (estilo chat)
-- Labels e imagens com descrição para leitores de tela
-- Substituição de `use_column_width` por `use_container_width`
+- Acesse: https://streamlit.io/cloud  
+- Conecte ao GitHub e selecione o repositório  
+- Configure o Secret `GOOGLE_API_KEY`  
+- Clique em “Deploy”  
 
----
+### 📚 Tecnologias Utilizadas
 
-## ☁️ Deploy com Streamlit Cloud
+- Python 3.10+  
+- Google Gemini API (via Google ADK)  
+- Streamlit  
+- Pytest  
 
-Você pode testar gratuitamente:
+### 🙋 Sobre a Autora
 
-1. Acesse: https://streamlit.io/cloud  
-2. Conecte sua conta GitHub  
-3. Escolha o repositório  
-4. Configure o secret:
-
-```toml
-GOOGLE_API_KEY = "sua_chave_aqui"
-```
-
-5. Clique em “Deploy” e compartilhe o link
-
----
-
-## 📚 Tecnologias Utilizadas
-
-- Python 3.10+
-- Google Gemini API (via Google ADK)
-- Streamlit
-- dotenv
-- axe-core, Lighthouse, NVDA
-
----
-
-## 🙋 Sobre a Autora
-
-Desenvolvido por **Joelma De Oliveira Prestes Ferreira**, Líder de Engenharia de Qualidade com ampla experiência em testes, acessibilidade e automação.
-
+Desenvolvido por Joelma De Oliveira Prestes Ferreira.  
 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
-💌 joprestes@hotmail.com
+📧 joprestes@hotmail.com  
 
 ---
 
-## 📄 Licença
+## 🇺🇸 English Version
 
-Distribuído sob a [MIT License](LICENSE).
+### ✨ Overview
 
----
+This project is an accessible and educational chatbot aimed at professionals, developers, and QA teams who want to learn more about digital accessibility. It uses Google’s Gemini API (via Google ADK) to generate comprehensive, verifiable responses with trusted references.
 
-## 🌐 English Version
-
-<p align="center">
-  <img
-    src="assets/banner.webp"
-    alt="Banner with dark background and a blue accessibility icon representing a stylized person with outstretched arms in connected circles. On the right, the text reads: 'Accessibility with Quality', followed by 'Developed by: Joelma De O. Prestes Ferreira', and below, the phrase: 'Intelligent assistant with multi-agent architecture using Gemini 2.0 Flash'."
-    width="100%">
-</p>
-  <strong>An intelligent assistant to make the web more accessible. 💡</strong>
-</p>
-
-# ♿ Digital Accessibility Chatbot
-
-An inclusive chatbot to answer digital accessibility questions, focused on software quality and usability for people with disabilities.
-
----
-
-## ✨ Overview
-
-This chatbot is designed for developers, QA teams, and accessibility advocates who want to understand how to improve the web for everyone. It uses Google's Gemini API to generate accurate, inclusive, and testable answers.
-
-💬 Example questions:
+💬 **Example questions:**
 - How do I test color contrast?
 - What is keyboard navigation?
 - How to make a website accessible to screen readers?
 
----
-
-## 🔍 Features
+### 🔍 Features
 
 ✅ Clear answers with practical examples  
-✅ Based on WCAG and ARIA standards  
-✅ Accessible and inclusive rephrasing  
-✅ Testing suggestions with tools like axe, NVDA, Lighthouse  
-✅ Study recommendations with links, courses, and books
+✅ Technical validation based on WCAG and ARIA  
+✅ Rewritten for accessible and inclusive language  
+✅ Practical testing suggestions with tools like axe, NVDA, and Lighthouse  
+✅ Study recommendations with useful links, courses, and books  
 
----
-
-## 🧠 Project Structure
+### 🧠 Project Structure
 
 ```
-chatbot_acessibilidade/
-│
-├── agents/               # Specialized answer agents
-├── core/                 # Helpers (validators, formatters)
-├── pipeline.py           # Response pipeline
-├── app.py                # Streamlit UI
-├── assets/               # CSS and image assets
-│   ├── banner.png
-│   └── style.css
-├── setup.sh              # Setup script for local install
+chatbot-acessibilidade/
+├── chatbot_acessibilidade/
+│   ├── agents/           # Defines agents (assistant, reviewer, etc.)
+│   ├── core/             # Utility functions (formatters, etc.)
+│   └── pipeline.py       # Orchestrates agents to generate the response
+├── tests/                # Unit tests with pytest
+├── assets/               # Images and CSS
+├── app.py                # Streamlit interface
 ├── requirements.txt      # Project dependencies
-└── .env                  # API key (not versioned)
+├── setup.sh              # Installation script
+└── .env                  # Google API key (do not version)
 ```
 
----
-
-## 🚀 Running Locally
+### 🚀 Running Locally
 
 ```bash
-git clone https://github.com/youruser/chatbot-acessibilidade.git
+git clone https://github.com/your-user/chatbot-acessibilidade.git
 cd chatbot-acessibilidade
-
 python3 -m venv .venv
 source .venv/bin/activate
-
 pip install -r requirements.txt
 ```
 
-Create a `.env` file:
-
+Set your API key in a `.env` file:
 ```env
 GOOGLE_API_KEY="your_api_key_here"
 ```
 
-Then run:
-
+Run the app:
 ```bash
 streamlit run app.py
 ```
 
----
-
-## 🔧 Quick Install (optional)
+### ✅ Unit Tests
 
 ```bash
-chmod +x setup.sh
-./setup.sh
+pytest -v
+pytest --html=test_report.html --self-contained-html
 ```
 
----
+### 🧑‍🦽 Optimized Accessibility
 
-## 🧑‍🦽 Accessibility Score: 100/100
+- Enhanced contrast and legible fonts  
+- Visible focus for keyboard users  
+- Labels and image descriptions for screen readers  
 
-This chatbot was designed for maximum accessibility:
+### ☁️ Deploy to Streamlit Cloud
 
-- Strong color contrast and large font
-- Keyboard navigation and visible focus
-- Accessible input with labels and clear language
-- Fixed footer input (chat-like interface)
-- Image descriptions and proper HTML structure
+- Go to: https://streamlit.io/cloud  
+- Connect your GitHub account and select the repository  
+- Add your API key as a "Secret": `GOOGLE_API_KEY`  
+- Click “Deploy”  
 
----
+### 📚 Tech Stack
 
-## ☁️ Deploy to Streamlit Cloud
+- Python 3.10+  
+- Google Gemini API (via Google ADK)  
+- Streamlit  
+- Pytest  
 
-1. Go to https://streamlit.io/cloud  
-2. Connect your GitHub  
-3. Select the repository and set `app.py` as the entry point  
-4. Add secret:
+### 🙋 About the Author
 
-```toml
-GOOGLE_API_KEY = "your_api_key"
-```
-
-5. Click **Deploy** – share the link with your team ✅
-
----
-
-## 📚 Tech Stack
-
-- Python 3.10+
-- Streamlit
-- Google Generative AI (Gemini)
-- dotenv
-- Accessibility tools: axe-core, NVDA, Lighthouse
-
----
-
-## 🙋 About the Author
-
-Built by **Joelma De Oliveira Prestes Ferreira**, QA Engineering Lead passionate about accessibility, inclusion, and automation.
-
+Developed by Joelma De Oliveira Prestes Ferreira.  
 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
-📧 joprestes@hotmail.com
+📧 joprestes@hotmail.com  
 
 ---
 
-## 📄 License
-
-Licensed under the [MIT License](LICENSE).
+📄 **License**  
+This project is licensed under the [MIT License](LICENSE).

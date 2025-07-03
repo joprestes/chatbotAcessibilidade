@@ -1,98 +1,89 @@
 import pytest
-from chatbot_acessibilidade import agent
-from chatbot_acessibilidade.agent import pipeline_acessibilidade
-from unittest.mock import patch, MagicMock
+import asyncio
+from unittest.mock import patch, AsyncMock
+from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
+from chatbot_acessibilidade.core.formatter import extrair_primeiro_paragrafo
 
-@pytest.fixture
-def mock_pipeline_setup():
-    with patch('chatbot_acessibilidade.agent.assistente_acessibilidade') as mock_assistente, \
-         patch('chatbot_acessibilidade.agent.revisor_clareza') as mock_revisor, \
-         patch('chatbot_acessibilidade.agent.validador_resposta') as mock_validador, \
-         patch('chatbot_acessibilidade.agent.validador_links') as mock_links, \
-         patch('chatbot_acessibilidade.agent.testabilidade') as mock_testabilidade, \
-         patch('chatbot_acessibilidade.agent.aprofundador') as mock_aprofundador:
+@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+def test_pipeline_sucesso_retorna_dicionario(mock_get_agent_response):
+    """
+    Testa o caminho feliz do pipeline, garantindo que ele chame todos os agentes
+    e retorne um dicionário formatado corretamente.
+    """
+    # Define as respostas simuladas que cada agente retornará em sequência
+    resposta_assistente = "Resposta inicial do assistente."
+    resposta_validada = "Resposta validada tecnicamente."
+    resposta_revisada = "Resposta revisada para ser mais clara.\n\nEste é o segundo parágrafo dos conceitos."
+    sugestoes_testes = "Sugestões de como testar na prática."
+    sugestoes_aprofundamento = "Links e materiais para aprofundar."
 
-        mock_assistente.return_value = "Resposta inicial padrão do assistente ADK."
-        mock_revisor.return_value = "Resposta padrão revisada para clareza (ADK)."
-        mock_validador.return_value = "Resposta padrão validada tecnicamente (ADK)."
-        mock_links.return_value = "✅ https://example.com (Status: 200)"
-        mock_testabilidade.return_value = "Sugestões padrão de como testar (ADK)."
-        mock_aprofundador.return_value = "Sugestões padrão para aprofundamento (ADK)."
+    mock_get_agent_response.side_effect = [
+        resposta_assistente,
+        resposta_validada,
+        resposta_revisada,
+        sugestoes_testes,
+        sugestoes_aprofundamento,
+    ]
 
-        yield
-
-def test_pipeline_retorna_resposta_str(mock_pipeline_setup):
     pergunta = "O que é WCAG?"
-    resposta = pipeline_acessibilidade(pergunta)
+    
+    # Executa a função assíncrona do pipeline dentro do teste síncrono
+    resultado = asyncio.run(pipeline_acessibilidade(pergunta))
 
-    assert isinstance(resposta, str)
-    assert len(resposta) > 0
+    # 1. Verifica se o resultado é um dicionário e se não contém erros
+    assert isinstance(resultado, dict)
+    assert "erro" not in resultado
 
-    agent.assistente_acessibilidade.assert_called_once_with(pergunta)
-    agent.revisor_clareza.assert_called_once_with(agent.assistente_acessibilidade.return_value)
-    agent.validador_resposta.assert_called_once_with(agent.revisor_clareza.return_value)
-    agent.validador_links.assert_called_once_with(agent.validador_resposta.return_value)
-    agent.testabilidade.assert_called_once_with(pergunta, agent.validador_resposta.return_value)
-    agent.aprofundador.assert_called_once_with(pergunta, agent.validador_resposta.return_value)
+    # 2. Garante que todos os 5 agentes foram chamados
+    assert mock_get_agent_response.call_count == 5
 
+    # 3. Verifica o conteúdo de cada seção do dicionário
+    # A introdução deve ser o primeiro parágrafo da resposta final (revisada)
+    assert resultado["📘 **Introdução**"] == extrair_primeiro_paragrafo(resposta_revisada)
+    
+    # A seção de conceitos deve conter a resposta completa e revisada
+    assert resultado["🔍 **Conceitos Essenciais**"] == resposta_revisada
+    
+    # As outras seções devem corresponder às respostas simuladas
+    assert resultado["🧪 **Como Testar na Prática**"] == sugestoes_testes
+    assert resultado["📚 **Quer se Aprofundar?**"] == sugestoes_aprofundamento
+    assert resultado["👋 **Dica Final**"].strip() != ""  # Apenas verifica se a dica foi gerada
 
-def test_pipeline_entrada_vazia(mock_pipeline_setup):
-    pergunta = ""
-    resposta_esperada = "Por favor, digite uma pergunta sobre acessibilidade digital."
-
-    resposta = pipeline_acessibilidade(pergunta)
-
-    assert resposta == resposta_esperada
-
-    agent.assistente_acessibilidade.assert_not_called()
-    agent.revisor_clareza.assert_not_called()
-    agent.validador_resposta.assert_not_called()
-    agent.testabilidade.assert_not_called()
-    agent.aprofundador.assert_not_called()
-    agent.validador_links.assert_not_called()
-
-
-def test_pipeline_estrutura_resposta(mock_pipeline_setup):
-    pergunta = "Como melhorar o contraste de um site?"
-    resposta = pipeline_acessibilidade(pergunta).lower()
-
-    palavras_chave_esperadas = ["resposta principal:", "verificação de links:", "como testar ou experimentar:", "quer se aprofundar?"]
-
-    for palavra in palavras_chave_esperadas:
-        assert palavra in resposta, f"A seção '{palavra}' não foi encontrada na resposta."
-
-
-def test_pipeline_aria(mock_pipeline_setup):
-    pergunta = "O que é aria-label?"
-    frase_esperada_aria = "Usado para fornecer um rótulo acessível para elementos"
-
-    agent.validador_resposta.return_value = (
-        f"Resposta validada sobre aria-label (ADK). É importante saber que é "
-        f"{frase_esperada_aria}."
-    )
-
-    resposta = pipeline_acessibilidade(pergunta)
-
-    assert frase_esperada_aria in resposta, "A resposta deveria conter a explicação sobre aria-label."
-    agent.assistente_acessibilidade.assert_called_once_with(pergunta)
-    agent.validador_resposta.assert_called_once_with(agent.revisor_clareza.return_value)
+def test_pipeline_entrada_vazia():
+    """
+    Testa se o pipeline lida corretamente com uma pergunta vazia,
+    retornando um dicionário de erro.
+    """
+    # Executa o pipeline com uma string vazia ou com espaços
+    resultado = asyncio.run(pipeline_acessibilidade("   "))
+    
+    # A mensagem de erro esperada, incluindo o emoji que você sugeriu
+    mensagem_esperada = " ❌ Por favor, digite uma pergunta sobre acessibilidade digital."
+    
+    # Verifica se o resultado é um dicionário e se a mensagem de erro está correta
+    assert isinstance(resultado, dict)
+    assert "erro" in resultado
+    assert resultado["erro"] == mensagem_esperada
 
 
-def test_pipeline_contexto_acessibilidade_implicito(mock_pipeline_setup):
-    pergunta_generica = "O que é contraste?"
-    frase_contexto_esperada = "Considerando o contexto de acessibilidade digital, o contraste"
+@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+def test_pipeline_falha_no_primeiro_agente(mock_get_agent_response):
+    """
+    Testa o que acontece se o primeiro agente (assistente) falhar,
+    garantindo que o pipeline pare e retorne um erro.
+    """
+    # Simula uma resposta de erro do primeiro agente
+    mock_get_agent_response.return_value = "Erro: Falha na API do Gemini"
 
-    agent.assistente_acessibilidade.return_value = (
-        f"{frase_contexto_esperada} é a diferença de luminosidade entre cores (ADK)."
-    )
-
-    agent.revisor_clareza.side_effect = lambda x: x
-    agent.validador_resposta.side_effect = lambda x: x
-
-
-    resposta = pipeline_acessibilidade(pergunta_generica)
-
-    assert frase_contexto_esperada.lower() in resposta.lower(), \
-        "A resposta deveria indicar que o contexto de acessibilidade digital foi assumido."
-
-    agent.assistente_acessibilidade.assert_called_once_with(pergunta_generica)
+    pergunta = "O que é WCAG?"
+    
+    # Executa o pipeline
+    resultado = asyncio.run(pipeline_acessibilidade(pergunta))
+    
+    # 1. Verifica se o resultado é um dicionário de erro
+    assert isinstance(resultado, dict)
+    assert "erro" in resultado
+    assert "Falha ao processar sua pergunta" in resultado["erro"]
+    
+    # 2. Garante que o pipeline parou após a primeira chamada e não continuou
+    mock_get_agent_response.assert_called_once()

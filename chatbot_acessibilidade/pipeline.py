@@ -18,7 +18,7 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
       - Sugestão de materiais de aprofundamento
     """
     if not pergunta.strip():
-        return "Por favor, digite uma pergunta sobre acessibilidade digital."
+        return {"erro": " ❌ Por favor, digite uma pergunta sobre acessibilidade digital."}
 
      # 1. Agente Assistente
     prompt_assistente = (
