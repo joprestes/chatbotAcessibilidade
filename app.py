@@ -86,7 +86,7 @@ with col1:
         margin-top: 10px; 
         font-size: 16px;
     '>
-      👋 Olá! Meu nome é <strong>Jota</strong> e estou aqui para te ajudar a entender mais sobre <strong>acessibilidade digital</strong>.
+      👋 Olá! Meu nome é <strong>Ada</strong> e estou aqui para te ajudar a entender mais sobre <strong>acessibilidade digital</strong>.
       O que vamos pesquisar hoje?
     </div>
     """, unsafe_allow_html=True)
@@ -95,7 +95,7 @@ with col2:
     img_base64_avatar = get_image_as_base64("assets/avatar.webp")
     if img_base64_avatar:
         st.markdown(
-            f'<img src="data:image/webp;base64,{img_base64_avatar}" alt="Avatar do Jota, o assistente virtual" width="150" style="float: right; margin-top: 10px;">',
+            f'<img src="data:image/webp;base64,{img_base64_avatar}" alt="Avatar da Ada, o assistente virtual" width="150" style="float: right; margin-top: 10px;">',
             unsafe_allow_html=True
         )
 
