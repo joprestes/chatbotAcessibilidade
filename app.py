@@ -1,11 +1,26 @@
 import streamlit as st
 import os
 import asyncio
+import base64
 from dotenv import load_dotenv
 from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
 
 # ========================
-# Configuração do ambiente
+# FUNÇÃO AUXILIAR PARA IMAGENS
+# ========================
+@st.cache_data
+def get_image_as_base64(path):
+    """Lê um arquivo de imagem e o converte para uma string Base64."""
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except FileNotFoundError:
+        st.error(f"Arquivo de imagem não encontrado em: {path}")
+        return None
+
+# ========================
+# CONFIGURAÇÃO DO AMBIENTE
 # ========================
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -15,7 +30,7 @@ if not GOOGLE_API_KEY:
     st.stop()
 
 # ========================
-# Configuração da página
+# CONFIGURAÇÃO DA PÁGINA
 # ========================
 st.set_page_config(
     page_title="Chatbot de Acessibilidade Digital",
@@ -25,103 +40,131 @@ st.set_page_config(
 )
 
 # ========================
-# Carregamento do estilo
+# CARREGAMENTO DE ESTILOS E CORREÇÃO DE TEMA
 # ========================
-with open("assets/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+# CSS injetado diretamente para garantir a compatibilidade com tema claro/escuro.
+# Esta é a solução mais robusta para os problemas de cor.
+st.markdown("""
+<style>
+/* Garante que o fundo de TODAS as bolhas de chat se adapte ao tema */
+div[data-testid="chat-message-container"] {
+    background-color: var(--secondary-background-color);
+    border-radius: 10px;
+}
+
+/* Força TUDO (texto, ícones, etc.) dentro da bolha a usar a cor do tema */
+div[data-testid="chat-message-container"] * {
+    color: var(--text-color) !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ========================
-# Banner com descrição via caption (renderizado com st.image)
+# BANNER E INTRODUÇÃO
 # ========================
-st.image(
-    "assets/banner.webp",
-    caption="Acessibilidade com Qualidade — desenvolvido por Joelma De O. Prestes Ferreira",
-    use_container_width=True
-)
+# Carregando imagens como Base64 para garantir que sempre apareçam.
+img_base64_banner = get_image_as_base64("assets/banner.webp")
+if img_base64_banner:
+    st.markdown(
+        f"""
+        <img src="data:image/webp;base64,{img_base64_banner}" alt="Banner Acessibilidade com Qualidade, por Joelma Ferreira" style="width: 100%; border-radius: 10px;">
+        <p style="text-align: center; color: var(--text-color); font-size: 14px; margin-top: 5px;">
+            Acessibilidade com Qualidade — desenvolvido por Joelma De O. Prestes Ferreira
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
-# ========================
-# Instrução
-# ========================
 col1, col2 = st.columns([7.5, 2.5])
 with col1:
     st.markdown("""
-    <div style='padding: 12px; background-color: #f5f5f5; border-radius: 10px; margin-top: 10px; font-size: 16px'>
-      👋 Olá! Meu nome é <strong>Jota</strong> e estou aqui para te ajudar a entender mais sobre <strong>acessibilidade digital</strong>, com foco em <strong>qualidade de software</strong>.  
+    <div style='
+        padding: 12px; 
+        background-color: var(--secondary-background-color); 
+        color: var(--text-color);
+        border-radius: 10px; 
+        margin-top: 10px; 
+        font-size: 16px;
+    '>
+      👋 Olá! Meu nome é <strong>Jota</strong> e estou aqui para te ajudar a entender mais sobre <strong>acessibilidade digital</strong>.
       O que vamos pesquisar hoje?
     </div>
     """, unsafe_allow_html=True)
 
 with col2:
-    st.image("assets/avatar.webp", width=150)
+    img_base64_avatar = get_image_as_base64("assets/avatar.webp")
+    if img_base64_avatar:
+        st.markdown(
+            f'<img src="data:image/webp;base64,{img_base64_avatar}" alt="Avatar do Jota, o assistente virtual" width="150" style="float: right; margin-top: 10px;">',
+            unsafe_allow_html=True
+        )
+
+st.markdown("---") # Linha separadora
 
 # ========================
-# Exibir resposta anterior (se houver)
+# LÓGICA DO CHAT
 # ========================
+
+# Inicializa o histórico de mensagens se não existir
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Exibe o histórico de mensagens na tela
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        
+        # Se for uma mensagem do usuário, apenas exibe o texto
         if message["role"] == "user":
             st.markdown(message["content"])
-        
+        # Se for uma mensagem do assistente, renderiza os expanders
         elif message["role"] == "assistant":
-           
-            if isinstance(message["content"], dict) and "erro" not in message["content"]:
-                for i, (titulo, conteudo) in enumerate(message["content"].items()):
-                    
+            resposta_dict = message["content"]
+            if isinstance(resposta_dict, dict) and "erro" not in resposta_dict:
+                for i, (titulo, conteudo) in enumerate(resposta_dict.items()):
                     expandido = (i == 0)
                     with st.expander(titulo, expanded=expandido):
                         st.markdown(conteudo, unsafe_allow_html=True)
-          
-            elif isinstance(message["content"], dict) and "erro" in message["content"]:
-                st.error(message["content"]["erro"])
-            
-            else:
-                st.markdown(message["content"], unsafe_allow_html=True)
+            elif isinstance(resposta_dict, dict) and "erro" in resposta_dict:
+                st.error(resposta_dict["erro"])
+            else: # Fallback para erros inesperados
+                st.error("Ocorreu um erro ao exibir a resposta.")
 
-
-# Campo de entrada do chat no rodapé da página
+# Campo de entrada do chat que fica fixo no rodapé
 if prompt := st.chat_input("Digite sua pergunta sobre acessibilidade digital:"):
-
     
+    # Adiciona e exibe a pergunta do usuário
     st.session_state.messages.append({"role": "user", "content": prompt})
-
-    
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    
+    # Gera e exibe a resposta do assistente
     with st.chat_message("assistant"):
         with st.spinner("🔎 Gerando resposta..."):
-            resposta_final = None  # Inicializa a variável
+            resposta_final = None
             try:
-                
+                # Chama o pipeline assíncrono para obter o dicionário de resposta
                 try:
                     resposta_dict = asyncio.run(pipeline_acessibilidade(prompt))
                 except RuntimeError:
                     loop = asyncio.get_event_loop()
                     resposta_dict = loop.run_until_complete(pipeline_acessibilidade(prompt))
                 
-                
                 resposta_final = resposta_dict
                 
-                
+                # Renderiza a resposta como expanders
                 if "erro" not in resposta_dict:
                     for i, (titulo, conteudo) in enumerate(resposta_dict.items()):
-                        expandido = (i == 0)
+                        expandido = (i == 0) # Deixa a introdução aberta
                         with st.expander(titulo, expanded=expandido):
                             st.markdown(conteudo, unsafe_allow_html=True)
                 else:
                     st.error(resposta_dict["erro"])
 
             except Exception as e:
-                
+                # Captura qualquer outra exceção e formata como erro
                 error_dict = {"erro": f"❌ Ocorreu um erro inesperado: {e}"}
                 resposta_final = error_dict
                 st.error(error_dict["erro"])
 
-            
+            # Adiciona a resposta final (o dicionário) ao histórico
             if resposta_final:
                 st.session_state.messages.append({"role": "assistant", "content": resposta_final})

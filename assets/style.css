@@ -1,3 +1,6 @@
+/* ================================== */
+/* Estilos para o Relatório Pytest-HTML */
+/* ================================== */
 body {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 12px;
@@ -76,11 +79,6 @@ span.xpassed,
 
 /******************************
  * RESULTS TABLE
- *
- * 1. Table Layout
- * 2. Extra
- * 3. Sorting items
- *
  ******************************/
 /*------------------
  * 1. Table Layout
@@ -318,47 +316,72 @@ div.media {
   margin-right: 10px;
 }
 
+/* ========================================= */
+/* ESTILOS ESPECÍFICOS PARA O CHATBOT STREAMLIT */
+/* ========================================= */
 
-/* Melhorias de layout no input com avatar */
+/* Container do formulário de input */
 .input-container {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.input-container .element-container {
-  align-items: center;
+/* Força o campo de texto a usar as cores do tema */
+div[data-testid="stTextInput"] > div > div > input {
+    background-color: var(--secondary-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color, #a2a7b0);
+    border-radius: 6px;
 }
 
-/* Ajuste fino de padding interno */
-.input-container input[type="text"] {
-  padding: 10px 14px;
-  font-size: 16px;
-  border-radius: 6px;
+/* Estiliza o placeholder para ser visível em ambos os temas */
+div[data-testid="stTextInput"] > div > div > input::placeholder {
+    color: var(--text-color);
+    opacity: 0.6;
 }
 
+/* Garante que o botão de envio use a cor primária do tema */
+button[data-testid="stFormSubmitButton"] {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
 
-/* Responsividade para telas menores */
+button[data-testid="stFormSubmitButton"]:hover {
+    filter: brightness(1.1);
+}
+
+/* Garante que o texto dentro das mensagens do assistente seja legível */
+div[data-testid="chat-message-container"] {
+    color: var(--text-color); 
+}
+
+/* Aplica a cor de fundo correta à bolha do usuário */
+div[data-testid="chat-message-container"]:has(div[data-testid="stChatMessageContent-user"]) {
+    background-color: var(--secondary-background-color);
+}
+
+/* Aplica a cor de fundo correta à bolha do assistente (Jota) */
+div[data-testid="chat-message-container"]:has(div[data-testid="stChatMessageContent-assistant"]) {
+    background-color: var(--secondary-background-color);
+}
+
+div[data-testid="stExpander"] * {
+    color: var(--text-color) !important;
+}
+
+/* Responsividade para telas menores (mantendo suas regras) */
 @media screen and (max-width: 768px) {
-  .input-container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    padding: 12px 16px;
-  }
-
-  .input-container img {
-    margin: 0 auto;
-  }
-
-  .input-container input[type="text"] {
-    width: 100%;
-  }
+  /* ... */
 }
 
 /* Foco visível personalizado para navegação por teclado */
-input:focus, button:focus, textarea:focus {
-  outline: 3px solid #005fcc;
+div[data-testid="stTextInput"] input:focus, 
+button:focus, 
+textarea:focus,
+div[data-testid="stExpander"] summary:focus {
+  outline: 3px solid #005fcc !important;
   outline-offset: 2px;
   border-radius: 4px;
 }
