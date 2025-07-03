@@ -57,42 +57,45 @@ with col2:
 # ========================
 # Exibir resposta anterior (se houver)
 # ========================
-if "resposta" in st.session_state:
-    st.markdown("---")
-    st.markdown(st.session_state.resposta)
 
-# Espaço reservado para não esconder a resposta
-st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
+# Inicializa o histórico de mensagens se não existir
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# ========================
-# Campo de entrada com avatar fixo no rodapé
-# ========================
-st.markdown("<div class='input-container'>", unsafe_allow_html=True)
+# Exibe o histórico de mensagens na tela
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"], unsafe_allow_html=True)
 
-with st.form("pergunta_form"):
-    pergunta = st.text_input("Digite sua pergunta sobre acessibilidade digital:", label_visibility="collapsed")
-    enviar = st.form_submit_button("Enviar")
+# Campo de entrada do chat no rodapé da página
+if prompt := st.chat_input("Digite sua pergunta sobre acessibilidade digital:"):
+    
+    # Adiciona e exibe a pergunta do usuário
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-st.markdown("</div>", unsafe_allow_html=True)
+    # Gera e exibe a resposta do assistente
+    with st.chat_message("assistant"):
+        with st.spinner("🔎 Gerando resposta..."):
+            try:
+                # Mantém a lógica assíncrona original para chamar o pipeline
+                try:
+                    resposta = asyncio.run(pipeline_acessibilidade(prompt))
+                except RuntimeError:
+                    loop = asyncio.get_event_loop()
+                    resposta = loop.run_until_complete(pipeline_acessibilidade(prompt))
+                
+                st.markdown(resposta, unsafe_allow_html=True)
+                # Adiciona a resposta do bot ao histórico
+                st.session_state.messages.append({"role": "assistant", "content": resposta})
 
-# ========================
-# Geração da resposta
-# ========================
-if enviar and pergunta.strip():
-    with st.spinner("🔎 Gerando resposta..."):
-        try:
-            resposta = asyncio.run(pipeline_acessibilidade(pergunta))
-        except RuntimeError:
-            loop = asyncio.get_event_loop()
-            resposta = loop.run_until_complete(pipeline_acessibilidade(pergunta))
-        except Exception as e:
-            resposta = f"❌ Ocorreu um erro ao processar sua pergunta: {e}"
+            except Exception as e:
+                error_message = f"❌ Ocorreu um erro ao processar sua pergunta: {e}"
+                st.error(error_message)
+                # Adiciona a mensagem de erro ao histórico para referência
+                st.session_state.messages.append({"role": "assistant", "content": error_message})
 
-        st.session_state.resposta = resposta
-        st.rerun()
-
-# ========================
-# Rodapé
-# ========================
+# --- Rodapé ---
 st.markdown("---")
 st.caption("🛠️ Desenvolvido para promover inclusão digital por meio de acessibilidade.\nPor Joelma De Oliveira Prestes Ferreira.")
