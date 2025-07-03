@@ -19,28 +19,14 @@ def extrair_primeiro_paragrafo(texto: str) -> str:
         return paragrafos[0]
     return texto[:300].rsplit('.', 1)[0] + '.' if '.' in texto[:300] else texto[:300] + "..."
 
-def formatar_resposta_final(resumo: str, conceitos: str, testes: str, aprofundar: str, dica: str) -> str:
-    return f"""
-📘 **Introdução**  
-{resumo.strip()}
-
----
-
-🔍 **Conceitos Essenciais**  
-{conceitos.strip()}
-
----
-
-🧪 **Como Testar na Prática**  
-{testes.strip()}
-
----
-
-📚 **Quer se Aprofundar?**  
-{aprofundar.strip()}
-
----
-
-👋 **Dica Final**  
-{dica.strip()}
-""".strip()
+def formatar_resposta_final(resumo: str, conceitos: str, testes: str, aprofundar: str, dica: str) -> dict:
+    """
+    Formata a resposta final como um dicionário, onde cada chave é um título de seção.
+    """
+    return {
+        "📘 **Introdução**": resumo.strip(),
+        "🔍 **Conceitos Essenciais**": conceitos.strip(),
+        "🧪 **Como Testar na Prática**": testes.strip(),
+        "📚 **Quer se Aprofundar?**": aprofundar.strip(),
+        "👋 **Dica Final**": dica.strip(),
+    }

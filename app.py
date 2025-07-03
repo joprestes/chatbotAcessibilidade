@@ -57,42 +57,71 @@ with col2:
 # ========================
 # Exibir resposta anterior (se houver)
 # ========================
-if "resposta" in st.session_state:
-    st.markdown("---")
-    st.markdown(st.session_state.resposta)
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# Espaço reservado para não esconder a resposta
-st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        
+        if message["role"] == "user":
+            st.markdown(message["content"])
+        
+        elif message["role"] == "assistant":
+           
+            if isinstance(message["content"], dict) and "erro" not in message["content"]:
+                for i, (titulo, conteudo) in enumerate(message["content"].items()):
+                    
+                    expandido = (i == 0)
+                    with st.expander(titulo, expanded=expandido):
+                        st.markdown(conteudo, unsafe_allow_html=True)
+          
+            elif isinstance(message["content"], dict) and "erro" in message["content"]:
+                st.error(message["content"]["erro"])
+            
+            else:
+                st.markdown(message["content"], unsafe_allow_html=True)
 
-# ========================
-# Campo de entrada com avatar fixo no rodapé
-# ========================
-st.markdown("<div class='input-container'>", unsafe_allow_html=True)
 
-with st.form("pergunta_form"):
-    pergunta = st.text_input("Digite sua pergunta sobre acessibilidade digital:", label_visibility="collapsed")
-    enviar = st.form_submit_button("Enviar")
+# Campo de entrada do chat no rodapé da página
+if prompt := st.chat_input("Digite sua pergunta sobre acessibilidade digital:"):
 
-st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-# ========================
-# Geração da resposta
-# ========================
-if enviar and pergunta.strip():
-    with st.spinner("🔎 Gerando resposta..."):
-        try:
-            resposta = asyncio.run(pipeline_acessibilidade(pergunta))
-        except RuntimeError:
-            loop = asyncio.get_event_loop()
-            resposta = loop.run_until_complete(pipeline_acessibilidade(pergunta))
-        except Exception as e:
-            resposta = f"❌ Ocorreu um erro ao processar sua pergunta: {e}"
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-        st.session_state.resposta = resposta
-        st.rerun()
+    
+    with st.chat_message("assistant"):
+        with st.spinner("🔎 Gerando resposta..."):
+            resposta_final = None  # Inicializa a variável
+            try:
+                
+                try:
+                    resposta_dict = asyncio.run(pipeline_acessibilidade(prompt))
+                except RuntimeError:
+                    loop = asyncio.get_event_loop()
+                    resposta_dict = loop.run_until_complete(pipeline_acessibilidade(prompt))
+                
+                
+                resposta_final = resposta_dict
+                
+                
+                if "erro" not in resposta_dict:
+                    for i, (titulo, conteudo) in enumerate(resposta_dict.items()):
+                        expandido = (i == 0)
+                        with st.expander(titulo, expanded=expandido):
+                            st.markdown(conteudo, unsafe_allow_html=True)
+                else:
+                    st.error(resposta_dict["erro"])
 
-# ========================
-# Rodapé
-# ========================
-st.markdown("---")
-st.caption("🛠️ Desenvolvido para promover inclusão digital por meio de acessibilidade.\nPor Joelma De Oliveira Prestes Ferreira.")
+            except Exception as e:
+                
+                error_dict = {"erro": f"❌ Ocorreu um erro inesperado: {e}"}
+                resposta_final = error_dict
+                st.error(error_dict["erro"])
+
+            
+            if resposta_final:
+                st.session_state.messages.append({"role": "assistant", "content": resposta_final})

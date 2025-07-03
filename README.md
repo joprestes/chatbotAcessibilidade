@@ -49,7 +49,8 @@ chatbot_acessibilidade/
 ├── pipeline.py           # Pipeline principal que orquestra todos os agentes
 ├── app.py                # Frontend com Streamlit
 ├── assets/               # Imagens e CSS customizado
-│   ├── banner.png
+│   ├── banner.webp
+│   └── avatar.webp
 │   └── style.css
 ├── setup.sh              # Script de instalação automática
 ├── requirements.txt      # Dependências do projeto
