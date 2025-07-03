@@ -57,45 +57,71 @@ with col2:
 # ========================
 # Exibir resposta anterior (se houver)
 # ========================
-
-# Inicializa o histórico de mensagens se não existir
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Exibe o histórico de mensagens na tela
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"], unsafe_allow_html=True)
+        
+        if message["role"] == "user":
+            st.markdown(message["content"])
+        
+        elif message["role"] == "assistant":
+           
+            if isinstance(message["content"], dict) and "erro" not in message["content"]:
+                for i, (titulo, conteudo) in enumerate(message["content"].items()):
+                    
+                    expandido = (i == 0)
+                    with st.expander(titulo, expanded=expandido):
+                        st.markdown(conteudo, unsafe_allow_html=True)
+          
+            elif isinstance(message["content"], dict) and "erro" in message["content"]:
+                st.error(message["content"]["erro"])
+            
+            else:
+                st.markdown(message["content"], unsafe_allow_html=True)
+
 
 # Campo de entrada do chat no rodapé da página
 if prompt := st.chat_input("Digite sua pergunta sobre acessibilidade digital:"):
+
     
-    # Adiciona e exibe a pergunta do usuário
     st.session_state.messages.append({"role": "user", "content": prompt})
+
+    
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Gera e exibe a resposta do assistente
+    
     with st.chat_message("assistant"):
         with st.spinner("🔎 Gerando resposta..."):
+            resposta_final = None  # Inicializa a variável
             try:
-                # Mantém a lógica assíncrona original para chamar o pipeline
+                
                 try:
-                    resposta = asyncio.run(pipeline_acessibilidade(prompt))
+                    resposta_dict = asyncio.run(pipeline_acessibilidade(prompt))
                 except RuntimeError:
                     loop = asyncio.get_event_loop()
-                    resposta = loop.run_until_complete(pipeline_acessibilidade(prompt))
+                    resposta_dict = loop.run_until_complete(pipeline_acessibilidade(prompt))
                 
-                st.markdown(resposta, unsafe_allow_html=True)
-                # Adiciona a resposta do bot ao histórico
-                st.session_state.messages.append({"role": "assistant", "content": resposta})
+                
+                resposta_final = resposta_dict
+                
+                
+                if "erro" not in resposta_dict:
+                    for i, (titulo, conteudo) in enumerate(resposta_dict.items()):
+                        expandido = (i == 0)
+                        with st.expander(titulo, expanded=expandido):
+                            st.markdown(conteudo, unsafe_allow_html=True)
+                else:
+                    st.error(resposta_dict["erro"])
 
             except Exception as e:
-                error_message = f"❌ Ocorreu um erro ao processar sua pergunta: {e}"
-                st.error(error_message)
-                # Adiciona a mensagem de erro ao histórico para referência
-                st.session_state.messages.append({"role": "assistant", "content": error_message})
+                
+                error_dict = {"erro": f"❌ Ocorreu um erro inesperado: {e}"}
+                resposta_final = error_dict
+                st.error(error_dict["erro"])
 
-# --- Rodapé ---
-st.markdown("---")
-st.caption("🛠️ Desenvolvido para promover inclusão digital por meio de acessibilidade.\nPor Joelma De Oliveira Prestes Ferreira.")
+            
+            if resposta_final:
+                st.session_state.messages.append({"role": "assistant", "content": resposta_final})
