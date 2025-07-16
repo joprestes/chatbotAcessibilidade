@@ -109,6 +109,8 @@ pytest --html=relatorio_testes.html --self-contained-html
 Desenvolvido por Joelma De Oliveira Prestes Ferreira.  
 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
 📧 joprestes@hotmail.com  
+* 🔗 [Medium](https://medium.com/@joprestes)
+
 
 ### 📄 Licença
 
@@ -204,6 +206,8 @@ pytest --html=test_report.html --self-contained-html
 Developed by Joelma De Oliveira Prestes Ferreira.  
 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
 📧 joprestes@hotmail.com  
+* 🔗 [Medium](https://medium.com/@joprestes)
+
 
 ---
 
