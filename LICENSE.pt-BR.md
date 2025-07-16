@@ -6,7 +6,7 @@
 
 Licença MIT
 
-Copyright (c) 2024 Joelma de Oliveira Prestes Ferreira
+Copyright (c) 2025 Joelma de Oliveira Prestes Ferreira
 
 A permissão é concedida, gratuitamente, a qualquer pessoa que obtenha uma cópia
 deste software e dos arquivos de documentação associados (o "Software"), para lidar
