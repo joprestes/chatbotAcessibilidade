@@ -110,6 +110,11 @@ Desenvolvido por Joelma De Oliveira Prestes Ferreira.
 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
 📧 joprestes@hotmail.com  
 
+### 📄 Licença
+
+Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+*(Uma tradução não-oficial para o português está disponível [aqui](LICENSE.pt-BR.md).)*
 ---
 
 ## 🇺🇸 English Version
@@ -202,5 +207,8 @@ Developed by Joelma De Oliveira Prestes Ferreira.
 
 ---
 
-📄 **License**  
-This project is licensed under the [MIT License](LICENSE).
+### 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+*(An unofficial Portuguese translation is available [here](LICENSE.pt-BR.md).)*
