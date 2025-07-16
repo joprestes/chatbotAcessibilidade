@@ -107,8 +107,8 @@ pytest --html=relatorio_testes.html --self-contained-html
 ### 🙋 Sobre a Autora
 
 Desenvolvido por Joelma De Oliveira Prestes Ferreira.  
-🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
-📧 joprestes@hotmail.com  
+* 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
+* 📧 joprestes@hotmail.com  
 * 🔗 [Medium](https://medium.com/@joprestes)
 
 
@@ -204,8 +204,8 @@ pytest --html=test_report.html --self-contained-html
 ### 🙋 About the Author
 
 Developed by Joelma De Oliveira Prestes Ferreira.  
-🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
-📧 joprestes@hotmail.com  
+* 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
+* 📧 joprestes@hotmail.com  
 * 🔗 [Medium](https://medium.com/@joprestes)
 
 
