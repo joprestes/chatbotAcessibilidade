@@ -533,8 +533,9 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 
 ## 🟢 Baixa Prioridade (Cont.)
 
-### 6. Arquivo de Constantes
+### 6. Arquivo de Constantes ✅
 
+**Status:** ✅ Concluído  
 **Objetivo:** Centralizar valores mágicos em um arquivo de constantes para facilitar manutenção.
 
 #### Tarefas

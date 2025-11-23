@@ -2,6 +2,45 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.4.0] - 2025-11-23
+
+### Adicionado
+- **Arquivo de Constantes Centralizadas:**
+  - Novo módulo `src/chatbot_acessibilidade/core/constants.py` com todas as constantes do projeto
+  - Constantes para timeouts (API, OpenRouter, Frontend, HTTPX)
+  - Constantes para limites (pergunta, parágrafo)
+  - Constantes para cache (TTL, tamanho máximo, assets estáticos)
+  - Constantes para compressão (tamanho mínimo)
+  - Constantes para tokens LLM (OpenRouter max tokens)
+  - Constantes para retry (máximo de tentativas)
+  - Constantes para rate limiting (padrão e fallback)
+  - Classe `ErrorMessages` com todas as mensagens de erro padronizadas
+  - Classe `LogMessages` com todas as mensagens de log padronizadas
+  - Classe `FrontendConstants` com constantes específicas do frontend
+  - 50 testes unitários para validar todas as constantes
+
+### Modificado
+- `src/backend/middleware.py`: Substituídos valores mágicos por constantes (TTL de cache, tamanho mínimo de compressão)
+- `src/backend/api.py`: Substituídos valores mágicos por constantes (rate limit fallback, mensagens de erro)
+- `src/chatbot_acessibilidade/core/llm_provider.py`: Substituídos valores mágicos por constantes (max tokens, timeouts, mensagens)
+- `src/chatbot_acessibilidade/agents/dispatcher.py`: Substituídos valores mágicos por constantes (retry attempts, mensagens)
+- `src/chatbot_acessibilidade/core/cache.py`: Substituídos valores mágicos por constantes (TTL, tamanho máximo, mensagens de log)
+- `src/chatbot_acessibilidade/core/formatter.py`: Substituído valor mágico por constante (tamanho mínimo de parágrafo)
+- `src/chatbot_acessibilidade/core/validators.py`: Substituída mensagem hardcoded por constante
+- `src/chatbot_acessibilidade/pipeline.py`: Substituídas mensagens de erro hardcoded por constantes
+- `frontend/app.js`: Adicionadas constantes locais para timeout e duração de anúncios de erro
+
+### Testes
+- Adicionado `tests/test_constants.py` com 50 testes cobrindo todas as constantes
+- Testes para validação de tipos, valores e formatação de mensagens
+- Todos os testes passando (254 testes no total)
+
+### Benefícios
+- Código mais manutenível (valores centralizados)
+- Mensagens de erro e log padronizadas
+- Facilita futuras alterações de configuração
+- Melhor rastreabilidade de valores mágicos
+
 ## [3.3.0] - 2025-11-23
 
 ### Adicionado
