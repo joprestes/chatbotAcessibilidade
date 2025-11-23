@@ -40,6 +40,19 @@ test-cov: ## Executa testes com cobertura
 test-playwright: ## Executa testes Playwright (requer servidor rodando)
 	pytest tests/e2e/playwright/ -v -m "playwright"
 
+test-ci-local: ## Testa pipeline CI/CD localmente
+	@echo "🚀 Executando pipeline CI/CD localmente..."
+	@bash scripts/test_ci_local.sh
+
+test-e2e-server: ## Inicia servidor e executa testes E2E
+	@echo "🚀 Iniciando servidor para testes E2E..."
+	@echo "⚠️  Pressione Ctrl+C para parar o servidor após os testes"
+	@uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 &
+	@sleep 5
+	@echo "✅ Servidor iniciado. Executando testes..."
+	@PLAYWRIGHT_BASE_URL=http://localhost:8000 PLAYWRIGHT_HEADLESS=true pytest tests/e2e/ -v -m "e2e" || true
+	@pkill -f "uvicorn src.backend.api:app" || true
+
 test-playwright-ui: ## Executa testes Playwright com UI (headed mode)
 	pytest tests/e2e/playwright/ -v --headed
 
