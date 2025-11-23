@@ -1235,3 +1235,177 @@ async def test_generate_with_fallback_outro_cliente_should_fallback_true(
 
     assert resposta == "Resposta do outro provedor"
     assert provedor == "OtherProvider"
+
+
+@patch("chatbot_acessibilidade.core.llm_provider.settings")
+def test_google_gemini_client_get_genai_client_api_key_vazia(mock_settings, mock_agent):
+    """Testa _get_genai_client com api_key vazia (linha 96-98)"""
+    mock_settings.google_api_key = ""  # API key vazia
+
+    client = GoogleGeminiClient(mock_agent)
+
+    with pytest.raises(ValueError, match="GOOGLE_API_KEY não configurada"):
+        client._get_genai_client()
+
+
+@patch("chatbot_acessibilidade.core.llm_provider.logger")
+@patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
+@patch("chatbot_acessibilidade.core.llm_provider.settings")
+def test_google_gemini_client_logging_inicializacao(
+    mock_settings, mock_client_class, mock_logger, mock_agent
+):
+    """Testa logging de inicialização (linha 93, 99, 102, 103-105)"""
+    mock_settings.google_api_key = "test_key_12345"
+
+    client = GoogleGeminiClient(mock_agent)
+    mock_client_instance = MagicMock()
+    mock_client_class.return_value = mock_client_instance
+
+    # Chama _get_genai_client para inicializar
+    client._get_genai_client()
+
+    # Verifica que logger foi chamado (linhas 93, 99, 102)
+    assert mock_logger.info.call_count >= 2  # Linha 93 e 102
+    mock_logger.debug.assert_called()  # Linha 99
+
+
+@patch("chatbot_acessibilidade.core.llm_provider.logger")
+@patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
+@patch("chatbot_acessibilidade.core.llm_provider.settings")
+def test_google_gemini_client_logging_erro_inicializacao(
+    mock_settings, mock_client_class, mock_logger, mock_agent
+):
+    """Testa logging de erro na inicialização (linha 103-105)"""
+    mock_settings.google_api_key = "test_key_12345"
+
+    client = GoogleGeminiClient(mock_agent)
+    # Simula erro ao criar genai.Client
+    mock_client_class.side_effect = Exception("Erro ao criar cliente")
+
+    # Chama _get_genai_client que deve levantar exceção
+    with pytest.raises(Exception, match="Erro ao criar cliente"):
+        client._get_genai_client()
+
+    # Verifica que logger.error foi chamado (linha 104)
+    mock_logger.error.assert_called()
+
+
+@patch("chatbot_acessibilidade.core.llm_provider.settings")
+@patch("chatbot_acessibilidade.core.llm_provider.InMemorySessionService")
+@patch("chatbot_acessibilidade.core.llm_provider.Runner")
+@patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
+@pytest.mark.asyncio
+async def test_google_gemini_client_google_api_error_nao_503_detalhado(
+    mock_client_class, mock_runner_class, mock_session_service_class, mock_settings, mock_agent
+):
+    """Testa GoogleAPICallError que não é 503 (linha 186, 195-201)"""
+    mock_settings.google_api_key = "test_key"
+    mock_settings.api_timeout_seconds = 60
+
+    # Mock do session service
+    mock_session_service = AsyncMock()
+    mock_session_service.create_session = AsyncMock()
+    mock_session_service_class.return_value = mock_session_service
+
+    # Mock do runner que levanta GoogleAPICallError sem 503
+    async def async_gen_error(**kwargs):
+        await asyncio.sleep(0.01)
+        raise google_exceptions.GoogleAPICallError("500 Internal Server Error")
+        yield
+
+    mock_runner = AsyncMock()
+    mock_runner.run_async = async_gen_error
+    mock_runner_class.return_value = mock_runner
+
+    client = GoogleGeminiClient(mock_agent)
+
+    # Deve cair no except GoogleAPICallError (linha 195) e não no 503 (linha 186)
+    with pytest.raises(APIError, match="Ocorreu um problema de comunicação"):
+        await client.generate("teste")
+
+
+def test_google_gemini_should_fallback_google_api_error_503():
+    """Testa should_fallback com GoogleAPICallError 503 (linha 220-223)"""
+    client = GoogleGeminiClient(MagicMock(spec=Agent))
+
+    # GoogleAPICallError com 503
+    exception = google_exceptions.GoogleAPICallError("503 Service Unavailable")
+    assert client.should_fallback(exception) is True
+
+    # GoogleAPICallError com overloaded
+    exception = google_exceptions.GoogleAPICallError("Service overloaded")
+    assert client.should_fallback(exception) is True
+
+
+@patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
+@patch("chatbot_acessibilidade.core.llm_provider.settings")
+def test_openrouter_client_get_client_erro(mock_settings, mock_async_client_class):
+    """Testa _get_client com erro na inicialização (linha 246, 303)"""
+    mock_settings.openrouter_api_key = "test_key"
+    mock_settings.openrouter_timeout_seconds = 60
+
+    # Simula erro ao criar AsyncClient na primeira chamada
+    mock_async_client_class.side_effect = [Exception("Erro ao criar cliente"), httpx.AsyncClient()]
+
+    client = OpenRouterClient()
+
+    # Primeira chamada deve levantar exceção (linha 246)
+    with pytest.raises(Exception, match="Erro ao criar cliente"):
+        client._get_client()
+
+    # Segunda chamada deve funcionar (mock retorna cliente válido)
+    # Isso testa o cache (linha 245) e a linha 303 não é alcançada neste caso
+    client2 = client._get_client()
+    assert client2 is not None
+
+
+@patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
+@patch("chatbot_acessibilidade.core.llm_provider.settings")
+def test_openrouter_client_get_client_cache(mock_settings, mock_async_client_class):
+    """Testa _get_client com cache (linha 245, 303)"""
+    mock_settings.openrouter_api_key = "test_key"
+    mock_settings.openrouter_timeout_seconds = 60
+
+    mock_client_instance = MagicMock()
+    mock_async_client_class.return_value = mock_client_instance
+
+    client = OpenRouterClient()
+
+    # Primeira chamada cria o cliente (linha 246)
+    client1 = client._get_client()
+    assert client1 is not None
+    assert mock_async_client_class.call_count == 1
+
+    # Segunda chamada retorna o mesmo cliente (cache, linha 245)
+    client2 = client._get_client()
+    assert client1 is client2
+    assert mock_async_client_class.call_count == 1  # Não cria novo cliente
+
+
+@patch("chatbot_acessibilidade.core.llm_provider.settings")
+@pytest.mark.asyncio
+async def test_generate_with_fallback_todos_modelos_falham_detalhado(
+    mock_settings, mock_agent
+):
+    """Testa generate_with_fallback quando todos os modelos falham (linha 421-425)"""
+    mock_settings.fallback_enabled = True
+    mock_settings.api_timeout_seconds = 60
+    mock_settings.openrouter_api_key = "test_key"
+    mock_settings.openrouter_models = "model1,model2"
+
+    primary_client = GoogleGeminiClient(mock_agent)
+    primary_client.generate = AsyncMock(side_effect=QuotaExhaustedError("Quota esgotada"))
+    primary_client.should_fallback = MagicMock(return_value=True)
+
+    # Cria OpenRouterClient que falha em todos os modelos
+    openrouter_client = OpenRouterClient()
+    openrouter_client.generate = AsyncMock(side_effect=APIError("Erro no modelo"))
+    openrouter_client.should_fallback = MagicMock(return_value=True)
+
+    with pytest.raises(APIError, match="Todos os provedores e modelos disponíveis falharam"):
+        await generate_with_fallback(
+            primary_client=primary_client,
+            prompt="teste",
+            fallback_clients=[openrouter_client],
+            fallback_models=["model1", "model2"],
+        )
