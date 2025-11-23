@@ -171,6 +171,154 @@ pytest tests/integration/test_user_flow.py -v
 pytest tests/e2e/playwright/test_frontend_playwright.py -v
 ```
 
+## 🎭 Testes Playwright - Funcionalidades Avançadas
+
+### Screenshots Automáticos
+
+Screenshots são capturados automaticamente quando testes falham:
+- Localização: `tests/reports/screenshots/`
+- Formato: PNG (página inteira)
+- Nome: `{test_name}_{timestamp}.png`
+
+### Vídeos de Execução
+
+Vídeos são gravados para cada teste:
+- Localização: `tests/reports/videos/`
+- Formato: WebM
+- Configuração: Habilitado por padrão, pode ser desabilitado via `PLAYWRIGHT_RECORD_VIDEO=false`
+
+### Trace Viewer
+
+Traces são salvos para debug detalhado:
+- Localização: `tests/reports/traces/`
+- Formato: ZIP (contém screenshots, snapshots e sources)
+- Visualização: `make playwright-trace` ou `playwright show-trace tests/reports/traces/*.zip`
+- Configuração: Habilitado por padrão, pode ser desabilitado via `PLAYWRIGHT_ENABLE_TRACE=false`
+
+### Relatórios HTML
+
+Gere relatórios HTML completos dos testes:
+```bash
+make test-playwright-report
+# ou
+pytest tests/e2e/playwright/ -v -m "playwright" --html=tests/reports/html/report.html --self-contained-html
+```
+
+### Testes em Múltiplos Navegadores
+
+Execute testes em diferentes navegadores:
+
+```bash
+# Chromium (padrão)
+make test-playwright-chromium
+# ou
+PLAYWRIGHT_BROWSER=chromium pytest tests/e2e/playwright/ -v -m "playwright"
+
+# Firefox
+make test-playwright-firefox
+# ou
+PLAYWRIGHT_BROWSER=firefox pytest tests/e2e/playwright/ -v -m "playwright"
+
+# WebKit (Safari)
+make test-playwright-webkit
+# ou
+PLAYWRIGHT_BROWSER=webkit pytest tests/e2e/playwright/ -v -m "playwright"
+
+# Todos os navegadores
+make test-playwright-all-browsers
+```
+
+**No CI/CD**: Os testes são executados automaticamente em todos os navegadores (Chromium, Firefox, WebKit) via matriz no GitHub Actions.
+
+### Variáveis de Ambiente
+
+| Variável | Descrição | Padrão |
+|:---|:---|:---|
+| `PLAYWRIGHT_BROWSER` | Navegador a usar (`chromium`, `firefox`, `webkit`) | `chromium` |
+| `PLAYWRIGHT_HEADLESS` | Executar em modo headless | `true` |
+| `PLAYWRIGHT_BASE_URL` | URL base da aplicação | `http://localhost:8000` |
+| `PLAYWRIGHT_RECORD_VIDEO` | Gravar vídeos dos testes | `true` |
+| `PLAYWRIGHT_ENABLE_TRACE` | Habilitar trace para debug | `true` |
+
+## 🆕 Novos Testes Implementados
+
+### Testes de Tratamento de Erros (Frontend)
+- `test_error_handling.py` - 6 testes
+  - Timeout de requisição
+  - Erro offline
+  - Rate limit (429)
+  - Erro do servidor (500)
+  - Cancelamento manual
+  - Resposta malformada
+
+### Testes de Performance
+- `test_performance.py` - 4 testes
+  - Múltiplas requisições sequenciais
+  - Requisições paralelas bloqueadas
+  - Mensagens longas (limites)
+  - Histórico grande
+
+### Testes de Segurança
+- `test_security.py` - 4 testes
+  - Prevenção XSS
+  - Prevenção SQL Injection
+  - Proteção CSRF
+  - Rate limiting real
+
+### Testes de Acessibilidade Avançados
+- `test_accessibility_advanced.py` - 5 testes
+  - Screen reader compatibility
+  - Navegação por teclado completa
+  - Modo de alto contraste
+  - Zoom 200%
+  - Redução de movimento
+
+### Testes de UI/UX
+- `test_ui_interactions.py` - 5 testes
+  - Interação com expanders
+  - Toast notifications
+  - Auto-resize do textarea
+  - Persistência de tema
+  - Histórico de mensagens
+
+### Testes de Responsividade
+- `test_responsive_detailed.py` - 4 testes parametrizados
+  - Breakpoints mobile (320px, 375px, 414px)
+  - Breakpoints tablet (768px, 1024px)
+  - Breakpoints desktop (1280px, 1920px)
+  - Mudança de orientação
+
+### Testes de Compatibilidade
+- `test_browser_compatibility.py` - 4 testes
+  - localStorage em todos os navegadores
+  - Fetch API
+  - AbortController
+  - CSS Grid/Flexbox
+
+### Testes de Fallback e Retry
+- `test_fallback.py` - 3 testes
+  - Fallback automático
+  - Retry em erros temporários
+  - Falha de todos os provedores
+
+### Testes de Cache Avançado
+- `test_cache_advanced.py` - 3 testes
+  - Cache com TTL
+  - Métricas detalhadas
+  - Pipeline com falhas parciais
+
+### Testes de Validação
+- `test_validation.py` - 7 testes
+  - Pergunta muito curta
+  - Pergunta muito longa
+  - Apenas espaços
+  - Caracteres especiais
+  - Emojis
+  - HTML
+  - Sanitização de padrões de injeção
+
+**Total**: ~45 novos testes implementados
+
 ## 📈 Verificando Cobertura
 
 ### Relatório HTML

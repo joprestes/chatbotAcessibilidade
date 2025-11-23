@@ -198,12 +198,13 @@ class ChatRequest(BaseModel):
                 f"A pergunta deve ter pelo menos {settings.min_question_length} caracteres."
             )
 
+        # Importa LogMessages para uso nos logs
+        from chatbot_acessibilidade.core.constants import LogMessages  # noqa: E402
+
         # Valida conteúdo (modo não-strict: detecta mas não rejeita)
         is_valid, reason = validate_content(v, strict=False)
         if not is_valid and reason:
             # Loga mas não rejeita em modo não-strict
-            from chatbot_acessibilidade.core.constants import LogMessages  # noqa: E402
-
             logger.warning(LogMessages.VALIDATION_SUSPICIOUS_PATTERN.format(reason=reason))
 
         # Detecta padrões de injection para logging

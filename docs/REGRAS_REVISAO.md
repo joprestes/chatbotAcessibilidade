@@ -42,11 +42,52 @@ Este documento define as regras, padrões e convenções que devem ser seguidos 
 
 ## 3. Qualidade de Código
 
+### Ferramentas Configuradas
+
+*   **Black** - Formatação de código Python seguindo PEP 8
+*   **Ruff** - Linter rápido que substitui múltiplas ferramentas (pycodestyle, pyflakes, isort, flake8-bugbear, etc.)
+*   **MyPy** - Verificação estática de tipos
+*   **Pre-commit** - Hooks automáticos executados antes de cada commit
+
+### Uso das Ferramentas
+
 *   **Linting**: O projeto usa **Ruff**. Nenhum erro de lint deve ser ignorado sem uma justificativa forte (use `# noqa: EXXX` com o código do erro e explicação).
 
 *   **Formatação**: O projeto usa **Black** e **Ruff format**. Todo código deve ser formatado automaticamente antes do commit.
 
 *   **Type Checking**: Utilize type hints em todas as assinaturas de função. O projeto usa **MyPy** para verificação estática de tipos.
+
+### Comandos Disponíveis
+
+```bash
+make lint          # Executa linters (ruff)
+make format        # Formata código (black + ruff format)
+make type-check    # Verifica tipos (mypy)
+make check         # Executa todas as verificações
+make fix           # Formata e corrige problemas automaticamente
+```
+
+### Configuração
+
+*   **Black**: Configurado em `pyproject.toml` (line length: 100, target: Python 3.12+)
+*   **Ruff**: Configurado em `pyproject.toml` (regras: E, W, F, I, B, C4, UP, ARG, SIM)
+*   **MyPy**: Configurado em `pyproject.toml` (Python 3.12+, ignora imports externos)
+
+### Pre-commit Hooks
+
+Os hooks são executados automaticamente antes de cada commit:
+1. Trailing whitespace - Remove espaços no final das linhas
+2. End of file fixer - Adiciona nova linha no final do arquivo
+3. YAML/JSON/TOML checker - Valida sintaxe
+4. Black - Formata código Python
+5. Ruff - Verifica e corrige problemas de lint
+6. MyPy - Verifica tipos
+
+### Regras de Lint
+
+**Regras Habilitadas**: E (pycodestyle), W (warnings), F (pyflakes), I (isort), B (bugbear), C4 (comprehensions), UP (pyupgrade), ARG (unused args), SIM (simplifications)
+
+**Regras Ignoradas**: E501 (linha muito longa - Black cuida), B008 (função em defaults), C901 (complexidade - pode ajustar)
 
 *   **Estrutura de Código**:
 

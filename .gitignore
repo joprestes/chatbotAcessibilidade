@@ -17,7 +17,10 @@ dist/
 build/
 .vscode/
 relatorio_testes.html
-tests/reports/*.html
+tests/reports/html/*.html
+tests/reports/screenshots/*.png
+tests/reports/videos/*.webm
+tests/reports/traces/*.zip
 .DS_Store
 Thumbs.db
 *.log

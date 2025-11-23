@@ -2,6 +2,76 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.11.0] - 2025-11-23
+
+### Adicionado
+- **Expansão de Testes Automatizados**: Implementados ~45 novos testes cobrindo múltiplas categorias
+  - Testes de Tratamento de Erros (6 testes): timeout, offline, rate limit, erro servidor, cancelamento, resposta malformada
+  - Testes de Performance (4 testes): requisições sequenciais/paralelas, mensagens longas, histórico grande
+  - Testes de Segurança (4 testes): prevenção XSS, SQL injection, CSRF, rate limiting real
+  - Testes de Acessibilidade Avançados (5 testes): screen reader, navegação teclado, alto contraste, zoom 200%, redução movimento
+  - Testes de UI/UX (5 testes): expanders, toasts, auto-resize, persistência tema, histórico mensagens
+  - Testes de Responsividade (8 testes parametrizados): breakpoints mobile/tablet/desktop, orientação
+  - Testes de Compatibilidade (4 testes): localStorage, fetch API, AbortController, CSS Grid/Flexbox
+  - Testes de Fallback e Retry (3 testes): fallback automático, retry temporário, falha todos provedores
+  - Testes de Cache Avançado (3 testes): TTL, métricas detalhadas, falhas parciais
+  - Testes de Validação (7 testes): validação de entrada, sanitização, padrões de injeção
+- **Fixtures Auxiliares**: Criado `tests/e2e/playwright/fixtures/error_simulation.py` com fixtures para simulação de erros
+- **Novos Marcadores pytest**: Adicionados marcadores `security` e `performance`
+- **Novos Comandos Makefile**: 
+  - `test-error-handling`: Executa testes de tratamento de erros
+  - `test-security`: Executa testes de segurança
+  - `test-performance`: Executa testes de performance
+  - `test-fallback`: Executa testes de fallback e retry
+
+### Melhorado
+- **Documentação de Testes**: Atualizado `docs/TESTES.md` com documentação dos novos testes
+- **Correção de Bug**: Corrigido import de `LogMessages` em `src/backend/api.py` que causava `UnboundLocalError`
+- **Testes Playwright**: Melhorada robustez dos testes com tratamento de erros e timeouts
+
+### Corrigido
+- Erro de sintaxe em `test_performance.py` (regex inválido)
+- Imports não utilizados em vários arquivos de teste
+- Variáveis não utilizadas removidas
+- Scope do fixture `base_url` ajustado para `session` para compatibilidade com pytest-base-url
+- Testes de segurança ajustados para lidar com diferentes cenários de resposta
+
+### Notas Técnicas
+- Testes Playwright requerem servidor rodando em `http://localhost:8000`
+- Testes de acessibilidade avançados requerem `axe-playwright` (opcional, testes fazem skip se não disponível)
+- Total de novos testes: ~45 testes
+- Cobertura mantida acima de 95%
+
+## [3.10.0] - 2025-01-23
+
+### Removido
+- **Documentação Redundante:**
+  - Removido `docs/API.md` (redundante com Swagger UI/ReDoc interativo)
+  - Removido `docs/INSTRUCOES_EXECUCAO.md` (consolidado no README, mencionava Streamlit obsoleto)
+  - Removido `docs/LINTERS.md` (consolidado em REGRAS_REVISAO.md)
+
+### Arquivado
+- **Planos de Implementação Concluídos:**
+  - `docs/PLANO_PLAYWRIGHT.md` → `docs/archive/PLANO_PLAYWRIGHT.md` (100% concluído)
+  - `docs/REORGANIZACAO_TESTES.md` → `docs/archive/REORGANIZACAO_TESTES.md` (100% concluído)
+
+### Modificado
+- **README.md:**
+  - Removidas referências a documentos removidos
+  - Adicionada seção de troubleshooting
+  - Adicionadas referências à documentação interativa da API (Swagger/ReDoc)
+  - Atualizada tabela de documentação
+
+- **docs/REGRAS_REVISAO.md:**
+  - Consolidadas informações de linters (de LINTERS.md)
+  - Adicionados detalhes sobre ferramentas, comandos e configurações
+
+### Melhorias
+- **Organização:**
+  - Redução de redundância na documentação
+  - Fonte única de verdade para cada informação
+  - Documentação mais fácil de manter e navegar
+
 ## [3.9.0] - 2025-01-23
 
 ### Adicionado

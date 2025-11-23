@@ -52,8 +52,49 @@ test-playwright-frontend: ## Executa apenas testes de frontend com Playwright
 test-playwright-accessibility: ## Executa apenas testes de acessibilidade
 	pytest tests/e2e/playwright/test_accessibility.py -v
 
+test-error-handling: ## Executa testes de tratamento de erros
+	pytest tests/e2e/playwright/test_error_handling.py -v
+
+test-security: ## Executa testes de segurança
+	pytest tests/e2e/playwright/test_security.py -v -m "security"
+
+test-performance: ## Executa testes de performance
+	pytest tests/e2e/playwright/test_performance.py -v -m "performance"
+
+test-fallback: ## Executa testes de fallback e retry
+	pytest tests/integration/test_fallback.py -v
+
+test-playwright-report: ## Executa testes Playwright e gera relatório HTML
+	pytest tests/e2e/playwright/ -v -m "playwright" --html=tests/reports/html/report.html --self-contained-html
+
 playwright-install: ## Instala navegadores do Playwright
 	playwright install chromium firefox webkit
+
+playwright-trace: ## Abre trace viewer do Playwright (usa o trace mais recente)
+	@if [ -z "$$(ls -A tests/reports/traces/*.zip 2>/dev/null)" ]; then \
+		echo "❌ Nenhum trace encontrado em tests/reports/traces/"; \
+		exit 1; \
+	fi; \
+	LATEST_TRACE=$$(ls -t tests/reports/traces/*.zip | head -1); \
+	echo "🔍 Abrindo trace: $$LATEST_TRACE"; \
+	playwright show-trace "$$LATEST_TRACE"
+
+test-playwright-chromium: ## Executa testes Playwright no Chromium
+	PLAYWRIGHT_BROWSER=chromium pytest tests/e2e/playwright/ -v -m "playwright"
+
+test-playwright-firefox: ## Executa testes Playwright no Firefox
+	PLAYWRIGHT_BROWSER=firefox pytest tests/e2e/playwright/ -v -m "playwright"
+
+test-playwright-webkit: ## Executa testes Playwright no WebKit
+	PLAYWRIGHT_BROWSER=webkit pytest tests/e2e/playwright/ -v -m "playwright"
+
+test-playwright-all-browsers: ## Executa testes em todos os navegadores
+	@echo "🌐 Testando Chromium..."
+	@$(MAKE) test-playwright-chromium || true
+	@echo "🌐 Testando Firefox..."
+	@$(MAKE) test-playwright-firefox || true
+	@echo "🌐 Testando WebKit..."
+	@$(MAKE) test-playwright-webkit || true
 
 check: lint type-check test ## Executa todas as verificações
 

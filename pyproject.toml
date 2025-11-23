@@ -96,6 +96,8 @@ addopts = [
     "--strict-markers",
     "--tb=short",
 ]
+# Relatórios HTML são gerados apenas quando explicitamente solicitados via comando
+# Para gerar relatório HTML: pytest --html=tests/reports/html/report.html --self-contained-html
 markers = [
     "unit: marca testes unitários",
     "integration: marca testes de integração",
@@ -104,6 +106,8 @@ markers = [
     "api: marca testes de API",
     "frontend: marca testes de frontend",
     "accessibility: marca testes de acessibilidade",
+    "security: marca testes de segurança",
+    "performance: marca testes de performance",
     "slow: marca testes lentos",
 ]
 filterwarnings = [

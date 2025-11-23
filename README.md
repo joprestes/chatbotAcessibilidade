@@ -154,9 +154,7 @@ O chatbot utiliza **5 agentes especializados** trabalhando em conjunto:
 chatbot-acessibilidade/
 ├── 📚 docs/                       # Documentação completa
 │   ├── CHANGELOG.md              # Histórico de mudanças
-│   ├── INSTRUCOES_EXECUCAO.md   # Guia de execução
-│   ├── LINTERS.md                # Guia de linters
-│   ├── REGRAS_REVISAO.md         # Regras e padrões
+│   ├── REGRAS_REVISAO.md         # Regras e padrões (inclui linters)
 │   ├── DEPLOY.md                 # Guia de deploy
 │   └── TESTES.md                 # Documentação de testes
 │
@@ -274,6 +272,25 @@ uvicorn src.backend.api:app --reload --port 8000
 
 Acesse: **http://localhost:8000**
 
+#### 🔧 Troubleshooting
+
+**Erro: "GOOGLE_API_KEY não encontrada"**
+- Verifique se o arquivo `.env` existe na raiz do projeto
+- Certifique-se de que contém: `GOOGLE_API_KEY="sua_chave_aqui"`
+
+**Erro: "fallback_enabled=True requer openrouter_api_key configurada"**
+- Se você habilitou o fallback, configure `OPENROUTER_API_KEY` no `.env`
+- Ou desabilite o fallback: `FALLBACK_ENABLED=false`
+
+**Erro: "Frontend não encontrado"**
+- Verifique se a pasta `frontend/` existe com os arquivos `index.html`, `styles.css` e `app.js`
+
+**Erro: "Assets não encontrados"**
+- Verifique se a pasta `assets/` existe com as imagens `banner.webp` e `avatar.webp`
+
+**Porta já em uso**
+- Use outra porta: `uvicorn src.backend.api:app --reload --port 8001`
+
 **Características da Interface:**
 - 🎨 Layout moderno com card de introdução
 - 💜 Paleta "Lavanda Inclusiva" (roxo/lilás acessível)
@@ -293,12 +310,12 @@ Acesse: **http://localhost:8000**
 
 | 📘 Documento | 📝 Descrição |
 |:---:|:---|
-| [📘 INSTRUCOES_EXECUCAO.md](docs/INSTRUCOES_EXECUCAO.md) | Guia detalhado de execução |
-| [🔍 LINTERS.md](docs/LINTERS.md) | Guia de linters e formatação |
 | [📝 CHANGELOG.md](docs/CHANGELOG.md) | Histórico de mudanças |
-| [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Regras e padrões do projeto |
+| [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Regras e padrões do projeto (inclui linters) |
 | [🚀 DEPLOY.md](docs/DEPLOY.md) | Guia completo de deploy |
 | [🧪 TESTES.md](docs/TESTES.md) | Documentação de testes |
+| [📚 API Interativa](http://localhost:8000/docs) | Swagger UI (quando servidor rodando) |
+| [📚 API ReDoc](http://localhost:8000/redoc) | ReDoc (quando servidor rodando) |
 
 </div>
 
@@ -353,7 +370,7 @@ make type-check
 make check
 ```
 
-> 📚 Veja [LINTERS.md](docs/LINTERS.md) para mais detalhes.
+> 📚 Veja [REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) para mais detalhes sobre linters e formatação.
 
 #### 🚀 CI/CD com GitHub Actions
 
@@ -382,7 +399,7 @@ O projeto utiliza **GitHub Actions** para automação completa de testes e valid
 - `GOOGLE_API_KEY` - Obrigatório para testes que usam API real
 - `OPENROUTER_API_KEY` - Opcional, para testes de fallback
 
-> 📚 Veja [PLANO_PLAYWRIGHT.md](docs/PLANO_PLAYWRIGHT.md) para detalhes completos sobre os testes E2E.
+> 📚 Veja [TESTES.md](docs/TESTES.md) para detalhes completos sobre os testes E2E.
 
 ---
 
@@ -617,8 +634,6 @@ Access: **http://localhost:8000**
 
 | Document | Description |
 |:---:|:---|
-| [📘 INSTRUCOES_EXECUCAO.md](docs/INSTRUCOES_EXECUCAO.md) | Detailed execution guide |
-| [🔍 LINTERS.md](docs/LINTERS.md) | Linters and formatting guide |
 | [📝 CHANGELOG.md](docs/CHANGELOG.md) | Change history |
 | [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Project rules and standards |
 | [🚀 DEPLOY.md](docs/DEPLOY.md) | Complete deployment guide |
@@ -662,7 +677,7 @@ make type-check
 make check
 ```
 
-> 📚 See [LINTERS.md](docs/LINTERS.md) for more details.
+> 📚 See [REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) for more details about linters and formatting.
 
 ---
 
