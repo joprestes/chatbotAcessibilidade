@@ -137,6 +137,9 @@ function clearMessages() {
 function renderMessages() {
     if (!chatContainer) return;
     
+    // Preserva typing indicator se existir
+    const typingIndicator = chatContainer.querySelector('.typing-indicator-container');
+    
     chatContainer.innerHTML = '';
     
     if (messages.length === 0) {
@@ -147,6 +150,11 @@ function renderMessages() {
         const messageElement = createMessageElement(message, index);
         chatContainer.appendChild(messageElement);
     });
+    
+    // Restaura typing indicator se existir
+    if (typingIndicator) {
+        chatContainer.appendChild(typingIndicator);
+    }
     
     // Scroll para o final
     scrollToBottom();
@@ -171,7 +179,9 @@ function createMessageElement(message, index) {
             bubble.innerHTML = formatMarkdown(message.content);
         } else if (typeof message.content === 'object') {
             if (message.content.erro) {
-                bubble.className += ' error';
+                const errorType = message.content.errorType || 'generic';
+                messageDiv.className += ` error error-${errorType}`;
+                bubble.className += ` error error-${errorType}`;
                 bubble.textContent = message.content.erro;
             } else {
                 // Renderiza as seções como expanders
@@ -318,6 +328,70 @@ function scrollToBottom() {
 }
 
 // =========================================
+// Typing Indicator
+// =========================================
+function showTypingIndicator() {
+    if (!chatContainer) return;
+    
+    // Remove indicador existente se houver
+    hideTypingIndicator();
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message assistant typing-indicator-container';
+    typingDiv.setAttribute('data-testid', 'typing-indicator');
+    typingDiv.setAttribute('aria-live', 'polite');
+    typingDiv.setAttribute('aria-label', 'Bot está digitando');
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble typing-indicator';
+    
+    const dots = document.createElement('div');
+    dots.className = 'typing-dots';
+    dots.setAttribute('aria-hidden', 'true');
+    
+    for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'typing-dot';
+        dot.style.animationDelay = `${i * 0.2}s`;
+        dots.appendChild(dot);
+    }
+    
+    bubble.appendChild(dots);
+    typingDiv.appendChild(bubble);
+    chatContainer.appendChild(typingDiv);
+    
+    scrollToBottom();
+}
+
+function hideTypingIndicator() {
+    if (!chatContainer) return;
+    
+    const typingIndicator = chatContainer.querySelector('.typing-indicator-container');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+// =========================================
+// Error Type Detection
+// =========================================
+function getErrorType(error) {
+    if (error.name === 'AbortError' || error.message === 'AbortError') {
+        return 'timeout';
+    } else if (error.message === 'OFFLINE') {
+        return 'offline';
+    } else if (error.message === 'RATE_LIMIT') {
+        return 'rate-limit';
+    } else if (error.message === 'SERVER_ERROR') {
+        return 'server-error';
+    } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        return 'network-error';
+    } else {
+        return 'generic';
+    }
+}
+
+// =========================================
 // Comunicação com API
 // =========================================
 async function checkAPIHealth() {
@@ -343,10 +417,8 @@ async function sendMessage(pergunta) {
     // Limpa o input
     userInput.value = '';
     
-    // Adiciona indicador de carregamento
-    const loadingMessage = { role: 'assistant', content: '🔎 Gerando resposta...', isLoading: true };
-    messages.push(loadingMessage);
-    renderMessages();
+    // Adiciona indicador de digitação (typing indicator)
+    showTypingIndicator();
     
     // AbortController para timeout
     const controller = new AbortController();
@@ -394,8 +466,8 @@ async function sendMessage(pergunta) {
     } catch (error) {
         clearTimeout(timeoutId);
         
-        // Remove mensagem de loading
-        messages.pop();
+        // Remove indicador de digitação
+        hideTypingIndicator();
         
         // Mensagens de erro específicas
         let errorMessage = '';
@@ -413,9 +485,10 @@ async function sendMessage(pergunta) {
             errorMessage = `❌ Erro ao processar sua pergunta: ${error.message}. Por favor, tente novamente.`;
         }
         
-        // Adiciona mensagem de erro
+        // Adiciona mensagem de erro com tipo específico
         addMessage('assistant', {
-            erro: errorMessage
+            erro: errorMessage,
+            errorType: getErrorType(error)
         });
         
         // Anuncia erro para leitores de tela

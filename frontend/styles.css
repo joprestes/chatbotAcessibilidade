@@ -342,30 +342,149 @@ main {
     outline-offset: 2px;
 }
 
-/* Mensagem de Erro */
-.message.error .message-bubble {
-    background-color: var(--error-color);
-    color: white;
+/* ========================================= */
+/* Typing Indicator */
+/* ========================================= */
+.typing-indicator-container {
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
 }
 
-/* Loading Indicator */
-.loading {
-    display: inline-flex;
+.typing-indicator {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    padding: 16px 20px;
+    min-width: 60px;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 6px;
     align-items: center;
-    gap: 8px;
-    color: var(--text-secondary);
-    font-style: italic;
+    justify-content: center;
 }
 
-.loading::after {
-    content: "...";
-    animation: dots 1.5s steps(4, end) infinite;
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--text-secondary);
+    animation: typingPulse 1.4s ease-in-out infinite;
 }
 
-@keyframes dots {
-    0%, 20% { content: "."; }
-    40% { content: ".."; }
-    60%, 100% { content: "..."; }
+@keyframes typingPulse {
+    0%, 60%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    30% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================= */
+/* Mensagens de Erro */
+/* ========================================= */
+.message.error .message-bubble {
+    color: white;
+    border: none;
+    padding: 16px 20px;
+    animation: slideInError 0.3s ease;
+}
+
+.message.error.error-timeout .message-bubble {
+    background-color: #f59e0b;
+}
+
+.message.error.error-offline .message-bubble {
+    background-color: #6b7280;
+}
+
+.message.error.error-rate-limit .message-bubble {
+    background-color: #ef4444;
+}
+
+.message.error.error-server-error .message-bubble {
+    background-color: #dc2626;
+}
+
+.message.error.error-network-error .message-bubble {
+    background-color: #3b82f6;
+}
+
+.message.error.error-generic .message-bubble {
+    background-color: var(--error-color);
+}
+
+@keyframes slideInError {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ========================================= */
+/* Animações de Transição para Mensagens */
+/* ========================================= */
+.message {
+    animation: slideInMessage 0.3s ease;
+}
+
+@keyframes slideInMessage {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.user {
+    animation: slideInMessageUser 0.3s ease;
+}
+
+@keyframes slideInMessageUser {
+    from {
+        opacity: 0;
+        transform: translateY(10px) translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+    }
+}
+
+.message.assistant {
+    animation: slideInMessageAssistant 0.3s ease;
+}
+
+@keyframes slideInMessageAssistant {
+    from {
+        opacity: 0;
+        transform: translateY(10px) translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+    }
 }
 
 /* ========================================= */
