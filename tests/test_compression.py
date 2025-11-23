@@ -88,32 +88,26 @@ def test_compression_no_accept_encoding(client):
 
 def test_compression_already_compressed():
     """Testa que compressão não é aplicada se já está comprimida"""
-    # Criar app sem o endpoint que já tem Content-Encoding
-    # pois TestClient tenta descomprimir e causa erro
-    from unittest.mock import patch
+    from unittest.mock import Mock, AsyncMock
     
-    app = FastAPI()
+    # Mock do request com Accept-Encoding
+    mock_request = Mock()
+    mock_request.headers = {"Accept-Encoding": "gzip"}
     
-    @app.get("/test")
-    async def test_endpoint():
-        response = JSONResponse({"message": "test"})
+    # Mock do call_next que retorna resposta já comprimida
+    async def mock_call_next(request):
+        response = JSONResponse({"data": "test"})
         response.headers["Content-Encoding"] = "gzip"
         return response
     
-    app.add_middleware(CompressionMiddleware)
-    client = TestClient(app, follow_redirects=True)
+    middleware = CompressionMiddleware(app=None)
     
-    # O middleware deve detectar Content-Encoding e não processar
-    # Mas TestClient vai tentar descomprimir e falhar, então vamos apenas
-    # verificar que o endpoint responde (mesmo que com erro de decodificação)
-    try:
-        response = client.get("/test", headers={"Accept-Encoding": "gzip"})
-        # Se chegou aqui, o middleware não tentou comprimir novamente
-        assert True
-    except Exception:
-        # Esperado: TestClient tenta descomprimir mas não está realmente comprimido
-        # Isso confirma que o middleware não processou (linha 113-114)
-        assert True
+    # Simula dispatch com resposta já comprimida
+    import asyncio
+    response = asyncio.run(middleware.dispatch(mock_request, mock_call_next))
+    
+    # Deve manter o Content-Encoding original (não comprimir novamente)
+    assert response.headers.get("Content-Encoding") == "gzip"
 
 
 def test_compression_wrong_content_type(client):
