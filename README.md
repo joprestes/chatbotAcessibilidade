@@ -21,7 +21,7 @@
 ### 👋 Olá! Eu sou a Ada
 
 <img
-  src="assets/ada-animated.gif"
+  src="https://raw.githubusercontent.com/joprestes/chatbotAcessibilidade/main/assets/ada-animated.gif"
   alt="Ada - Assistente de Acessibilidade Digital"
   width="200"
   height="200"
