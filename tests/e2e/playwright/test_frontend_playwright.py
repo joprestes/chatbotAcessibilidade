@@ -59,7 +59,7 @@ def test_chat_interface_visible(page: Page, base_url: str, server_running: bool)
     if chat_container.count() == 0:
         # Tenta seletores alternativos
         chat_container = page.locator("main, .chat-container, #chat, [role='main']")
-    
+
     # Se ainda não encontrar, verifica que pelo menos a página carregou
     if chat_container.count() == 0:
         # Verifica que pelo menos o body está presente
