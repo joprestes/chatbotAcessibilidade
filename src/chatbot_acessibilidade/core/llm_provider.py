@@ -94,8 +94,15 @@ class GoogleGeminiClient(LLMClient):
             # Usa a API key das configurações
             api_key = settings.google_api_key
             if not api_key:
+                logger.error("GOOGLE_API_KEY não configurada nas settings")
                 raise ValueError("GOOGLE_API_KEY não configurada")
-            self._genai_client = genai.Client(api_key=api_key)
+            logger.debug(f"Inicializando genai.Client com API key: {api_key[:10]}...")
+            try:
+                self._genai_client = genai.Client(api_key=api_key)
+                logger.info("genai.Client inicializado com sucesso")
+            except Exception as e:
+                logger.error(f"Erro ao inicializar genai.Client: {e}")
+                raise
         return self._genai_client
 
     async def generate(self, prompt: str, model: Optional[str] = None) -> str:
@@ -197,7 +204,10 @@ class GoogleGeminiClient(LLMClient):
             raise
         except Exception as e:
             logger.error(f"Erro inesperado no Gemini: {e}", exc_info=True)
-            raise AgentError("Erro: Ocorreu uma falha inesperada.")
+            # Loga o erro completo para debug
+            import traceback
+            logger.error(f"Traceback completo: {traceback.format_exc()}")
+            raise AgentError(f"Erro: Ocorreu uma falha inesperada. Detalhes: {str(e)}")
 
     def should_fallback(self, exception: Exception) -> bool:
         """Determina se deve acionar fallback"""
