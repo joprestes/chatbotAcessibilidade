@@ -220,7 +220,7 @@ def test_settings_openrouter_models_list_vazio():
 
 
 def test_settings_openrouter_models_list_nao_string():
-    """Testa openrouter_models_list quando openrouter_models não é string (linha 111-112)"""
+    """Testa openrouter_models_list quando openrouter_models não é string (linha 111-113)"""
     import os
     from chatbot_acessibilidade.config import Settings
 
@@ -234,15 +234,35 @@ def test_settings_openrouter_models_list_nao_string():
         settings = Settings()
         # Simula que openrouter_models já é uma lista (não string)
         # Isso acontece quando o Pydantic já parseou como lista
-        # Atribui diretamente para testar o caminho da linha 112
+        # Atribui diretamente para testar o caminho da linha 113
         original_models = settings.openrouter_models
         settings.openrouter_models = ["model1", "model2"]
-        # Testa a propriedade quando já é lista (linha 112)
+        # Testa a propriedade quando já é lista (linha 113)
         models_list = settings.openrouter_models_list
         assert isinstance(models_list, list)
         assert models_list == ["model1", "model2"]
         # Restaura
         settings.openrouter_models = original_models
+
+
+def test_settings_validate_fallback_config_linhas_136_139():
+    """Testa validação de fallback quando habilitado mas sem configuração (linhas 136-139)"""
+    # Testa o caminho quando fallback_enabled=True mas openrouter_api_key está vazia
+    # e openrouter_models também está vazio
+    with patch.dict(
+        os.environ,
+        {
+            "GOOGLE_API_KEY": "test_key",
+            "FALLBACK_ENABLED": "true",
+            "OPENROUTER_API_KEY": "",
+            "OPENROUTER_MODELS": "",
+        },
+    ):
+        with pytest.raises(ValidationError) as exc_info:
+            Settings()
+        # Deve falhar na validação (linha 119 ou 123)
+        error_str = str(exc_info.value).lower()
+        assert "openrouter" in error_str or "fallback" in error_str
 
 
 def test_settings_parse_cors_origins_string_vazia():
