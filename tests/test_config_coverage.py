@@ -4,7 +4,6 @@ Focando nas linhas não cobertas: 127, 150-153
 """
 
 import os
-import pytest
 from unittest.mock import patch
 import sys
 from pathlib import Path
@@ -52,38 +51,42 @@ def test_config_linhas_150_153_sem_google_api_key():
     try:
         # Define PYTEST_CURRENT_TEST para entrar no bloco if
         os.environ["PYTEST_CURRENT_TEST"] = "test_config_coverage.py::test_config_linhas_150_153"
-        
+
         # Remove GOOGLE_API_KEY para testar linha 150-151
         if "GOOGLE_API_KEY" in os.environ:
             del os.environ["GOOGLE_API_KEY"]
-        
+
         # Recarrega o módulo para executar o código de inicialização
         import importlib
         import chatbot_acessibilidade.config
+
         importlib.reload(chatbot_acessibilidade.config)
-        
+
         # Verifica que GOOGLE_API_KEY foi definido
         assert "GOOGLE_API_KEY" in os.environ
         assert os.environ["GOOGLE_API_KEY"] == "test_key_for_pytest"
-        
+
     finally:
         # Restaura estado original
         if original_pytest:
             os.environ["PYTEST_CURRENT_TEST"] = original_pytest
         elif "PYTEST_CURRENT_TEST" in os.environ:
             del os.environ["PYTEST_CURRENT_TEST"]
-        
+
         if original_google_key:
             os.environ["GOOGLE_API_KEY"] = original_google_key
-        elif "GOOGLE_API_KEY" in os.environ and os.environ["GOOGLE_API_KEY"] == "test_key_for_pytest":
+        elif (
+            "GOOGLE_API_KEY" in os.environ and os.environ["GOOGLE_API_KEY"] == "test_key_for_pytest"
+        ):
             del os.environ["GOOGLE_API_KEY"]
-        
+
         if original_openrouter_key:
             os.environ["OPENROUTER_API_KEY"] = original_openrouter_key
-        
+
         # Recarrega o módulo novamente para restaurar estado
         import importlib
         import chatbot_acessibilidade.config
+
         importlib.reload(chatbot_acessibilidade.config)
 
 
@@ -100,40 +103,41 @@ def test_config_linhas_150_153_sem_openrouter_api_key():
     try:
         # Define PYTEST_CURRENT_TEST para entrar no bloco if
         os.environ["PYTEST_CURRENT_TEST"] = "test_config_coverage.py::test_config_linhas_150_153_2"
-        
+
         # Garante que GOOGLE_API_KEY existe
         os.environ["GOOGLE_API_KEY"] = "test_key"
-        
+
         # Remove OPENROUTER_API_KEY para testar linha 152-153
         if "OPENROUTER_API_KEY" in os.environ:
             del os.environ["OPENROUTER_API_KEY"]
-        
+
         # Recarrega o módulo para executar o código de inicialização
         import importlib
         import chatbot_acessibilidade.config
+
         importlib.reload(chatbot_acessibilidade.config)
-        
+
         # Verifica que OPENROUTER_API_KEY foi definido como string vazia
         assert "OPENROUTER_API_KEY" in os.environ
         assert os.environ["OPENROUTER_API_KEY"] == ""
-        
+
     finally:
         # Restaura estado original
         if original_pytest:
             os.environ["PYTEST_CURRENT_TEST"] = original_pytest
         elif "PYTEST_CURRENT_TEST" in os.environ:
             del os.environ["PYTEST_CURRENT_TEST"]
-        
+
         if original_google_key:
             os.environ["GOOGLE_API_KEY"] = original_google_key
-        
+
         if original_openrouter_key:
             os.environ["OPENROUTER_API_KEY"] = original_openrouter_key
         elif "OPENROUTER_API_KEY" in os.environ and os.environ["OPENROUTER_API_KEY"] == "":
             del os.environ["OPENROUTER_API_KEY"]
-        
+
         # Recarrega o módulo novamente para restaurar estado
         import importlib
         import chatbot_acessibilidade.config
-        importlib.reload(chatbot_acessibilidade.config)
 
+        importlib.reload(chatbot_acessibilidade.config)

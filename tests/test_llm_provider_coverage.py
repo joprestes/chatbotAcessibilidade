@@ -6,7 +6,6 @@ Focando nas linhas não cobertas: 191, 311, 435-439
 import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-import httpx
 from google.adk.agents import Agent
 from google.api_core import exceptions as google_exceptions
 
@@ -72,7 +71,6 @@ async def test_openrouter_client_content_nao_string_linha_311(mock_client_class)
     Testa linha 311: quando content não é string
     O erro é capturado e transformado em erro genérico, mas a linha 311 é executada
     """
-    from chatbot_acessibilidade.core.llm_provider import OpenRouterClient
 
     # Mock response com content que não é string
     mock_response = MagicMock()
@@ -136,6 +134,7 @@ async def test_generate_with_fallback_continue_linhas_435_439(
     # Cria dois clientes de fallback: primeiro falha, segundo funciona
     class CustomFallbackClient1:
         """Primeiro cliente de fallback - falha"""
+
         async def generate(self, prompt: str, model=None):
             raise QuotaExhaustedError("Quota esgotada")
 
@@ -148,6 +147,7 @@ async def test_generate_with_fallback_continue_linhas_435_439(
 
     class CustomFallbackClient2:
         """Segundo cliente de fallback - funciona"""
+
         async def generate(self, prompt: str, model=None):
             return "Resposta do fallback 2"
 
@@ -172,4 +172,3 @@ async def test_generate_with_fallback_continue_linhas_435_439(
     # Verifica que o fallback funcionou
     assert resposta == "Resposta do fallback 2"
     assert provedor == "Custom Fallback 2"
-
