@@ -24,7 +24,7 @@
 1. **Erro de Linter:** E402 corrigido (import dotenv)
 2. **Cobertura:** Alguns caminhos não cobertos em `llm_provider.py` e `config.py`
 3. **Type Hints:** Alguns `type: ignore` necessários devido a incompatibilidades de tipos
-4. **Python 3.9:** Projeto usa Python 3.9, mas recomenda-se 3.10+ (alguns warnings)
+4. **Python 3.12:** ✅ Projeto atualizado para Python 3.12 (versão estável mais recente)
 
 ---
 
@@ -363,7 +363,7 @@ O projeto está em **excelente estado**, com:
 
 1. ✅ Corrigir erro de linter (já feito)
 2. Aumentar cobertura de `config.py` e `llm_provider.py`
-3. Considerar atualização para Python 3.10+
+3. ✅ Atualização para Python 3.12 concluída
 4. Adicionar headers de segurança
 5. Considerar cache persistente para produção
 

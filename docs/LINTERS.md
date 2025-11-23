@@ -109,7 +109,7 @@ make fix           # Formata e corrige automaticamente
 ### Black
 Configurado em `pyproject.toml`:
 - Line length: 100 caracteres
-- Target: Python 3.10+
+- Target: Python 3.12+
 
 ### Ruff
 Configurado em `pyproject.toml`:
@@ -119,7 +119,7 @@ Configurado em `pyproject.toml`:
 
 ### MyPy
 Configurado em `pyproject.toml`:
-- Python 3.10+
+- Python 3.12+
 - Ignora imports faltantes de bibliotecas externas (google.*, streamlit, etc)
 
 ## 🎯 Pre-commit Hooks

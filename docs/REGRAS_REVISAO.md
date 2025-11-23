@@ -401,7 +401,7 @@ Antes de abrir um Pull Request, verifique:
 
 *   **Dependências**: Mantenha dependências atualizadas, mas teste antes de atualizar versões major.
 
-*   **Python Version**: O projeto usa Python 3.9+. Mantenha compatibilidade.
+*   **Python Version**: O projeto usa Python 3.12+ (versão estável mais recente). Mantenha compatibilidade.
 
 *   **Breaking Changes**: Documente breaking changes no CHANGELOG e considere versionamento semântico.
 

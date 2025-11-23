@@ -4,7 +4,7 @@
 
 **Um assistente inteligente para tornar a web mais acessível** 💡
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000?style=for-the-badge)](https://github.com/psf/black)
@@ -318,7 +318,7 @@ docker-compose up
 
 | Categoria | Tecnologias |
 |:---------:|:-----------|
-| **🐍 Backend** | Python 3.10+, FastAPI, Uvicorn |
+| **🐍 Backend** | Python 3.12+, FastAPI, Uvicorn |
 | **🤖 IA** | Google Gemini 2.0 Flash, Google ADK |
 | **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla) |
 | **🧪 Testes** | Pytest, Pytest-cov |
@@ -577,7 +577,7 @@ docker-compose up
 
 | Category | Technologies |
 |:--------:|:------------|
-| **🐍 Backend** | Python 3.10+, FastAPI, Uvicorn |
+| **🐍 Backend** | Python 3.12+, FastAPI, Uvicorn |
 | **🤖 AI** | Google Gemini 2.0 Flash, Google ADK |
 | **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla) |
 | **🧪 Testing** | Pytest, Pytest-cov |
