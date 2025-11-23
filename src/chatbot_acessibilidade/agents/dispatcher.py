@@ -123,7 +123,7 @@ async def rodar_agente(agent: Agent, prompt: str, user_id="user", session_prefix
         )
 
         logger.info(f"Agente '{agent.name}' executado com sucesso usando {provedor_usado}")
-        return resposta
+        return str(resposta)
 
     except APIError as e:
         # Converte mensagens de erro para formato amigável

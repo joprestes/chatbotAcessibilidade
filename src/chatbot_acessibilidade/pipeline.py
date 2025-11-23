@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Dict, Union
 from chatbot_acessibilidade.agents.dispatcher import get_agent_response
 from chatbot_acessibilidade.core.formatter import (
     eh_erro,
@@ -13,7 +14,9 @@ from chatbot_acessibilidade.config import settings
 logger = logging.getLogger(__name__)
 
 
-def _tratar_resultado_paralelo(resultado: any, nome_agente: str, fallback: str) -> str:
+def _tratar_resultado_paralelo(
+    resultado: Union[str, Exception], nome_agente: str, fallback: str
+) -> str:
     """
     Trata o resultado de um agente executado em paralelo.
 
@@ -137,11 +140,19 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
         testes, aprofundar = resultados_paralelos
 
         # Tratamento de erro para os resultados paralelos usando função auxiliar
+        # asyncio.gather com return_exceptions=True retorna Union[resultado, Exception]
+        testes_result: Union[str, Exception] = (
+            testes if isinstance(testes, (str, Exception)) else str(testes)
+        )
+        aprofundar_result: Union[str, Exception] = (
+            aprofundar if isinstance(aprofundar, (str, Exception)) else str(aprofundar)
+        )
+        
         testes = _tratar_resultado_paralelo(
-            testes, "testes", "Não foi possível gerar sugestões de testes desta vez."
+            testes_result, "testes", "Não foi possível gerar sugestões de testes desta vez."
         )
         aprofundar = _tratar_resultado_paralelo(
-            aprofundar,
+            aprofundar_result,
             "aprofundamento",
             "Não foi possível gerar sugestões de aprofundamento desta vez.",
         )
@@ -165,4 +176,7 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
     dica = gerar_dica_final(pergunta, resposta_final)
 
     # 5. Formata a resposta final, passando a introdução e o corpo de conceitos separados.
-    return formatar_resposta_final(introducao, corpo_conceitos, testes, aprofundar, dica)
+    resultado_final: Dict[str, str] = formatar_resposta_final(
+        introducao, corpo_conceitos, testes, aprofundar, dica
+    )
+    return resultado_final

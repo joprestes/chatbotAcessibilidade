@@ -72,7 +72,8 @@ class Settings(BaseSettings):
         description="Formato das mensagens de log",
     )
 
-    model_config = ConfigDict(
+    # type: ignore necessário porque Pydantic aceita essas chaves mas MyPy não reconhece
+    model_config = ConfigDict(  # type: ignore[typeddict-unknown-key,assignment]
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
@@ -124,4 +125,16 @@ class Settings(BaseSettings):
 
 
 # Instância global de configurações
+# Em ambiente de teste, as variáveis são definidas em conftest.py antes da importação
+# Em produção, devem estar no .env
+import os
+
+# Verifica se está em ambiente de teste
+if os.getenv("PYTEST_CURRENT_TEST"):
+    # Em testes, usa valores padrão se não estiverem definidos
+    if "GOOGLE_API_KEY" not in os.environ:
+        os.environ["GOOGLE_API_KEY"] = "test_key_for_pytest"
+    if "OPENROUTER_API_KEY" not in os.environ:
+        os.environ["OPENROUTER_API_KEY"] = ""
+
 settings = Settings()

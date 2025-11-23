@@ -5,6 +5,7 @@ API FastAPI para o Chatbot de Acessibilidade Digital
 import logging
 import time
 from pathlib import Path
+from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -45,7 +46,9 @@ app = FastAPI(
 # Configura Rate Limiting (sempre inicializa, mas pode estar desabilitado)
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# Handler de rate limit - usa o handler padrão do slowapi
+# type: ignore necessário porque slowapi usa tipos específicos
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
 # Configura CORS com origens permitidas
 app.add_middleware(
@@ -110,7 +113,7 @@ class ChatResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     message: str
-    cache: dict = None
+    cache: Optional[dict] = None
 
 
 # Endpoint de saúde

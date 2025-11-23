@@ -5,7 +5,7 @@ Módulo de cache para respostas do chatbot
 import hashlib
 import logging
 from typing import Optional, Dict, Any
-from cachetools import TTLCache
+from cachetools import TTLCache  # type: ignore[import-untyped]
 
 from chatbot_acessibilidade.config import settings
 
@@ -70,7 +70,10 @@ def get_cached_response(pergunta: str) -> Optional[Dict[str, Any]]:
 
     if resposta is not None:
         logger.debug(f"Cache HIT para pergunta: {pergunta[:50]}...")
-        return resposta
+        # Garante que retorna dict[str, Any] ou None
+        if isinstance(resposta, dict):
+            return resposta
+        return None
 
     logger.debug(f"Cache MISS para pergunta: {pergunta[:50]}...")
     return None

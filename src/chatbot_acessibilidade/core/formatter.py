@@ -1,5 +1,7 @@
 # chatbot_acessibilidade/core/formatter.py
 
+from typing import Dict
+
 
 def eh_erro(texto: str) -> bool:
     texto_lower = texto.lower()
@@ -28,7 +30,7 @@ def extrair_primeiro_paragrafo(texto: str) -> str:
 
 def formatar_resposta_final(
     resumo: str, conceitos: str, testes: str, aprofundar: str, dica: str
-) -> dict:
+) -> Dict[str, str]:
     """
     Formata a resposta final como um dicionário, onde cada chave é um título de seção.
     """

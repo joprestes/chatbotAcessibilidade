@@ -161,12 +161,12 @@ class GoogleGeminiClient(LLMClient):
 
             # Constrói o resultado
             resultado = "".join(
-                parte.text + "\n"
+                (parte.text or "") + "\n"
                 for parte in final_response_content.parts
-                if getattr(parte, "text", None)
+                if getattr(parte, "text", None) is not None
             )
             logger.debug("Google Gemini executado com sucesso")
-            return resultado.strip()
+            return str(resultado.strip())
 
         except asyncio.TimeoutError:
             raise APIError(
@@ -232,7 +232,7 @@ class OpenRouterClient(LLMClient):
                     "Authorization": f"Bearer {self.api_key}",
                     "HTTP-Referer": "https://github.com/chatbotAcessibilidade",
                     "X-Title": "Chatbot Acessibilidade",
-                },
+                } if self.api_key else {},
             )
         return self._client
 
@@ -278,8 +278,10 @@ class OpenRouterClient(LLMClient):
                 raise APIError("Resposta inválida do OpenRouter: sem content")
 
             content = choice["message"]["content"]
+            if not isinstance(content, str):
+                raise APIError("Resposta inválida do OpenRouter: content não é string")
             logger.debug(f"OpenRouter modelo '{model}' executado com sucesso")
-            return content.strip()
+            return str(content.strip())
 
         except asyncio.TimeoutError:
             logger.error(f"Timeout ao executar OpenRouter modelo '{model}' após {self.timeout}s")
