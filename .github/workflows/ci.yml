@@ -70,20 +70,46 @@ jobs:
       
       # Step 6: Executa testes unitários
       # Testes rápidos que verificam unidades individuais de código
+      # Cobre todos os módulos:
+      # - tests/unit/agents/: dispatcher, factory, pipeline
+      # - tests/unit/backend/: api, compression, security_headers, static_cache, validation
+      # - tests/unit/core/: cache, config, constants, formatter, llm_provider, validators
       # --tb=short: Mostra traceback resumido em caso de falha
+      # --cov=src: Calcula cobertura de código do diretório src
+      # --cov-report=term-missing: Mostra linhas não cobertas no terminal
       - name: Run unit tests
-        run: pytest tests/unit/ -v -m "unit" --tb=short
+        run: |
+          echo "🧪 Executando testes unitários..."
+          echo "📁 Testando: agents, backend, core"
+          pytest tests/unit/ -v -m "unit" --tb=short --cov=src --cov-report=term-missing --cov-report=html
         env:
           PYTHONUNBUFFERED: "1"
       
       # Step 7: Executa testes de integração
       # Testes que verificam integração entre componentes
+      # Cobre:
+      # - tests/integration/test_cache_advanced.py: Cache com TTL, métricas
+      # - tests/integration/test_fallback.py: Fallback automático entre LLMs
+      # - tests/integration/test_user_flow.py: Fluxo completo do usuário
       # FALLBACK_ENABLED=false: Desabilita fallback para testes mais rápidos
       - name: Run integration tests
-        run: pytest tests/integration/ -v -m "integration" --tb=short
+        run: |
+          echo "🔗 Executando testes de integração..."
+          echo "📁 Testando: cache avançado, fallback, fluxo de usuário"
+          pytest tests/integration/ -v -m "integration" --tb=short
         env:
           PYTHONUNBUFFERED: "1"
           FALLBACK_ENABLED: "false"  # Desabilita fallback automático
+      
+      # Step 8: Upload de relatório de cobertura
+      # Faz upload do relatório HTML de cobertura gerado pelos testes unitários
+      - name: Upload coverage report
+        if: always()  # Sempre faz upload, mesmo em caso de falha
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
   
   # ============================================
   # Job 2: Testes E2E (End-to-End)
@@ -174,8 +200,25 @@ jobs:
       
       # Step 6: Executa testes E2E com Playwright
       # Estes testes simulam uso real: abrem navegador, interagem com a interface
+      # Executa TODOS os testes do Playwright em tests/e2e/playwright/:
+      # ✅ test_api_playwright.py: Testes de API via Playwright
+      # ✅ test_frontend_playwright.py: Testes de interface do usuário
+      # ✅ test_accessibility.py: Testes básicos de acessibilidade (WCAG)
+      # ✅ test_accessibility_advanced.py: Testes avançados de acessibilidade
+      # ✅ test_error_handling.py: Tratamento de erros (timeout, offline, rate limit)
+      # ✅ test_security.py: Testes de segurança (XSS, SQL injection, CSRF, rate limiting)
+      # ✅ test_performance.py: Testes de performance (múltiplas requisições, cache)
+      # ✅ test_ui_interactions.py: Interações de UI (expanders, toasts, textarea, tema)
+      # ✅ test_responsive_detailed.py: Responsividade detalhada (múltiplos breakpoints)
+      # ✅ test_browser_compatibility.py: Compatibilidade entre navegadores
+      # 
+      # Marcadores: -m "e2e and playwright" garante que apenas testes E2E do Playwright sejam executados
       - name: Run E2E tests
-        run: pytest tests/e2e/ -v -m "e2e" --tb=short
+        run: |
+          echo "🎭 Executando testes E2E com Playwright..."
+          echo "📊 Navegador: ${{ matrix.browser }}"
+          echo "📁 Executando todos os testes em tests/e2e/playwright/"
+          pytest tests/e2e/playwright/ -v -m "e2e and playwright" --tb=short
         env:
           # Configurações do Playwright
           PLAYWRIGHT_BASE_URL: http://localhost:8000  # URL base para testes
