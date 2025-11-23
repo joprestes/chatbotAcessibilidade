@@ -5,6 +5,7 @@ python-dotenv
 pytest
 pytest-html
 pytest-cov
+pytest-asyncio
 fastapi
 uvicorn[standard]
 python-multipart

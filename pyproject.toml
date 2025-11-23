@@ -96,15 +96,22 @@ addopts = [
     "--strict-markers",
     "--tb=short",
 ]
+filterwarnings = [
+    # Suprimir warnings de dependências externas e ambiente
+    "ignore::urllib3.exceptions.NotOpenSSLWarning",  # LibreSSL vs OpenSSL (ambiente)
+    "ignore::FutureWarning",  # Python 3.9 EOL e outros FutureWarnings de dependências
+    "ignore::DeprecationWarning",  # Deprecations de dependências externas (Google genai, etc)
+]
 
 [tool.coverage.run]
-source = ["chatbot_acessibilidade", "backend"]
+source = ["src"]
 omit = [
     "*/tests/*",
     "*/test_*.py",
     "*/__pycache__/*",
     "*/venv/*",
     "*/.venv/*",
+    "*/scripts/*",
 ]
 
 [tool.coverage.report]
@@ -117,4 +124,8 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "@abstractmethod",
 ]
+fail_under = 95
+precision = 2
+show_missing = true
+skip_covered = false
 

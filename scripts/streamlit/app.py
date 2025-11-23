@@ -11,7 +11,8 @@ src_path = Path(__file__).parent.parent.parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
+from chatbot_acessibilidade.pipeline import pipeline_acessibilidade  # noqa: E402
+
 
 # ========================
 # FUNÇÃO AUXILIAR PARA IMAGENS
@@ -26,6 +27,7 @@ def get_image_as_base64(path):
     except FileNotFoundError:
         st.error(f"Arquivo de imagem não encontrado em: {path}")
         return None
+
 
 # ========================
 # CONFIGURAÇÃO DO AMBIENTE
@@ -44,7 +46,7 @@ st.set_page_config(
     page_title="Chatbot de Acessibilidade Digital",
     page_icon="♿",
     layout="centered",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
 # ========================
@@ -52,7 +54,8 @@ st.set_page_config(
 # ========================
 # CSS injetado diretamente para garantir a compatibilidade com tema claro/escuro.
 # Esta é a solução mais robusta para os problemas de cor.
-st.markdown("""
+st.markdown(
+    """
 <style>
 /* Garante que o fundo de TODAS as bolhas de chat se adapte ao tema */
 div[data-testid="chat-message-container"] {
@@ -65,7 +68,9 @@ div[data-testid="chat-message-container"] * {
     color: var(--text-color) !important;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ========================
 # BANNER E INTRODUÇÃO
@@ -80,12 +85,13 @@ if img_base64_banner:
             Acessibilidade com Qualidade — desenvolvido por Joelma De O. Prestes Ferreira
         </p>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 col1, col2 = st.columns([7.5, 2.5])
 with col1:
-    st.markdown("""
+    st.markdown(
+        """
     <div style='
         padding: 12px; 
         background-color: var(--secondary-background-color); 
@@ -97,13 +103,15 @@ with col1:
      👋 Opa! Eu sou a <strong>Ada</strong> — seu bot de confiança pra falar sobre <strong>acessibilidade digital</strong> com foco em <strong>qualidade de software</strong>.
 Se você é de QA e quer deixar seus testes mais inclusivos, tá no lugar certo! Bora validar a acessibilidade juntos? ✅♿
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 with col2:
     img_base64_avatar = get_image_as_base64("static/images/avatar.webp")
     if img_base64_avatar:
         st.markdown(
-           f'''
+            f"""
     <img src="data:image/webp;base64,{img_base64_avatar}" 
          alt="Avatar da Ada, o assistente virtual baseada em Ada Lovelace a primeira mulher programadora" 
          width="150" 
@@ -116,8 +124,8 @@ with col2:
              border-top-right-radius: 10px;
              overflow: hidden;
          ">
-    ''',
-            unsafe_allow_html=True
+    """,
+            unsafe_allow_html=True,
         )
 
 # ========================
@@ -139,17 +147,17 @@ for message in st.session_state.messages:
             resposta_dict = message["content"]
             if isinstance(resposta_dict, dict) and "erro" not in resposta_dict:
                 for i, (titulo, conteudo) in enumerate(resposta_dict.items()):
-                    expandido = (i == 0)
+                    expandido = i == 0
                     with st.expander(titulo, expanded=expandido):
                         st.markdown(conteudo, unsafe_allow_html=True)
             elif isinstance(resposta_dict, dict) and "erro" in resposta_dict:
                 st.error(resposta_dict["erro"])
-            else: # Fallback para erros inesperados
+            else:  # Fallback para erros inesperados
                 st.error("Ocorreu um erro ao exibir a resposta.")
 
 # Campo de entrada do chat que fica fixo no rodapé
 if prompt := st.chat_input("Digite sua pergunta sobre acessibilidade digital:"):
-    
+
     # Adiciona e exibe a pergunta do usuário
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -166,13 +174,13 @@ if prompt := st.chat_input("Digite sua pergunta sobre acessibilidade digital:"):
                 except RuntimeError:
                     loop = asyncio.get_event_loop()
                     resposta_dict = loop.run_until_complete(pipeline_acessibilidade(prompt))
-                
+
                 resposta_final = resposta_dict
-                
+
                 # Renderiza a resposta como expanders
                 if "erro" not in resposta_dict:
                     for i, (titulo, conteudo) in enumerate(resposta_dict.items()):
-                        expandido = (i == 0) # Deixa a introdução aberta
+                        expandido = i == 0  # Deixa a introdução aberta
                         with st.expander(titulo, expanded=expandido):
                             st.markdown(conteudo, unsafe_allow_html=True)
                 else:

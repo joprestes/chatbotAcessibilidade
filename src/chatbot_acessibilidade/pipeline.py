@@ -5,7 +5,7 @@ from chatbot_acessibilidade.core.formatter import (
     eh_erro,
     gerar_dica_final,
     formatar_resposta_final,
-    extrair_primeiro_paragrafo
+    extrair_primeiro_paragrafo,
 )
 from chatbot_acessibilidade.core.exceptions import APIError, AgentError, ValidationError
 from chatbot_acessibilidade.config import settings
@@ -16,23 +16,23 @@ logger = logging.getLogger(__name__)
 def _tratar_resultado_paralelo(resultado: any, nome_agente: str, fallback: str) -> str:
     """
     Trata o resultado de um agente executado em paralelo.
-    
+
     Args:
         resultado: Resultado do agente (pode ser Exception ou string)
         nome_agente: Nome do agente para logging
         fallback: Mensagem de fallback em caso de erro
-        
+
     Returns:
         String com o resultado ou mensagem de fallback
     """
     if isinstance(resultado, Exception):
         logger.warning(f"Erro ao gerar sugestões de {nome_agente}: {resultado}")
         return fallback
-    
+
     if eh_erro(resultado):
         logger.warning(f"Erro detectado na resposta do {nome_agente}")
         return fallback
-    
+
     return resultado
 
 
@@ -50,13 +50,17 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
     pergunta = pergunta.strip()
     if not pergunta:
         raise ValidationError("❌ Por favor, digite uma pergunta sobre acessibilidade digital.")
-    
+
     if len(pergunta) < settings.min_question_length:
-        raise ValidationError(f"❌ A pergunta deve ter pelo menos {settings.min_question_length} caracteres.")
-    
+        raise ValidationError(
+            f"❌ A pergunta deve ter pelo menos {settings.min_question_length} caracteres."
+        )
+
     if len(pergunta) > settings.max_question_length:
-        raise ValidationError(f"❌ A pergunta não pode ter mais de {settings.max_question_length} caracteres.")
-    
+        raise ValidationError(
+            f"❌ A pergunta não pode ter mais de {settings.max_question_length} caracteres."
+        )
+
     logger.info(f"Iniciando pipeline para pergunta: {pergunta[:50]}...")
 
     # 1. Agente Assistente: Gera a primeira versão da resposta.
@@ -85,7 +89,9 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
         base_tecnica = await get_agent_response("validador", prompt_validador, "validador")
         if eh_erro(base_tecnica):
             logger.warning("Erro na resposta do validador, usando resposta inicial")
-            base_tecnica = resposta_inicial  # Fallback: se o validador falhar, usa a resposta inicial.
+            base_tecnica = (
+                resposta_inicial  # Fallback: se o validador falhar, usa a resposta inicial.
+            )
     except (APIError, AgentError) as e:
         logger.warning(f"Erro no agente validador: {e}, usando resposta inicial")
         base_tecnica = resposta_inicial  # Fallback em caso de erro
@@ -123,21 +129,21 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
     # Executa as tarefas em paralelo
     task_testes = get_agent_response("testador", prompt_testes, "teste")
     task_aprofundar = get_agent_response("aprofundador", prompt_aprofundar, "aprofundar")
-    
+
     try:
-        resultados_paralelos = await asyncio.gather(task_testes, task_aprofundar, return_exceptions=True)
+        resultados_paralelos = await asyncio.gather(
+            task_testes, task_aprofundar, return_exceptions=True
+        )
         testes, aprofundar = resultados_paralelos
-        
+
         # Tratamento de erro para os resultados paralelos usando função auxiliar
         testes = _tratar_resultado_paralelo(
-            testes, 
-            "testes", 
-            "Não foi possível gerar sugestões de testes desta vez."
+            testes, "testes", "Não foi possível gerar sugestões de testes desta vez."
         )
         aprofundar = _tratar_resultado_paralelo(
-            aprofundar, 
-            "aprofundamento", 
-            "Não foi possível gerar sugestões de aprofundamento desta vez."
+            aprofundar,
+            "aprofundamento",
+            "Não foi possível gerar sugestões de aprofundamento desta vez.",
         )
     except Exception as e:
         logger.error(f"Erro ao executar agentes paralelos: {e}")
@@ -146,7 +152,7 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
 
     # 1. Extrai a introdução (primeiro parágrafo) da resposta completa.
     introducao = extrair_primeiro_paragrafo(resposta_final)
-    
+
     # 2. Cria a variável para o corpo principal dos conceitos.
     corpo_conceitos = resposta_final
 
@@ -154,9 +160,9 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
     #    Isso evita que o mesmo parágrafo apareça duas vezes.
     if introducao.strip() != resposta_final.strip():
         corpo_conceitos = resposta_final.replace(introducao, "", 1).strip()
-    
+
     # 4. Gera a dica final com base na pergunta.
     dica = gerar_dica_final(pergunta, resposta_final)
-    
+
     # 5. Formata a resposta final, passando a introdução e o corpo de conceitos separados.
     return formatar_resposta_final(introducao, corpo_conceitos, testes, aprofundar, dica)
