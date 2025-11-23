@@ -238,7 +238,8 @@ def test_compression_large_response(mock_pipeline, client):
     if settings.compression_enabled and content_encoding == "gzip":
         # Descomprime e verifica conteúdo
         decompressed = gzip.decompress(response.content)
-        assert b"Introdução" in decompressed or "Introdução".encode("utf-8") in decompressed
+        intro_encoded = "Introdução".encode("utf-8")
+        assert intro_encoded in decompressed
     else:
         # Se não comprimiu, verifica que a resposta existe
         assert response.json() is not None
