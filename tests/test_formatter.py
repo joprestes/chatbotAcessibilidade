@@ -15,13 +15,6 @@ def test_eh_erro_falso():
     """Testa se a função não marca uma resposta normal como erro."""
     assert eh_erro("Esta é uma resposta de sucesso.") == False
 
-def extrair_primeiro_paragrafo(texto: str) -> str:
-    """Extrai o primeiro parágrafo de um texto. Um parágrafo é um bloco de texto separado por \\n\\n."""
-    texto_limpo = texto.strip()
-    if "\n\n" in texto_limpo:
-        return texto_limpo.split("\n\n")[0].strip()
-    return texto_limpo
-
 def test_extrair_paragrafo_texto_curto():
     """Testa o fallback para textos sem quebra de parágrafo."""
     texto = "Um texto curto sem quebras."

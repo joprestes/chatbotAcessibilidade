@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Chatbot de Acessibilidade Digital - Assistente inteligente para tornar a web mais acessível">
+    <title>Chatbot de Acessibilidade Digital</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♿</text></svg>">
+</head>
+<body>
+    <header role="banner">
+        <img 
+            src="/assets/banner.webp" 
+            alt="Banner Acessibilidade com Qualidade, por Joelma Ferreira" 
+            class="banner"
+            loading="eager"
+        >
+        <p class="banner-credit">
+            Acessibilidade com Qualidade — desenvolvido por Joelma De O. Prestes Ferreira
+        </p>
+    </header>
+
+    <main role="main">
+        <section class="intro-section" aria-labelledby="intro-title">
+            <div class="intro-content">
+                <h1 id="intro-title" class="sr-only">Introdução ao Chatbot</h1>
+                <div class="intro-text" role="complementary" aria-label="Apresentação da Ada">
+                    <p>
+                        👋 Opa! Eu sou a <strong>Ada</strong> — seu bot de confiança pra falar sobre 
+                        <strong>acessibilidade digital</strong> com foco em <strong>qualidade de software</strong>.
+                        Se você é de QA e quer deixar seus testes mais inclusivos, tá no lugar certo! 
+                        Bora validar a acessibilidade juntos? ✅♿
+                    </p>
+                </div>
+                <img 
+                    src="/assets/avatar.webp" 
+                    alt="Avatar da Ada, o assistente virtual baseada em Ada Lovelace a primeira mulher programadora" 
+                    class="avatar"
+                    loading="eager"
+                >
+            </div>
+        </section>
+
+        <section class="chat-section" aria-labelledby="chat-title">
+            <h2 id="chat-title" class="sr-only">Área de Conversa</h2>
+            <div id="chat-container" class="chat-container" role="log" aria-live="polite" aria-label="Histórico de mensagens do chat">
+                <!-- Mensagens serão inseridas aqui via JavaScript -->
+            </div>
+        </section>
+
+        <section class="input-section" aria-labelledby="input-title">
+            <h2 id="input-title" class="sr-only">Campo de Entrada</h2>
+            <form id="chat-form" class="chat-form" role="form" aria-label="Formulário de envio de mensagem">
+                <div class="input-wrapper">
+                    <label for="user-input" class="sr-only">Digite sua pergunta sobre acessibilidade digital</label>
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        name="pergunta"
+                        placeholder="Digite sua pergunta sobre acessibilidade digital..."
+                        class="chat-input"
+                        autocomplete="off"
+                        aria-required="true"
+                        aria-describedby="input-help"
+                    >
+                    <button 
+                        type="submit" 
+                        id="send-button"
+                        class="send-button"
+                        aria-label="Enviar mensagem"
+                    >
+                        Enviar
+                    </button>
+                </div>
+                <p id="input-help" class="sr-only">
+                    Digite sua pergunta e pressione Enter ou clique no botão Enviar
+                </p>
+            </form>
+        </section>
+    </main>
+
+    <footer role="contentinfo">
+        <p>
+            Desenvolvido com foco em acessibilidade digital | 
+            <a href="https://github.com/seu-usuario/chatbot-acessibilidade" target="_blank" rel="noopener noreferrer">
+                GitHub
+            </a>
+        </p>
+    </footer>
+
+    <!-- Toggle de tema -->
+    <button 
+        id="theme-toggle" 
+        class="theme-toggle"
+        aria-label="Alternar entre tema claro e escuro"
+        title="Alternar tema"
+    >
+        <span aria-hidden="true">🌓</span>
+    </button>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
+

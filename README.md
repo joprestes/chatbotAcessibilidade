@@ -49,9 +49,15 @@ chatbot-acessibilidade/
 │   ├── agents/           # Define os agentes (assistente, revisor, etc.)
 │   ├── core/             # Funções utilitárias (formatadores, etc.)
 │   └── pipeline.py       # Orquestra os agentes para gerar a resposta
+├── backend/
+│   └── api.py            # API FastAPI (novo frontend)
+├── frontend/
+│   ├── index.html        # Interface HTML (novo frontend)
+│   ├── styles.css        # Estilos acessíveis
+│   └── app.js            # Lógica JavaScript
 ├── tests/                # Testes unitários com pytest
 ├── assets/               # Imagens e CSS
-├── app.py                # Interface com Streamlit
+├── app.py                # Interface com Streamlit (alternativa)
 ├── requirements.txt      # Dependências do projeto
 ├── setup.sh              # Script de instalação
 └── .env                  # Chave da API Google (não versionar)
@@ -72,7 +78,13 @@ Crie um arquivo `.env` com sua chave:
 GOOGLE_API_KEY="sua_chave_aqui"
 ```
 
-Execute:
+**Opção 1: Frontend Web (Recomendado)**
+```bash
+uvicorn backend.api:app --reload --port 8000
+```
+Acesse: http://localhost:8000
+
+**Opção 2: Interface Streamlit (Alternativa)**
 ```bash
 streamlit run app.py
 ```
@@ -101,7 +113,9 @@ pytest --html=relatorio_testes.html --self-contained-html
 
 - Python 3.10+  
 - Google Gemini API (via Google ADK)  
-- Streamlit  
+- FastAPI (API REST)  
+- HTML/CSS/JavaScript (Frontend)  
+- Streamlit (Interface alternativa)  
 - Pytest  
 
 ### 🙋 Sobre a Autora
@@ -146,9 +160,15 @@ chatbot-acessibilidade/
 │   ├── agents/           # Defines agents (assistant, reviewer, etc.)
 │   ├── core/             # Utility functions (formatters, etc.)
 │   └── pipeline.py       # Orchestrates agents to generate the response
+├── backend/
+│   └── api.py            # FastAPI (new frontend)
+├── frontend/
+│   ├── index.html        # HTML interface (new frontend)
+│   ├── styles.css        # Accessible styles
+│   └── app.js            # JavaScript logic
 ├── tests/                # Unit tests with pytest
 ├── assets/               # Images and CSS
-├── app.py                # Streamlit interface
+├── app.py                # Streamlit interface (alternative)
 ├── requirements.txt      # Project dependencies
 ├── setup.sh              # Installation script
 └── .env                  # Google API key (do not version)
@@ -169,7 +189,13 @@ Set your API key in a `.env` file:
 GOOGLE_API_KEY="your_api_key_here"
 ```
 
-Run the app:
+**Option 1: Web Frontend (Recommended)**
+```bash
+uvicorn backend.api:app --reload --port 8000
+```
+Access: http://localhost:8000
+
+**Option 2: Streamlit Interface (Alternative)**
 ```bash
 streamlit run app.py
 ```
@@ -198,7 +224,9 @@ pytest --html=test_report.html --self-contained-html
 
 - Python 3.10+  
 - Google Gemini API (via Google ADK)  
-- Streamlit  
+- FastAPI (REST API)  
+- HTML/CSS/JavaScript (Frontend)  
+- Streamlit (Alternative interface)  
 - Pytest  
 
 ### 🙋 About the Author

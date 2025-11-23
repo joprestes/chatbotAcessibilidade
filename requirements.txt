@@ -4,3 +4,10 @@ google-adk
 python-dotenv
 pytest
 pytest-html
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic-settings
+slowapi
+tenacity
+cachetools

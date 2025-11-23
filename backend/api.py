@@ -1,0 +1,175 @@
+"""
+API FastAPI para o Chatbot de Acessibilidade Digital
+"""
+"""
+API FastAPI para o Chatbot de Acessibilidade Digital
+"""
+import logging
+import time
+from pathlib import Path
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi.middleware.base import BaseHTTPMiddleware
+from pydantic import BaseModel, Field, field_validator
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+from chatbot_acessibilidade.config import settings
+from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
+from chatbot_acessibilidade.core.exceptions import ValidationError
+
+# Configuração de logging
+logging.basicConfig(
+    level=getattr(logging, settings.log_level),
+    format=settings.log_format
+)
+logger = logging.getLogger(__name__)
+
+# Inicializa FastAPI
+app = FastAPI(
+    title="Chatbot de Acessibilidade Digital API",
+    description="API para o chatbot de acessibilidade digital usando Gemini 2.0 Flash",
+    version="1.0.0"
+)
+
+# Configura Rate Limiting (sempre inicializa, mas pode estar desabilitado)
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Configura CORS com origens permitidas
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# Middleware de logging
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        logger.info(f"Incoming request: {request.method} {request.url.path}")
+        
+        response = await call_next(request)
+        
+        process_time = time.time() - start_time
+        logger.info(
+            f"Request completed: {request.method} {request.url.path} - "
+            f"Status: {response.status_code} - Time: {process_time:.3f}s"
+        )
+        
+        return response
+
+app.add_middleware(LoggingMiddleware)
+
+# Modelos Pydantic para validação
+class ChatRequest(BaseModel):
+    pergunta: str = Field(..., min_length=1, description="Pergunta sobre acessibilidade digital")
+    
+    @field_validator("pergunta")
+    @classmethod
+    def validate_pergunta(cls, v: str) -> str:
+        """Valida e sanitiza a pergunta"""
+        v = v.strip()
+        
+        if len(v) < settings.min_question_length:
+            raise ValueError(
+                f"A pergunta deve ter pelo menos {settings.min_question_length} caracteres."
+            )
+        
+        if len(v) > settings.max_question_length:
+            raise ValueError(
+                f"A pergunta não pode ter mais de {settings.max_question_length} caracteres."
+            )
+        
+        # Sanitização básica - remove caracteres de controle
+        v = "".join(char for char in v if ord(char) >= 32 or char in "\n\t")
+        
+        return v
+
+class ChatResponse(BaseModel):
+    resposta: dict
+
+class HealthResponse(BaseModel):
+    status: str
+    message: str
+
+# Endpoint de saúde
+@app.get("/api/health", response_model=HealthResponse)
+async def health_check():
+    """Verifica se a API está funcionando"""
+    return {
+        "status": "ok",
+        "message": "API do Chatbot de Acessibilidade Digital está funcionando"
+    }
+
+# Endpoint principal de chat
+rate_limit_str = f"{settings.rate_limit_per_minute}/minute" if settings.rate_limit_enabled else "1000/minute"
+
+@app.post("/api/chat", response_model=ChatResponse)
+@limiter.limit(rate_limit_str)
+async def chat(request: Request, chat_request: ChatRequest):
+    """
+    Processa uma pergunta sobre acessibilidade digital e retorna a resposta formatada.
+    
+    - **pergunta**: Pergunta sobre acessibilidade digital (3-2000 caracteres)
+    
+    Retorna um dicionário com as seções formatadas da resposta.
+    """
+    logger.info(f"Processando pergunta: {chat_request.pergunta[:50]}...")
+    
+    try:
+        # Chama o pipeline assíncrono
+        resposta_dict = await pipeline_acessibilidade(chat_request.pergunta)
+        
+        # Verifica se houve erro no pipeline
+        if isinstance(resposta_dict, dict) and "erro" in resposta_dict:
+            logger.error(f"Erro no pipeline: {resposta_dict['erro']}")
+            raise HTTPException(
+                status_code=500,
+                detail=resposta_dict["erro"]
+            )
+        
+        logger.info("Resposta gerada com sucesso")
+        return ChatResponse(resposta=resposta_dict)
+    
+    except ValidationError as e:
+        logger.warning(f"Erro de validação: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+    except HTTPException:
+        # Re-raise HTTPExceptions
+        raise
+    except Exception as e:
+        logger.error(f"Erro inesperado: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="❌ Ocorreu um erro inesperado ao processar sua pergunta. Por favor, tente novamente."
+        )
+
+# Servir arquivos estáticos do frontend e assets
+# Verifica se os diretórios existem antes de montar
+frontend_path = Path("frontend")
+assets_path = Path("assets")
+
+if frontend_path.exists():
+    # Serve arquivos do frontend (CSS, JS) em /static
+    app.mount("/static", StaticFiles(directory="frontend"), name="static")
+    
+    # Serve index.html na raiz
+    @app.get("/")
+    async def read_root():
+        """Serve a página principal do frontend"""
+        return FileResponse("frontend/index.html")
+
+if assets_path.exists():
+    # Serve assets (imagens) em /assets
+    app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+

@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from chatbot_acessibilidade.agents.dispatcher import get_agent_response
 from chatbot_acessibilidade.core.formatter import (
     eh_erro,
@@ -6,6 +7,10 @@ from chatbot_acessibilidade.core.formatter import (
     formatar_resposta_final,
     extrair_primeiro_paragrafo
 )
+from chatbot_acessibilidade.core.exceptions import APIError, AgentError, ValidationError
+from chatbot_acessibilidade.config import settings
+
+logger = logging.getLogger(__name__)
 
 async def pipeline_acessibilidade(pergunta: str) -> dict:
     """
@@ -17,17 +22,32 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
       - Sugestão de formas de teste
       - Sugestão de materiais de aprofundamento
     """
-    if not pergunta.strip():
-        return {"erro": "❌ Por favor, digite uma pergunta sobre acessibilidade digital."}
+    # Validação de entrada
+    pergunta = pergunta.strip()
+    if not pergunta:
+        raise ValidationError("❌ Por favor, digite uma pergunta sobre acessibilidade digital.")
+    
+    if len(pergunta) < settings.min_question_length:
+        raise ValidationError(f"❌ A pergunta deve ter pelo menos {settings.min_question_length} caracteres.")
+    
+    if len(pergunta) > settings.max_question_length:
+        raise ValidationError(f"❌ A pergunta não pode ter mais de {settings.max_question_length} caracteres.")
+    
+    logger.info(f"Iniciando pipeline para pergunta: {pergunta[:50]}...")
 
     # 1. Agente Assistente: Gera a primeira versão da resposta.
     prompt_assistente = (
         f"Você é um especialista em acessibilidade digital. Responda à seguinte pergunta de forma clara, "
         f"acessível e didática, explicando os conceitos e oferecendo exemplos práticos:\n\nPERGUNTA: '{pergunta}'"
     )
-    resposta_inicial = await get_agent_response("assistente", prompt_assistente, "assistente")
-    if eh_erro(resposta_inicial):
-        return {"erro": f"❌ Falha ao gerar a resposta inicial: {resposta_inicial}"}
+    try:
+        resposta_inicial = await get_agent_response("assistente", prompt_assistente, "assistente")
+        if eh_erro(resposta_inicial):
+            logger.error(f"Erro na resposta inicial: {resposta_inicial}")
+            return {"erro": f"❌ Falha ao gerar a resposta inicial: {resposta_inicial}"}
+    except (APIError, AgentError) as e:
+        logger.error(f"Erro no agente assistente: {e}")
+        return {"erro": str(e)}
 
     # 2. Agente Validador: Corrige e aprimora tecnicamente a resposta.
     prompt_validador = (
@@ -37,9 +57,14 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
         f"**Reescreva o texto, corrigindo qualquer imprecisão ou adicionando detalhes técnicos importantes. "
         f"ENTREGUE APENAS O TEXTO CORRIGIDO E FINAL, SEM INTRODUÇÕES OU COMENTÁRIOS.**"
     )
-    base_tecnica = await get_agent_response("validador", prompt_validador, "validador")
-    if eh_erro(base_tecnica):
-        base_tecnica = resposta_inicial  # Fallback: se o validador falhar, usa a resposta inicial.
+    try:
+        base_tecnica = await get_agent_response("validador", prompt_validador, "validador")
+        if eh_erro(base_tecnica):
+            logger.warning("Erro na resposta do validador, usando resposta inicial")
+            base_tecnica = resposta_inicial  # Fallback: se o validador falhar, usa a resposta inicial.
+    except (APIError, AgentError) as e:
+        logger.warning(f"Erro no agente validador: {e}, usando resposta inicial")
+        base_tecnica = resposta_inicial  # Fallback em caso de erro
 
     # 3. Agente Revisor: Torna a linguagem mais clara e acessível.
     prompt_revisor = (
@@ -48,9 +73,14 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
         f"Texto a ser reescrito:\n'{base_tecnica}'\n\n"
         f"**Reescreva o texto de forma didática e gentil. SUA SAÍDA DEVE SER APENAS O TEXTO FINAL, sem comentários como 'aqui está a versão revisada'.**"
     )
-    resposta_final = await get_agent_response("revisor", prompt_revisor, "revisor")
-    if eh_erro(resposta_final):
-        resposta_final = base_tecnica  # Fallback: se o revisor falhar, usa a resposta técnica.
+    try:
+        resposta_final = await get_agent_response("revisor", prompt_revisor, "revisor")
+        if eh_erro(resposta_final):
+            logger.warning("Erro na resposta do revisor, usando resposta técnica")
+            resposta_final = base_tecnica  # Fallback: se o revisor falhar, usa a resposta técnica.
+    except (APIError, AgentError) as e:
+        logger.warning(f"Erro no agente revisor: {e}, usando resposta técnica")
+        resposta_final = base_tecnica  # Fallback em caso de erro
 
     # 4 & 5. Agentes Testador e Aprofundador: Executados em paralelo para mais eficiência.
     prompt_testes = (
@@ -69,13 +99,26 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
     # Executa as tarefas em paralelo
     task_testes = get_agent_response("testador", prompt_testes, "teste")
     task_aprofundar = get_agent_response("aprofundador", prompt_aprofundar, "aprofundar")
-    resultados_paralelos = await asyncio.gather(task_testes, task_aprofundar)
-    testes, aprofundar = resultados_paralelos
-
-    # Tratamento de erro para os resultados paralelos
-    if eh_erro(testes):
+    
+    try:
+        resultados_paralelos = await asyncio.gather(task_testes, task_aprofundar, return_exceptions=True)
+        testes, aprofundar = resultados_paralelos
+        
+        # Tratamento de erro para os resultados paralelos
+        if isinstance(testes, Exception) or eh_erro(testes if not isinstance(testes, Exception) else ""):
+            logger.warning("Erro ao gerar sugestões de testes")
+            testes = "Não foi possível gerar sugestões de testes desta vez."
+        elif isinstance(testes, Exception):
+            testes = "Não foi possível gerar sugestões de testes desta vez."
+            
+        if isinstance(aprofundar, Exception) or eh_erro(aprofundar if not isinstance(aprofundar, Exception) else ""):
+            logger.warning("Erro ao gerar sugestões de aprofundamento")
+            aprofundar = "Não foi possível gerar sugestões de aprofundamento desta vez."
+        elif isinstance(aprofundar, Exception):
+            aprofundar = "Não foi possível gerar sugestões de aprofundamento desta vez."
+    except Exception as e:
+        logger.error(f"Erro ao executar agentes paralelos: {e}")
         testes = "Não foi possível gerar sugestões de testes desta vez."
-    if eh_erro(aprofundar):
         aprofundar = "Não foi possível gerar sugestões de aprofundamento desta vez."
 
     # 1. Extrai a introdução (primeiro parágrafo) da resposta completa.
