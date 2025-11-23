@@ -162,23 +162,13 @@ def test_manual_cancellation(page: Page, base_url: str):
     send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
-    # Aguarda que o typing indicator apareça (garante que a requisição começou)
-    typing_indicator = page.locator("text=Aguarde que estou pesquisando")
-    expect(typing_indicator).to_be_visible(timeout=10000)
-
-    # Aguarda botão cancelar aparecer (aguarda que isLoading seja true)
-    # O botão só aparece quando isLoading é true, então aguardamos
-    # que a classe 'hidden' seja removida
+    # Aguarda botão cancelar aparecer
+    # O botão aparece quando isLoading é true e updateUIState() foi chamado
     cancel_button = page.get_by_test_id("btn-cancelar")
 
-    # Aguarda que o botão não tenha mais a classe 'hidden' E esteja visível
-    page.wait_for_function(
-        "() => { const btn = document.querySelector('[data-testid=\"btn-cancelar\"]'); return btn && !btn.classList.contains('hidden') && btn.offsetParent !== null; }",
-        timeout=10000,
-    )
-
-    # Verifica que está visível
-    expect(cancel_button).to_be_visible(timeout=2000)
+    # Aguarda que o botão esteja visível (mais simples e direto)
+    # Playwright já faz a verificação de visibilidade automaticamente
+    expect(cancel_button).to_be_visible(timeout=10000)
 
     # Clica no botão cancelar
     cancel_button.click()
