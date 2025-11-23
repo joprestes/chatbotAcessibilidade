@@ -43,6 +43,11 @@ from chatbot_acessibilidade.core.cache import (  # noqa: E402
     set_cached_response,
     get_cache_stats,
 )
+from chatbot_acessibilidade.core.validators import (  # noqa: E402
+    sanitize_input,
+    validate_content,
+    detect_injection_patterns,
+)
 
 # Configuração de logging
 logging.basicConfig(level=getattr(logging, settings.log_level), format=settings.log_format)
