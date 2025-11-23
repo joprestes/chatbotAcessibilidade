@@ -15,6 +15,7 @@ const STORAGE_KEY = 'chatbot_messages';
 // =========================================
 let messages = [];
 let isLoading = false;
+const TYPING_MESSAGE_ID = '__typing_indicator__'; // ID especial para mensagem de digitação
 
 // =========================================
 // Elementos DOM
@@ -131,14 +132,32 @@ function clearMessages() {
     renderMessages();
 }
 
+function removeLastErrorMessage() {
+    // Remove a última mensagem de erro do assistente, se existir
+    let removed = false;
+    for (let i = messages.length - 1; i >= 0; i--) {
+        const message = messages[i];
+        if (message.role === 'assistant' && 
+            typeof message.content === 'object' && 
+            message.content.erro) {
+            messages.splice(i, 1);
+            removed = true;
+            break;
+        }
+    }
+    // Só salva e re-renderiza se realmente removeu algo
+    // O renderMessages() já preserva o indicador se isLoading for true
+    if (removed) {
+        saveMessagesToStorage();
+        renderMessages();
+    }
+}
+
 // =========================================
 // Renderização
 // =========================================
 function renderMessages() {
     if (!chatContainer) return;
-    
-    // Preserva typing indicator se existir
-    const typingIndicator = chatContainer.querySelector('.typing-indicator-container');
     
     chatContainer.innerHTML = '';
     
@@ -150,11 +169,6 @@ function renderMessages() {
         const messageElement = createMessageElement(message, index);
         chatContainer.appendChild(messageElement);
     });
-    
-    // Restaura typing indicator se existir
-    if (typingIndicator) {
-        chatContainer.appendChild(typingIndicator);
-    }
     
     // Scroll para o final
     scrollToBottom();
@@ -174,8 +188,33 @@ function createMessageElement(message, index) {
     if (message.role === 'user') {
         bubble.textContent = message.content;
     } else {
-        // Mensagem do assistente - pode ser string ou objeto
-        if (typeof message.content === 'string') {
+        // Verifica se é a mensagem de digitação
+        if (message.content === TYPING_MESSAGE_ID) {
+            bubble.className += ' typing-indicator';
+            bubble.setAttribute('data-testid', 'typing-indicator');
+            bubble.setAttribute('aria-live', 'polite');
+            bubble.setAttribute('aria-label', 'Bot está pesquisando resposta');
+            
+            // Texto informativo
+            const textSpan = document.createElement('span');
+            textSpan.className = 'typing-text';
+            textSpan.textContent = 'Aguarde que estou pesquisando';
+            bubble.appendChild(textSpan);
+            
+            // Dots animados
+            const dots = document.createElement('div');
+            dots.className = 'typing-dots';
+            dots.setAttribute('aria-hidden', 'true');
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'typing-dot';
+                dot.style.animationDelay = `${i * 0.2}s`;
+                dots.appendChild(dot);
+            }
+            
+            bubble.appendChild(dots);
+        } else if (typeof message.content === 'string') {
             bubble.innerHTML = formatMarkdown(message.content);
         } else if (typeof message.content === 'object') {
             if (message.content.erro) {
@@ -217,7 +256,10 @@ function createExpanderSection(title, content, isExpanded = false) {
     header.setAttribute('aria-controls', uniqueId);
     
     const titleSpan = document.createElement('span');
-    titleSpan.innerHTML = title;
+    // Remove formatação markdown (asteriscos) do título
+    const cleanTitle = title.replace(/\*\*/g, '').trim();
+    titleSpan.textContent = cleanTitle;
+    titleSpan.style.flex = '1';
     header.appendChild(titleSpan);
     
     const icon = document.createElement('span');
@@ -331,44 +373,26 @@ function scrollToBottom() {
 // Typing Indicator
 // =========================================
 function showTypingIndicator() {
-    if (!chatContainer) return;
+    // Adiciona uma mensagem temporária do assistente com o indicador
+    // Usa um ID especial para identificá-la depois
+    const typingMessage = {
+        role: 'assistant',
+        content: TYPING_MESSAGE_ID, // Conteúdo especial que será renderizado como indicador
+        timestamp: Date.now()
+    };
     
-    // Remove indicador existente se houver
-    hideTypingIndicator();
-    
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'message assistant typing-indicator-container';
-    typingDiv.setAttribute('data-testid', 'typing-indicator');
-    typingDiv.setAttribute('aria-live', 'polite');
-    typingDiv.setAttribute('aria-label', 'Bot está digitando');
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble typing-indicator';
-    
-    const dots = document.createElement('div');
-    dots.className = 'typing-dots';
-    dots.setAttribute('aria-hidden', 'true');
-    
-    for (let i = 0; i < 3; i++) {
-        const dot = document.createElement('span');
-        dot.className = 'typing-dot';
-        dot.style.animationDelay = `${i * 0.2}s`;
-        dots.appendChild(dot);
-    }
-    
-    bubble.appendChild(dots);
-    typingDiv.appendChild(bubble);
-    chatContainer.appendChild(typingDiv);
-    
-    scrollToBottom();
+    messages.push(typingMessage);
+    saveMessagesToStorage();
+    renderMessages();
 }
 
 function hideTypingIndicator() {
-    if (!chatContainer) return;
-    
-    const typingIndicator = chatContainer.querySelector('.typing-indicator-container');
-    if (typingIndicator) {
-        typingIndicator.remove();
+    // Remove a mensagem de digitação do array
+    const typingIndex = messages.findIndex(msg => msg.content === TYPING_MESSAGE_ID);
+    if (typingIndex !== -1) {
+        messages.splice(typingIndex, 1);
+        saveMessagesToStorage();
+        renderMessages();
     }
 }
 
@@ -443,8 +467,8 @@ async function sendMessage(pergunta) {
         
         clearTimeout(timeoutId);
         
-        // Remove mensagem de loading
-        messages.pop();
+        // NÃO remove mensagens de erro aqui - só quando a resposta chegar
+        // Isso evita que o indicador desapareça prematuramente
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: 'Erro desconhecido' }));
@@ -462,7 +486,13 @@ async function sendMessage(pergunta) {
         
         const data = await response.json();
         
-        // Adiciona resposta do assistente
+        // Remove indicador de digitação
+        hideTypingIndicator();
+        
+        // Remove qualquer mensagem de erro anterior do assistente
+        removeLastErrorMessage();
+        
+        // Adiciona resposta do assistente (aparecerá abaixo do indicador que foi removido)
         addMessage('assistant', data.resposta);
         
     } catch (error) {
@@ -505,6 +535,8 @@ async function sendMessage(pergunta) {
         
         console.error('Erro ao enviar mensagem:', error);
     } finally {
+        // Garante que o indicador seja removido quando terminar (sucesso ou erro)
+        hideTypingIndicator();
         isLoading = false;
         updateUIState();
     }
