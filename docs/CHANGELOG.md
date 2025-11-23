@@ -2,6 +2,25 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.5.0] - 2025-01-22
+
+### Adicionado
+- Testes adicionais para aumentar cobertura de `config.py` e `llm_provider.py`
+- `tests/test_config_coverage.py`: Testes para linhas não cobertas de `config.py` (linhas 127, 150-153)
+- `tests/test_llm_provider_coverage.py`: Testes para linhas não cobertas de `llm_provider.py` (linhas 191, 311, 435-439)
+
+### Melhorado
+- Cobertura de testes de `config.py`: 92.31% → 98.46% (+6.15%)
+- Cobertura de testes de `llm_provider.py`: 98.11% → 99.53% (+1.42%)
+- Ambos os arquivos agora têm cobertura acima da meta de 98%
+
+### Detalhes Técnicos
+- Linha 127 de `config.py`: Teste para `openrouter_models_list` quando `openrouter_models` é string
+- Linhas 150-153 de `config.py`: Testes para inicialização de variáveis de ambiente em ambiente de teste
+- Linha 191 de `llm_provider.py`: Teste para `TimeoutError` no except externo do `generate`
+- Linha 311 de `llm_provider.py`: Teste para validação de `content` não sendo string no OpenRouter
+- Linhas 435-439 de `llm_provider.py`: Teste para `continue` quando `should_fallback` retorna `True` para clientes não-OpenRouter
+
 ## [3.4.0] - 2025-11-23
 
 ### Adicionado

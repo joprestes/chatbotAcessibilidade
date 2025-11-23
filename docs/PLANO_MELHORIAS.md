@@ -16,8 +16,8 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 
 | Prioridade | Item | Status | Estimativa |
 |------------|------|--------|------------|
-| 🔴 Alta | Aumentar cobertura de `config.py` | ⏳ Pendente | 2-3h |
-| 🔴 Alta | Aumentar cobertura de `llm_provider.py` | ⏳ Pendente | 3-4h |
+| 🔴 Alta | Aumentar cobertura de `config.py` | ✅ Concluído | 2-3h |
+| 🔴 Alta | Aumentar cobertura de `llm_provider.py` | ✅ Concluído | 3-4h |
 | 🟡 Média | Melhorar segurança (headers) | ⏳ Pendente | 2-3h |
 | 🟡 Média | Validação de conteúdo robusta | ⏳ Pendente | 2-3h |
 | 🟡 Média | Otimizações de performance | ⏳ Pendente | 4-5h |
@@ -75,9 +75,9 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 - `tests/test_config.py` (adicionar novos testes)
 
 **Critérios de Aceitação:**
-- [ ] Cobertura de `config.py` >= 98%
-- [ ] Todos os testes passando
-- [ ] Sem regressões
+- [x] Cobertura de `config.py` >= 98% (98.46% alcançado)
+- [x] Todos os testes passando
+- [x] Sem regressões
 
 **Estimativa Total:** 2-3 horas
 
@@ -137,9 +137,9 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 - `tests/test_llm_provider.py` (adicionar novos testes)
 
 **Critérios de Aceitação:**
-- [ ] Cobertura de `llm_provider.py` >= 98%
-- [ ] Todos os testes passando
-- [ ] Sem regressões
+- [x] Cobertura de `llm_provider.py` >= 98% (99.53% alcançado)
+- [x] Todos os testes passando
+- [x] Sem regressões
 
 **Estimativa Total:** 3-4 horas
 
