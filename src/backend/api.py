@@ -69,9 +69,10 @@ app = FastAPI(
     title="Chatbot de Acessibilidade Digital API",
     description="""
     ## 🎯 API para Chatbot de Acessibilidade Digital
-    
-    API REST desenvolvida com FastAPI que fornece respostas inteligentes sobre acessibilidade digital,
-    utilizando Google Gemini 2.0 Flash com fallback automático para múltiplos LLMs via OpenRouter.
+
+    API REST desenvolvida com FastAPI que fornece respostas inteligentes sobre
+    acessibilidade digital, utilizando Google Gemini 2.0 Flash com fallback
+    automático para múltiplos LLMs via OpenRouter.
     
     ### ✨ Funcionalidades
     
