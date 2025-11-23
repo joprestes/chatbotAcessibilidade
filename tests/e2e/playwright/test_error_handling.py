@@ -23,26 +23,23 @@ def test_timeout_request(
 
     page.goto(base_url)
 
-    # Intercepta requisição e adiciona delay
+    # Intercepta requisição (sem delay - Playwright já sincroniza)
     def handle_route(route: Route):
-        import time
-
-        time.sleep(0.1)  # Delay pequeno para teste rápido
         route.continue_()
 
     page.route(f"{base_url}/api/chat", handle_route)
 
     # Preenche input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Teste de timeout")
 
     # Envia mensagem
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Para teste real de timeout, seria necessário delay de 120s+
     # Por enquanto, apenas verifica que requisição foi iniciada
-    cancel_button = page.locator('[data-testid="btn-cancelar"]')
+    cancel_button = page.get_by_test_id("btn-cancelar")
     # Se botão cancelar aparece, requisição está em andamento
     try:
         expect(cancel_button).to_be_visible(timeout=2000)
@@ -63,11 +60,11 @@ def test_offline_error(page: Page, base_url: str):
     page.context.set_offline(True)
 
     # Preenche input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Teste offline")
 
     # Envia mensagem
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Verifica mensagem de offline
@@ -102,11 +99,11 @@ def test_rate_limit_error(page: Page, base_url: str):
     page.route(f"{base_url}/api/chat", handle_route)
 
     # Preenche input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Teste rate limit")
 
     # Envia mensagem
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Verifica mensagem de rate limit
@@ -136,11 +133,11 @@ def test_server_error_500(page: Page, base_url: str):
     page.route(f"{base_url}/api/chat", handle_route)
 
     # Preenche input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Teste erro servidor")
 
     # Envia mensagem
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Verifica mensagem de erro do servidor
@@ -157,15 +154,15 @@ def test_manual_cancellation(page: Page, base_url: str):
     page.goto(base_url)
 
     # Preenche input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Teste cancelamento")
 
     # Envia mensagem
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Aguarda botão cancelar aparecer
-    cancel_button = page.locator('[data-testid="btn-cancelar"]')
+    cancel_button = page.get_by_test_id("btn-cancelar")
     expect(cancel_button).to_be_visible(timeout=2000)
 
     # Clica no botão cancelar
@@ -175,6 +172,7 @@ def test_manual_cancellation(page: Page, base_url: str):
     page.wait_for_timeout(500)
 
     # Verifica que não há mensagem de erro
+    # Busca mensagens assistant que tenham classe error
     error_messages = page.locator('[data-testid="chat-mensagem-assistant"].error')
     expect(error_messages).to_have_count(0)
 
@@ -202,15 +200,16 @@ def test_malformed_response(page: Page, base_url: str):
     page.route(f"{base_url}/api/chat", handle_route)
 
     # Preenche input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Teste resposta malformada")
 
     # Envia mensagem
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Verifica que erro é tratado graciosamente
     # Pode ser mensagem de erro genérica ou específica
+    # Usa locator para combinar test-id com classe CSS
     error_message = page.locator('[data-testid="chat-mensagem-assistant"].error')
     expect(error_message).to_be_visible(timeout=5000)
 

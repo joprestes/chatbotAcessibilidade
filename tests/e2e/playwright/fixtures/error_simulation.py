@@ -99,11 +99,8 @@ def mock_api_response(page: Page, base_url: str) -> Generator[callable, None, No
         delay: Optional[int] = None,
     ) -> None:
         def handle_route(route: Route) -> None:
-            if delay:
-                import time
-
-                time.sleep(delay / 1000)  # delay em milissegundos
-
+            # Delay removido - Playwright já sincroniza automaticamente
+            # Se delay for necessário no futuro, usar page.wait_for_timeout() no teste
             route.fulfill(
                 status=status,
                 headers={"Content-Type": "application/json"},
