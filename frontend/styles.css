@@ -195,8 +195,32 @@ header.glass-header {
     object-fit: cover;
     border: 3px solid rgba(255, 255, 255, 0.4); /* Borda mais visível */
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3); /* Sombra mais forte */
-    animation: breathing 3s ease-in-out infinite;
     flex-shrink: 0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+/* Animação de respiração quando está IDLE */
+.ada-header-avatar.avatar-breathing {
+    animation: avatarBreathing 3s ease-in-out infinite;
+}
+
+/* Animação de transição entre avatares */
+.ada-header-avatar.avatar-transitioning {
+    opacity: 0.7;
+    transform: scale(0.95);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+@keyframes avatarBreathing {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+    }
 }
 
 @media (min-width: 768px) {
@@ -682,12 +706,16 @@ main {
 }
 
 .intro-card-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid rgba(124, 58, 237, 0.2);
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
     flex-shrink: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.intro-card-avatar.avatar-transitioning {
+    opacity: 0.7;
+    transform: scale(0.95);
 }
 
 .intro-card-text {
@@ -741,8 +769,8 @@ main {
     }
     
     .intro-card-avatar {
-        width: 100px;
-        height: 100px;
+        width: 150px;
+        height: 150px;
     }
     
     .intro-card-text h2 {
@@ -836,24 +864,21 @@ main {
 
 /* Avatares para mensagens */
 .message-avatar {
-    width: 56px; /* Aumentado de 48px para melhor visibilidade */
-    height: 56px;
-    border-radius: 50%;
+    width: 80px; /* Aumentado de 56px para melhor visibilidade */
+    height: 80px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 22px; /* Aumentado de 20px para acompanhar o tamanho */
     font-weight: 700;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12); /* Sombra mais forte */
 }
 
 @media (min-width: 768px) {
     .message-avatar {
-        width: 64px; /* Aumentado de 56px para desktop */
-        height: 64px;
+        width: 100px; /* Aumentado de 64px para desktop */
+        height: 100px;
         font-size: 24px; /* Aumentado de 22px para desktop */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); /* Sombra ainda mais forte */
     }
 }
 
@@ -862,31 +887,46 @@ main {
     color: white;
 }
 
+/* Quando há imagem no avatar do usuário, remove o gradiente */
+.message.user .message-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%; /* Mantém circular para o usuário */
+}
+
+.message.user .message-avatar:has(img) {
+    background: transparent; /* Remove gradiente quando há imagem */
+}
+
 .message.assistant .message-avatar {
     background: transparent;
-    border: 3px solid var(--bot-bubble-border); /* Mantém 3px */
+    border: none;
     padding: 0;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(124, 58, 237, 0.2); /* Sombra roxa sutil para destacar */
+    overflow: visible;
 }
 
 @media (min-width: 768px) {
     .message.assistant .message-avatar {
-        border: 4px solid var(--bot-bubble-border); /* Borda um pouco mais grossa no desktop */
-        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25); /* Sombra mais forte no desktop */
+        /* Borda removida - apenas imagem */
     }
 }
 
 .message.assistant .message-avatar img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
+    object-fit: contain;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.message.assistant .message-avatar img.avatar-transitioning {
+    opacity: 0.7;
+    transform: scale(0.95);
 }
 
 @media (min-width: 768px) {
     .message.assistant .message-avatar {
-        border: 3px solid var(--bot-bubble-border);
+        /* Borda removida - apenas imagem */
     }
 }
 
@@ -895,7 +935,7 @@ main {
 }
 
 [data-theme="dark"] .message.assistant .message-avatar {
-    background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+    background: transparent;
 }
 
 .message-bubble {
@@ -1533,7 +1573,11 @@ main {
 }
 
 .cancel-button.hidden {
-    display: none;
+    display: none !important;
+}
+
+.cancel-button:not(.hidden) {
+    display: flex !important;
 }
 
 [data-theme="dark"] .cancel-button {

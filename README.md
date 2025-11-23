@@ -16,11 +16,20 @@
 
 ---
 
+<div align="center">
+
+### 👋 Olá! Eu sou a Ada
+
 <img
-  src="assets/banner.webp"
-  alt="Banner Acessibilidade com Qualidade"
-  width="100%"
-  style="border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);">
+  src="assets/ada-animated.gif"
+  alt="Ada - Assistente de Acessibilidade Digital"
+  width="200"
+  height="200"
+  style="border-radius: 50%; border: 4px solid rgba(124, 58, 237, 0.3); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3); margin: 20px 0;">
+
+**Sua Assistente de Inclusão Digital** 💜
+
+</div>
 
 **Desenvolvido por:** [Joelma De O. Prestes Ferreira](https://www.linkedin.com/in/joprestes84/)
 

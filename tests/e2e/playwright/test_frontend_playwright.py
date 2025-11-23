@@ -7,7 +7,6 @@ validando interações, fluxos e comportamento visual.
 
 import pytest
 from playwright.sync_api import Page, expect
-from typing import Generator
 
 pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.frontend]
 
@@ -126,7 +125,7 @@ def test_suggestion_chips_click(page: Page, base_url: str):
     page.goto(base_url)
     
     # Aguarda card de introdução aparecer
-    intro_card = page.locator('[data-testid="intro-card"]')
+    page.locator('[data-testid="intro-card"]')
     
     # Verifica se há chips de sugestão
     suggestion_chip = page.locator('[data-testid="chip-contraste"]').first
@@ -168,7 +167,7 @@ def test_clear_chat_button(page: Page, base_url: str):
         page.wait_for_timeout(500)
         
         # Verifica se card de introdução voltou
-        intro_card = page.locator('[data-testid="intro-card"]')
+        page.locator('[data-testid="intro-card"]')
         # Pode estar visível novamente
 
 

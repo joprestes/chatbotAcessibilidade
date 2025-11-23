@@ -6,7 +6,7 @@ incluindo mocks, factories e configurações específicas.
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock, AsyncMock
+from unittest.mock import AsyncMock
 from typing import Dict, Any
 
 

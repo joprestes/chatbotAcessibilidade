@@ -28,6 +28,144 @@ const TYPING_MESSAGE_ID = '__typing_indicator__'; // ID especial para mensagem d
 const MAX_QUESTION_LENGTH = 2000; // Máximo de caracteres (do backend)
 
 // =========================================
+// Sistema de Avatar Dinâmico
+// =========================================
+const AVATAR_STATES = {
+    GREETING: 'ada-greeting',
+    IDLE: 'ada-idle',
+    SURPRISED: 'ada-surprised',
+    THINKING: 'ada-thinking',
+    EUREKA: 'ada-eureka',
+    HAPPY: 'ada-happy',
+    SLEEP: 'ada-sleep',
+    CONFUSED: 'ada-confused',
+    SAD: 'ada-sad',
+    ERROR: 'ada-error',
+    BACK_SOON: 'ada-back-soon'
+};
+
+let currentAvatarState = AVATAR_STATES.GREETING;
+let lastActivityTime = Date.now();
+let sleepTimeout = null;
+let userTyping = false;
+let foundAnswer = false; // Flag para detectar quando encontra resposta
+
+/**
+ * Retorna o caminho do avatar baseado no estado
+ */
+function getAvatarPath(state = null) {
+    const avatarState = state || currentAvatarState;
+    return `/assets/ada-states/${avatarState}.png`;
+}
+
+/**
+ * Atualiza o avatar em todos os lugares (header, intro card, mensagens)
+ */
+function updateAvatar(state, animate = true) {
+    if (state === currentAvatarState && !animate) return;
+    
+    const avatarPath = getAvatarPath(state);
+    const previousState = currentAvatarState;
+    currentAvatarState = state;
+    
+    // Atualiza avatar no header
+    const headerAvatar = document.querySelector('.ada-header-avatar');
+    if (headerAvatar) {
+        if (animate) {
+            headerAvatar.classList.add('avatar-transitioning');
+            setTimeout(() => {
+                headerAvatar.src = avatarPath;
+                headerAvatar.addEventListener('load', () => {
+                    headerAvatar.classList.remove('avatar-transitioning');
+                    // Adiciona animação de respiração se for IDLE
+                    if (state === AVATAR_STATES.IDLE) {
+                        headerAvatar.classList.add('avatar-breathing');
+                    } else {
+                        headerAvatar.classList.remove('avatar-breathing');
+                    }
+                }, { once: true });
+            }, 150);
+        } else {
+            headerAvatar.src = avatarPath;
+            if (state === AVATAR_STATES.IDLE) {
+                headerAvatar.classList.add('avatar-breathing');
+            } else {
+                headerAvatar.classList.remove('avatar-breathing');
+            }
+        }
+    }
+    
+    // Atualiza avatar no card de introdução
+    const introAvatar = document.querySelector('.intro-card-avatar');
+    if (introAvatar) {
+        if (animate) {
+            introAvatar.classList.add('avatar-transitioning');
+            setTimeout(() => {
+                introAvatar.src = avatarPath;
+                introAvatar.addEventListener('load', () => {
+                    introAvatar.classList.remove('avatar-transitioning');
+                }, { once: true });
+            }, 150);
+        } else {
+            introAvatar.src = avatarPath;
+        }
+    }
+    
+    // Atualiza avatares nas mensagens do assistente
+    const messageAvatars = document.querySelectorAll('.message.assistant .message-avatar img');
+    messageAvatars.forEach(avatar => {
+        if (animate) {
+            avatar.classList.add('avatar-transitioning');
+            setTimeout(() => {
+                avatar.src = avatarPath;
+                avatar.addEventListener('load', () => {
+                    avatar.classList.remove('avatar-transitioning');
+                }, { once: true });
+            }, 150);
+        } else {
+            avatar.src = avatarPath;
+        }
+    });
+}
+
+/**
+ * Gerencia timeout de inatividade (5 minutos para SLEEP)
+ */
+function resetSleepTimeout() {
+    lastActivityTime = Date.now();
+    
+    if (sleepTimeout) {
+        clearTimeout(sleepTimeout);
+    }
+    
+    // Após 5 minutos de inatividade, muda para SLEEP
+    sleepTimeout = setTimeout(() => {
+        if (Date.now() - lastActivityTime >= 300000 && !isLoading) { // 5 minutos
+            updateAvatar(AVATAR_STATES.SLEEP, true);
+        }
+    }, 300000);
+}
+
+/**
+ * Inicializa sistema de clique no avatar para acordar
+ */
+function setupAvatarClickHandler() {
+    const headerAvatar = document.querySelector('.ada-header-avatar');
+    if (headerAvatar) {
+        headerAvatar.style.cursor = 'pointer';
+        headerAvatar.setAttribute('title', 'Clique para acordar a Ada');
+        headerAvatar.addEventListener('click', () => {
+            if (currentAvatarState === AVATAR_STATES.SLEEP) {
+                updateAvatar(AVATAR_STATES.GREETING, true);
+                resetSleepTimeout();
+                // Mostra mensagem de "acordou"
+                showToast('Acordei! Vamos lá! 💜', 'info');
+            }
+        });
+    }
+}
+
+// =========================================
 // Elementos DOM
 // =========================================
 const chatContainer = document.getElementById('chat-container');
@@ -91,6 +229,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderMessages();
     setupEventListeners();
     checkAPIHealth();
+    
+    // Inicializa sistema de avatar
+    const realMessages = messages.filter(msg => msg.content !== TYPING_MESSAGE_ID);
+    if (realMessages.length === 0) {
+        updateAvatar(AVATAR_STATES.GREETING, false);
+    } else {
+        updateAvatar(AVATAR_STATES.IDLE, false);
+    }
+    setupAvatarClickHandler();
+    resetSleepTimeout();
 });
 
 // =========================================
@@ -337,6 +485,27 @@ function setupEventListeners() {
     chatForm.addEventListener('submit', handleFormSubmit);
     
     // Enter no textarea (sem Shift = enviar, com Shift = nova linha)
+    // Detecta quando usuário começa a digitar (SURPRISED)
+    userInput.addEventListener('input', () => {
+        if (userInput.value.length > 0 && !userTyping) {
+            userTyping = true;
+            if (currentAvatarState === AVATAR_STATES.IDLE || currentAvatarState === AVATAR_STATES.GREETING) {
+                updateAvatar(AVATAR_STATES.SURPRISED, true);
+            }
+            resetSleepTimeout();
+        } else if (userInput.value.length === 0 && userTyping) {
+            userTyping = false;
+            if (currentAvatarState === AVATAR_STATES.SURPRISED) {
+                const realMessages = messages.filter(msg => msg.content !== TYPING_MESSAGE_ID);
+                if (realMessages.length === 0) {
+                    updateAvatar(AVATAR_STATES.GREETING, true);
+                } else {
+                    updateAvatar(AVATAR_STATES.IDLE, true);
+                }
+            }
+        }
+    });
+    
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -502,17 +671,51 @@ function createMessageElement(message, index) {
     avatar.setAttribute('data-testid', `avatar-${message.role}`);
     avatar.setAttribute('aria-hidden', 'true');
     
+    let avatarImg = null; // Declara fora do if para poder usar depois
+    
     if (message.role === 'user') {
-        avatar.textContent = '👤';
+        // Tenta usar avatar personalizado, senão usa emoji
+        const userAvatarImg = document.createElement('img');
+        userAvatarImg.src = '/assets/user-avatar.png';
+        userAvatarImg.alt = 'Você';
+        userAvatarImg.style.width = '100%';
+        userAvatarImg.style.height = '100%';
+        userAvatarImg.style.objectFit = 'contain';
+        userAvatarImg.onerror = () => {
+            // Se avatar não existir, usa emoji como fallback
+            avatar.textContent = '👤';
+            userAvatarImg.remove();
+        };
+        avatar.appendChild(userAvatarImg);
     } else {
-        // Usa avatar da Ada ao invés de coração
-        const avatarImg = document.createElement('img');
-        avatarImg.src = '/assets/avatar.webp';
+        // Usa avatar da Ada - escolhe baseado no estado da mensagem
+        avatarImg = document.createElement('img');
+        
+        // Se é mensagem de digitação, usa THINKING
+        if (message.content === TYPING_MESSAGE_ID) {
+            avatarImg.src = getAvatarPath(AVATAR_STATES.THINKING);
+        }
+        // Se a mensagem contém erro, usa avatar de erro
+        else if (typeof message.content === 'object' && message.content.erro) {
+            const errorMsg = message.content.erro.toLowerCase();
+            if (errorMsg.includes('offline') || errorMsg.includes('conexão')) {
+                avatarImg.src = getAvatarPath(AVATAR_STATES.SAD);
+            } else if (errorMsg.includes('servidor') || errorMsg.includes('500')) {
+                avatarImg.src = getAvatarPath(AVATAR_STATES.ERROR);
+            } else if (errorMsg.includes('timeout')) {
+                avatarImg.src = getAvatarPath(AVATAR_STATES.BACK_SOON);
+            } else {
+                avatarImg.src = getAvatarPath(AVATAR_STATES.CONFUSED);
+            }
+        } else {
+            // Mensagem de sucesso - usa HAPPY
+            avatarImg.src = getAvatarPath(AVATAR_STATES.HAPPY);
+        }
+        
         avatarImg.alt = 'Ada';
         avatarImg.style.width = '100%';
         avatarImg.style.height = '100%';
-        avatarImg.style.objectFit = 'cover';
-        avatarImg.style.borderRadius = '50%';
+        avatarImg.style.objectFit = 'contain';
         avatar.appendChild(avatarImg);
     }
     
@@ -535,6 +738,7 @@ function createMessageElement(message, index) {
     } else {
         // Verifica se é a mensagem de digitação
         if (message.content === TYPING_MESSAGE_ID) {
+            // Avatar já está configurado como THINKING acima
             bubble.className += ' typing-indicator';
             bubble.setAttribute('data-testid', 'typing-indicator');
             bubble.setAttribute('aria-live', 'polite');
@@ -880,6 +1084,14 @@ async function sendMessage(pergunta) {
     if (isLoading) return;
     
     isLoading = true;
+    userTyping = false;
+    foundAnswer = false;
+    
+    // Garante que o botão de cancelar apareça
+    if (!cancelButton) {
+        cancelButton = document.getElementById('cancel-button');
+    }
+    
     updateUIState();
     
     // Adiciona mensagem do usuário
@@ -888,15 +1100,21 @@ async function sendMessage(pergunta) {
     // Limpa o input
     userInput.value = '';
     
+    // Muda para THINKING quando começa a processar
+    updateAvatar(AVATAR_STATES.THINKING, true);
+    
     // Adiciona indicador de digitação (typing indicator)
     showTypingIndicator();
+    
+    resetSleepTimeout();
     // Skeleton loading removido - usando apenas typing indicator
     
     // AbortController para timeout e cancelamento
     currentAbortController = new AbortController();
     const controller = currentAbortController;
-    // Timeout usando constante do backend
-    const timeoutId = setTimeout(() => controller.abort(), frontendConfig.request_timeout_ms);
+    // Timeout reduzido para 60 segundos (mais responsivo)
+    const timeoutMs = Math.min(frontendConfig.request_timeout_ms || 120000, 60000); // Máximo 60s
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     
     try {
         // Verifica se está offline
@@ -934,6 +1152,22 @@ async function sendMessage(pergunta) {
         
         const data = await response.json();
         
+        // Verifica se a resposta contém indicação de busca (EUREKA)
+        const respostaStr = JSON.stringify(data.resposta).toLowerCase();
+        if (respostaStr.includes('google') || respostaStr.includes('busca') || respostaStr.includes('pesquisa')) {
+            foundAnswer = true;
+            updateAvatar(AVATAR_STATES.EUREKA, true);
+            // Após 1 segundo, muda para HAPPY
+            setTimeout(() => {
+                if (foundAnswer) {
+                    updateAvatar(AVATAR_STATES.HAPPY, true);
+                }
+            }, 1000);
+        } else {
+            // Resposta direta, vai direto para HAPPY
+            updateAvatar(AVATAR_STATES.HAPPY, true);
+        }
+        
         // Remove indicador de digitação
         hideTypingIndicator();
         
@@ -942,6 +1176,14 @@ async function sendMessage(pergunta) {
         
         // Adiciona resposta do assistente (aparecerá abaixo do indicador que foi removido)
         addMessage('assistant', data.resposta);
+        
+        // Após resposta, volta para IDLE após 2 segundos
+        setTimeout(() => {
+            if (!isLoading && currentAvatarState === AVATAR_STATES.HAPPY) {
+                updateAvatar(AVATAR_STATES.IDLE, true);
+            }
+            resetSleepTimeout();
+        }, 2000);
         
     } catch (error) {
         clearTimeout(timeoutId);
@@ -957,27 +1199,49 @@ async function sendMessage(pergunta) {
         // Remove indicador de digitação
         hideTypingIndicator();
         
-        // Mensagens de erro específicas
+        // Mensagens de erro específicas e estados do avatar
         let errorMessage = '';
+        let avatarState = AVATAR_STATES.ERROR;
+        
         if (error.name === 'AbortError' || error.message === 'AbortError') {
             errorMessage = '⏱️ A requisição demorou muito para responder (timeout). Por favor, tente novamente.';
+            avatarState = AVATAR_STATES.BACK_SOON; // WORRIED (usando back-soon como equivalente)
         } else if (error.message === 'OFFLINE') {
             errorMessage = '📡 Você está offline. Verifique sua conexão com a internet e tente novamente.';
+            avatarState = AVATAR_STATES.SAD;
         } else if (error.message === 'RATE_LIMIT') {
             errorMessage = '🚦 Muitas requisições no momento. Por favor, aguarde um minuto e tente novamente.';
+            avatarState = AVATAR_STATES.CONFUSED;
         } else if (error.message === 'SERVER_ERROR') {
             errorMessage = '🔧 Erro no servidor. Nossa equipe foi notificada. Por favor, tente novamente em alguns instantes.';
+            avatarState = AVATAR_STATES.ERROR;
         } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             errorMessage = '🌐 Erro de conexão. Verifique sua internet e tente novamente.';
+            avatarState = AVATAR_STATES.BACK_SOON; // WORRIED
+        } else if (error.message.includes('validação') || error.message.includes('422')) {
+            errorMessage = `❌ ${error.message}`;
+            avatarState = AVATAR_STATES.SAD; // Validação falhou
         } else {
             errorMessage = `❌ Erro ao processar sua pergunta: ${error.message}. Por favor, tente novamente.`;
+            avatarState = AVATAR_STATES.CONFUSED; // Pergunta ambígua ou erro genérico
         }
+        
+        // Atualiza avatar para estado de erro
+        updateAvatar(avatarState, true);
         
         // Adiciona mensagem de erro com tipo específico
         addMessage('assistant', {
             erro: errorMessage,
             errorType: getErrorType(error)
         });
+        
+        // Após erro, volta para IDLE após 3 segundos
+        setTimeout(() => {
+            if (!isLoading && (currentAvatarState === avatarState)) {
+                updateAvatar(AVATAR_STATES.IDLE, true);
+            }
+            resetSleepTimeout();
+        }, 3000);
         
         // Mostra toast notification
         showToast(errorMessage, 'error');
@@ -991,8 +1255,13 @@ async function sendMessage(pergunta) {
         
         // Garante que o indicador seja removido quando terminar (sucesso ou erro)
         hideTypingIndicator();
+        
+        // SEMPRE reseta isLoading, mesmo se houver erro
         isLoading = false;
         updateUIState();
+        
+        // Log para debug
+        console.log('sendMessage finalizado, isLoading:', isLoading);
     }
 }
 
@@ -1000,14 +1269,28 @@ async function sendMessage(pergunta) {
 // UI State Management
 // =========================================
 function updateUIState() {
+    // Proteção: se isLoading estiver undefined ou null, reseta para false
+    if (isLoading === undefined || isLoading === null) {
+        console.warn('isLoading estava undefined/null, resetando para false');
+        isLoading = false;
+    }
+    
     userInput.disabled = isLoading;
     sendButton.disabled = isLoading;
     
     if (isLoading) {
         sendButton.style.opacity = '0.6';
         sendButton.setAttribute('aria-label', 'Enviando mensagem...');
+        
+        // Garante que o botão de cancelar apareça
+        if (!cancelButton) {
+            cancelButton = document.getElementById('cancel-button');
+        }
         if (cancelButton) {
             cancelButton.classList.remove('hidden');
+            cancelButton.style.display = 'flex'; // Força exibição
+        } else {
+            console.warn('Botão cancelar não encontrado no DOM');
         }
     } else {
         sendButton.style.opacity = '1';
@@ -1023,6 +1306,21 @@ function updateUIState() {
     }
 }
 
+/**
+ * Função de emergência para resetar estado travado
+ */
+function resetStuckState() {
+    console.warn('Resetando estado travado...');
+    isLoading = false;
+    currentAbortController = null;
+    hideTypingIndicator();
+    updateUIState();
+    updateAvatar(AVATAR_STATES.IDLE, false);
+}
+
+// Expõe função globalmente para debug (pode ser chamada no console)
+window.resetAdaState = resetStuckState;
+
 // =========================================
 // Handlers
 // =========================================
@@ -1031,10 +1329,26 @@ async function handleFormSubmit(e) {
     
     const pergunta = userInput.value.trim();
     
-    if (!pergunta || isLoading) {
+    // Debug: verifica estado
+    console.log('handleFormSubmit chamado:', { pergunta: pergunta.substring(0, 20), isLoading });
+    
+    if (!pergunta) {
+        console.log('Pergunta vazia, ignorando');
         return;
     }
     
-    await sendMessage(pergunta);
+    if (isLoading) {
+        console.warn('Já está carregando, ignorando nova requisição');
+        return;
+    }
+    
+    try {
+        await sendMessage(pergunta);
+    } catch (error) {
+        console.error('Erro em handleFormSubmit:', error);
+        // Garante que isLoading seja resetado mesmo em caso de erro não tratado
+        isLoading = false;
+        updateUIState();
+    }
 }
 
