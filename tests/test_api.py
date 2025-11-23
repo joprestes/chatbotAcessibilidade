@@ -212,34 +212,36 @@ def test_compression_enabled(client):
         assert len(response.content) < 500 or not settings.compression_enabled
 
 
-def test_compression_large_response(client):
+@patch("src.backend.api.pipeline_acessibilidade", new_callable=AsyncMock)
+def test_compression_large_response(mock_pipeline, client):
     """Testa compressão em resposta grande"""
     import gzip
-    from unittest.mock import patch
 
-    # Mock para retornar resposta grande
-    large_response = {"data": "x" * 2000}  # Resposta grande
+    # Mock para retornar resposta grande (mais de 500 bytes)
+    large_data = "x" * 1000  # Dados grandes
+    mock_pipeline.return_value = {
+        "📘 **Introdução**": large_data,
+        "📚 **Detalhes**": large_data * 2,
+        "📖 **Mais Informações**": large_data * 3,
+    }
 
-    with patch("src.backend.api.pipeline_acessibilidade") as mock_pipeline:
-        mock_pipeline.return_value = {
-            "📘 **Introdução**": large_response["data"],
-            "📚 **Detalhes**": large_response["data"] * 2,
-        }
+    response = client.post(
+        "/api/chat",
+        json={"pergunta": "Teste de compressão"},
+        headers={"Accept-Encoding": "gzip"},
+    )
 
-        response = client.post(
-            "/api/chat",
-            json={"pergunta": "Teste de compressão"},
-            headers={"Accept-Encoding": "gzip"},
-        )
+    assert response.status_code == 200
 
-        assert response.status_code == 200
-
-        # Verifica se foi comprimido (resposta grande deve ser comprimida)
-        content_encoding = response.headers.get("Content-Encoding")
-        if settings.compression_enabled and content_encoding == "gzip":
-            # Descomprime e verifica conteúdo
-            decompressed = gzip.decompress(response.content)
-            assert "Introdução".encode("utf-8") in decompressed
+    # Verifica se foi comprimido (resposta grande deve ser comprimida)
+    content_encoding = response.headers.get("Content-Encoding")
+    if settings.compression_enabled and content_encoding == "gzip":
+        # Descomprime e verifica conteúdo
+        decompressed = gzip.decompress(response.content)
+        assert b"Introdução" in decompressed or "Introdução".encode("utf-8") in decompressed
+    else:
+        # Se não comprimiu, verifica que a resposta existe
+        assert response.json() is not None
 
 
 def test_compression_disabled():
