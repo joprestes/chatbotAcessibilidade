@@ -311,7 +311,9 @@ def test_pipeline_init_exception_generica():
     # Simula Exception genérica (ex: AttributeError, KeyError, etc)
     with patch("chatbot_acessibilidade.pipeline.PipelineOrquestrador") as mock_class:
         mock_orquestrador = AsyncMock()
-        mock_orquestrador.executar = AsyncMock(side_effect=AttributeError("Atributo não encontrado"))
+        mock_orquestrador.executar = AsyncMock(
+            side_effect=AttributeError("Atributo não encontrado")
+        )
         mock_class.return_value = mock_orquestrador
 
         pergunta = "O que é WCAG?"

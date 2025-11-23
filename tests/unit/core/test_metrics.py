@@ -170,7 +170,7 @@ def test_metrics_context():
     """Testa MetricsContext como context manager"""
     reset_metrics()
 
-    with MetricsContext("assistente") as ctx:
+    with MetricsContext("assistente"):
         import time
 
         time.sleep(0.1)  # Simula trabalho
@@ -185,7 +185,7 @@ def test_metrics_context_sem_agente():
     """Testa MetricsContext sem nome de agente"""
     reset_metrics()
 
-    with MetricsContext() as ctx:
+    with MetricsContext():
         import time
 
         time.sleep(0.1)  # Simula trabalho
@@ -193,4 +193,3 @@ def test_metrics_context_sem_agente():
     metrics = get_metrics()
     assert metrics["response_time"]["count"] == 1
     assert len(metrics["agent_times"]) == 0
-

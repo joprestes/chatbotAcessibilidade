@@ -87,9 +87,9 @@ def test_long_message_limits(page: Page, base_url: str, server_running: bool):
     if char_counter.is_visible(timeout=2000):
         counter_text = char_counter.inner_text(timeout=2000)
         # Aceita qualquer número no contador (pode ser 2000 ou formato diferente)
-        assert any(char.isdigit() for char in counter_text), (
-            f"Contador não mostra número: {counter_text}"
-        )
+        assert any(
+            char.isdigit() for char in counter_text
+        ), f"Contador não mostra número: {counter_text}"
 
     # Envia mensagem
     send_button.click()

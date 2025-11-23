@@ -249,9 +249,9 @@ async def test_e2e_multiple_requests(client: TestClient):
                 pytest.skip(
                     f"Rate limit acionado na requisição {i + 1} - comportamento esperado quando muitos testes rodam rapidamente"
                 )
-            assert response.status_code == 200, (
-                f"Requisição {i + 1} falhou com status {response.status_code}"
-            )
+            assert (
+                response.status_code == 200
+            ), f"Requisição {i + 1} falhou com status {response.status_code}"
             assert "resposta" in response.json()
 
 
