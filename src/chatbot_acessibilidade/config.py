@@ -85,7 +85,8 @@ class Settings(BaseSettings):
         """Parse CORS origins from string"""
         if v == "*":
             return ["*"]
-        return [origin.strip() for origin in v.split(",")]
+        # Filtra strings vazias após split
+        return [origin.strip() for origin in v.split(",") if origin.strip()]
 
     @field_validator("log_level")
     @classmethod

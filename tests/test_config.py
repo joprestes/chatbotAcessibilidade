@@ -243,3 +243,102 @@ def test_settings_openrouter_models_list_nao_string():
         assert models_list == ["model1", "model2"]
         # Restaura
         settings.openrouter_models = original_models
+
+
+def test_settings_parse_cors_origins_string_vazia():
+    """Testa parse de CORS origins com string vazia"""
+    with patch.dict(
+        os.environ,
+        {
+            "GOOGLE_API_KEY": "test_key",
+            "CORS_ORIGINS": "",
+        },
+    ):
+        settings = Settings()
+        # String vazia deve retornar lista vazia após split e filtro
+        assert isinstance(settings.cors_origins, list)
+        assert len(settings.cors_origins) == 0
+
+
+def test_settings_parse_cors_origins_com_espacos():
+    """Testa parse de CORS origins com espaços extras"""
+    with patch.dict(
+        os.environ,
+        {
+            "GOOGLE_API_KEY": "test_key",
+            "CORS_ORIGINS": " http://localhost:3000 , https://example.com ",
+        },
+    ):
+        settings = Settings()
+        assert len(settings.cors_origins) == 2
+        assert "http://localhost:3000" in settings.cors_origins
+        assert "https://example.com" in settings.cors_origins
+
+
+def test_settings_parse_openrouter_models_string_vazia():
+    """Testa parse de modelos OpenRouter com string vazia"""
+    with patch.dict(
+        os.environ,
+        {
+            "GOOGLE_API_KEY": "test_key",
+            "OPENROUTER_MODELS": "",
+        },
+    ):
+        settings = Settings()
+        models_list = settings.openrouter_models_list
+        assert isinstance(models_list, list)
+        assert len(models_list) == 0
+
+
+
+
+def test_settings_parse_openrouter_models_com_virgulas_multiplas():
+    """Testa parse de modelos OpenRouter com múltiplas vírgulas"""
+    with patch.dict(
+        os.environ,
+        {
+            "GOOGLE_API_KEY": "test_key",
+            "OPENROUTER_MODELS": "model1,,model2, ,model3",
+        },
+    ):
+        settings = Settings()
+        models_list = settings.openrouter_models_list
+        # Deve filtrar strings vazias
+        assert len(models_list) == 3
+        assert "model1" in models_list
+        assert "model2" in models_list
+        assert "model3" in models_list
+
+
+def test_settings_validate_fallback_config_sem_api_key_detalhado():
+    """Testa validação detalhada de fallback sem API key (linha 119)"""
+    with patch.dict(
+        os.environ,
+        {
+            "GOOGLE_API_KEY": "test_key",
+            "OPENROUTER_API_KEY": "",  # Vazio
+            "FALLBACK_ENABLED": "true",
+            "OPENROUTER_MODELS": "model1,model2",
+        },
+    ):
+        with pytest.raises(ValidationError) as exc_info:
+            Settings()
+        error_str = str(exc_info.value).lower()
+        assert "openrouter_api_key" in error_str or "fallback_enabled" in error_str
+
+
+def test_settings_validate_fallback_config_sem_modelos_detalhado():
+    """Testa validação detalhada de fallback sem modelos (linha 122)"""
+    with patch.dict(
+        os.environ,
+        {
+            "GOOGLE_API_KEY": "test_key",
+            "OPENROUTER_API_KEY": "openrouter_key",
+            "FALLBACK_ENABLED": "true",
+            "OPENROUTER_MODELS": "",  # Vazio
+        },
+    ):
+        with pytest.raises(ValidationError) as exc_info:
+            Settings()
+        error_str = str(exc_info.value).lower()
+        assert "openrouter_models" in error_str or "fallback_enabled" in error_str
