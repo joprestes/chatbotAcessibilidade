@@ -144,7 +144,7 @@ chatbot-acessibilidade/
 
 #### 📋 Pré-requisitos
 
-- Python 3.10 ou superior
+- Python 3.12 ou superior (recomendado 3.12.x)
 - Chave da API Google Gemini
 - Git
 
@@ -429,7 +429,7 @@ chatbot-acessibilidade/
 
 #### 📋 Prerequisites
 
-- Python 3.10 or higher
+- Python 3.12 or higher (recommended 3.12.x)
 - Google Gemini API key
 - Git
 

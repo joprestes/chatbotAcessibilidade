@@ -5,6 +5,17 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [3.1.0] - 2025-11-22
+
+### Modificado
+- **Atualização do Python**: Projeto atualizado para Python 3.12 (versão estável mais recente)
+  - `pyproject.toml`: Atualizado `target-version` para `py312` e `py313`
+  - `pyproject.toml`: Atualizado `python_version` do MyPy para `3.12`
+  - `README.md`: Atualizada recomendação de Python 3.10+ para Python 3.12+
+  - `docs/INSTRUCOES_EXECUCAO.md`: Atualizada versão mínima do Python
+  - Resolve warnings sobre EOL do Python 3.9
+  - Aproveita features e melhorias de performance do Python 3.12
+
 ## [2.1.1] - 2025-11-22
 
 ### Adicionado

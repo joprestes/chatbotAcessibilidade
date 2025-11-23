@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 100
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py312', 'py313']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -22,7 +22,7 @@ extend-exclude = '''
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py312"
 exclude = [
     ".git",
     "__pycache__",
@@ -61,7 +61,7 @@ known-first-party = ["chatbot_acessibilidade", "backend", "tests"]
 "tests/*" = ["ARG", "S101"]  # allow unused arguments and assert in tests
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false

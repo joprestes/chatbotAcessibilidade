@@ -2,7 +2,7 @@
 
 ## Pré-requisitos
 
-- Python 3.10 ou superior
+- Python 3.12 ou superior (recomendado 3.12.x)
 - Arquivo `.env` com a chave `GOOGLE_API_KEY` (obrigatória)
 - Chave `OPENROUTER_API_KEY` (opcional, necessária apenas se quiser usar fallback automático)
 
