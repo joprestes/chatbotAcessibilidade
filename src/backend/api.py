@@ -12,8 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-
-from backend.middleware import SecurityHeadersMiddleware
 from pydantic import BaseModel, Field, field_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -32,6 +30,7 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv()
 
 from chatbot_acessibilidade.config import settings  # noqa: E402
+from backend.middleware import SecurityHeadersMiddleware  # noqa: E402
 
 # Garante que GOOGLE_API_KEY está disponível como variável de ambiente
 # O Google ADK precisa disso para criar o cliente internamente
@@ -62,6 +61,9 @@ app.state.limiter = limiter
 # Handler de rate limit - usa o handler padrão do slowapi
 # type: ignore necessário porque slowapi usa tipos específicos que MyPy não reconhece
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
+
+# Middleware de segurança (deve ser adicionado primeiro)
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Configura CORS com origens permitidas
 app.add_middleware(
