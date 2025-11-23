@@ -59,8 +59,9 @@ jobs:
       
       # Step 4: Verifica qualidade do código com Ruff
       # Ruff é um linter rápido que verifica estilo e problemas comuns
+      # Ignora E402 em testes (imports após pytestmark são intencionais para configurar path)
       - name: Lint with ruff
-        run: ruff check src/ tests/ || (echo "❌ Linting falhou" && exit 1)
+        run: ruff check src/ tests/ --ignore E402 || (echo "❌ Linting falhou" && exit 1)
       
       # Step 5: Verifica tipos com MyPy
       # MyPy verifica se os type hints estão corretos

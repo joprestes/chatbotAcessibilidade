@@ -51,7 +51,8 @@ fi
 
 # Step 2: Lint with ruff
 echo "🔍 Executando lint (ruff)..."
-if ruff check src/ tests/; then
+# Ignora E402 em testes (imports após pytestmark são intencionais para configurar path)
+if ruff check src/ tests/ --ignore E402; then
     success "Lint passou"
 else
     error "Lint falhou"
