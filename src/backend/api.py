@@ -23,7 +23,16 @@ src_path = Path(__file__).parent.parent
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Carrega .env antes de importar settings
+from dotenv import load_dotenv
+load_dotenv()
+
 from chatbot_acessibilidade.config import settings  # noqa: E402
+
+# Garante que GOOGLE_API_KEY está disponível como variável de ambiente
+# O Google ADK precisa disso para criar o cliente internamente
+if settings.google_api_key and not os.getenv("GOOGLE_API_KEY"):
+    os.environ["GOOGLE_API_KEY"] = settings.google_api_key
 from chatbot_acessibilidade.pipeline import pipeline_acessibilidade  # noqa: E402
 from chatbot_acessibilidade.core.exceptions import ValidationError  # noqa: E402
 from chatbot_acessibilidade.core.cache import (  # noqa: E402
