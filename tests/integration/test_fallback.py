@@ -79,10 +79,11 @@ async def test_retry_on_temporary_error():
     
     # Obtém agentes disponíveis
     agentes = criar_agentes()
-    if "assistant" not in agentes:
-        pytest.skip("Agente 'assistant' não disponível")
+    # Nota: O agente se chama "assistente" (português), não "assistant" (inglês)
+    if "assistente" not in agentes:
+        pytest.skip("Agente 'assistente' não disponível")
     
-    agent = agentes["assistant"]
+    agent = agentes["assistente"]
     
     # Mock de generate_with_fallback que simula retry
     call_count = 0
