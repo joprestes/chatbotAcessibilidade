@@ -4,6 +4,8 @@ Este documento define as regras, padrões e convenções que devem ser seguidos 
 
 ## 1. Princípios Gerais
 
+⚠️ **REGRA FUNDAMENTAL**: **NUNCA faça commits diretamente na branch `main`**. Sempre crie uma branch para qualquer alteração, por menor que seja.
+
 *   **Idioma**: Todo o código, comentários, documentação e mensagens de commit devem ser em **Português Brasileiro (pt-BR)**. Termos técnicos universais (ex: *controller*, *service*, *payload*, *API*, *LLM*) podem ser mantidos em inglês.
 
 *   **Clean Code**: O código deve ser legível, simples e autoexplicativo. Funções devem ser pequenas e ter uma única responsabilidade.
@@ -74,9 +76,12 @@ Este documento define as regras, padrões e convenções que devem ser seguidos 
 
 ### Regras Obrigatórias de Branch
 
-*   **NUNCA faça commits diretamente na branch `main`**.
+⚠️ **REGRA CRÍTICA**: **NUNCA, JAMAIS, SOB NENHUMA CIRCUNSTÂNCIA faça commits diretamente na branch `main`**.
 
+*   **NUNCA faça commits diretamente na branch `main`**.
 *   **SEMPRE crie uma branch antes de iniciar qualquer alteração**.
+*   **Mesmo para correções pequenas ou documentação, crie uma branch**.
+*   **A branch `main` deve ser protegida e receber código apenas via Pull Request/Merge**.
 
 *   Nomenclatura de branches:
 
@@ -100,13 +105,38 @@ Este documento define as regras, padrões e convenções que devem ser seguidos 
 
 ### Fluxo de Trabalho
 
-1. Crie uma branch a partir da `main`: `git checkout -b feature/minha-feature`
+⚠️ **IMPORTANTE**: Sempre siga este fluxo, sem exceções:
+
+1. **NUNCA** trabalhe diretamente na `main`. Sempre crie uma branch:
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b feature/minha-feature
+   ```
+
 2. Faça seus commits na branch criada
+
 3. Execute `make lint` e `make test` antes de fazer push
-4. Abra um Pull Request para a `main`
-5. Após aprovação e merge, limpe as branches locais e remotas
+
+4. Faça push da sua branch:
+   ```bash
+   git push origin feature/minha-feature
+   ```
+
+5. Abra um Pull Request para a `main` no GitHub/GitLab
+
+6. Aguarde revisão e aprovação
+
+7. Após aprovação e merge, limpe as branches locais e remotas:
+   ```bash
+   git checkout main
+   git pull origin main
+   git branch -d feature/minha-feature
+   git push origin --delete feature/minha-feature
+   ```
 
 *   **Mensagens**: Claras e descritivas, em português.
+*   **Violação desta regra**: Se você cometeu diretamente na `main` por engano, use `git reset` para desfazer e crie uma branch corretamente.
 
 ## 6. Segurança
 
