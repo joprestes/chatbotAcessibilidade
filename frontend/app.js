@@ -83,6 +83,7 @@ function setupEventListeners() {
     themeToggle.addEventListener('click', toggleTheme);
     
     // Botão limpar chat
+    const clearChatButton = document.getElementById('clear-chat-button');
     if (clearChatButton) {
         clearChatButton.addEventListener('click', () => {
             if (confirm('Tem certeza que deseja limpar todo o histórico do chat?')) {
@@ -155,6 +156,9 @@ function createMessageElement(message, index) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.role}`;
     messageDiv.setAttribute('role', message.role === 'user' ? 'user' : 'assistant');
+    messageDiv.setAttribute('data-testid', `chat-mensagem`);
+    messageDiv.setAttribute('data-message-id', index);
+    messageDiv.setAttribute('data-message-role', message.role);
     
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
@@ -191,12 +195,16 @@ function createMessageElement(message, index) {
 function createExpanderSection(title, content, isExpanded = false) {
     const section = document.createElement('div');
     section.className = 'response-section';
+    section.setAttribute('data-testid', 'expander-section');
+    
+    const uniqueId = `content-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const header = document.createElement('button');
     header.className = 'expander-header';
     header.setAttribute('type', 'button');
+    header.setAttribute('data-testid', 'expander-header');
     header.setAttribute('aria-expanded', isExpanded);
-    header.setAttribute('aria-controls', `content-${Date.now()}-${Math.random()}`);
+    header.setAttribute('aria-controls', uniqueId);
     
     const titleSpan = document.createElement('span');
     titleSpan.innerHTML = title;
@@ -409,6 +417,15 @@ async function sendMessage(pergunta) {
         addMessage('assistant', {
             erro: errorMessage
         });
+        
+        // Anuncia erro para leitores de tela
+        const errorAnnouncement = document.createElement('div');
+        errorAnnouncement.setAttribute('role', 'alert');
+        errorAnnouncement.setAttribute('aria-live', 'assertive');
+        errorAnnouncement.className = 'sr-only';
+        errorAnnouncement.textContent = errorMessage;
+        document.body.appendChild(errorAnnouncement);
+        setTimeout(() => errorAnnouncement.remove(), 1000);
         
         console.error('Erro ao enviar mensagem:', error);
     } finally {

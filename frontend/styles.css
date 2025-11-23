@@ -99,6 +99,8 @@ header {
     display: flex;
     align-items: center;
     gap: 6px;
+    min-height: 44px; /* Touch target mínimo */
+    min-width: 44px;
 }
 
 .clear-chat-button:hover {
@@ -493,44 +495,130 @@ footer a:focus {
 }
 
 /* ========================================= */
-/* Responsividade */
+/* Skip Link para Acessibilidade */
 /* ========================================= */
-@media screen and (max-width: 768px) {
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--accent-color);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+    border-radius: 4px;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* ========================================= */
+/* Mobile First - Base (Mobile) */
+/* ========================================= */
+/* Estilos base são para mobile (320px+) */
+main {
+    padding: 10px;
+}
+
+.intro-content {
+    flex-direction: column;
+    padding: 15px;
+}
+
+.avatar {
+    width: 100px;
+    align-self: center;
+}
+
+.message-bubble {
+    max-width: 90%;
+}
+
+.chat-container {
+    max-height: 400px;
+    padding: 15px;
+}
+
+.input-wrapper {
+    flex-direction: column;
+    gap: 8px;
+}
+
+.send-button {
+    width: 100%;
+    min-height: 44px; /* Touch target mínimo */
+}
+
+.clear-chat-button {
+    min-height: 44px; /* Touch target mínimo */
+    min-width: 44px;
+}
+
+.theme-toggle {
+    bottom: 10px;
+    right: 10px;
+    width: 44px; /* Touch target mínimo */
+    height: 44px;
+    font-size: 20px;
+}
+
+/* ========================================= */
+/* Tablet (768px+) */
+/* ========================================= */
+@media screen and (min-width: 768px) {
     main {
-        padding: 10px;
+        padding: 20px;
     }
 
     .intro-content {
-        flex-direction: column;
+        flex-direction: row;
+        padding: 20px;
     }
 
     .avatar {
-        width: 100px;
-        align-self: center;
+        width: 150px;
+        align-self: flex-start;
     }
 
     .message-bubble {
-        max-width: 90%;
+        max-width: 80%;
     }
 
     .chat-container {
-        max-height: 400px;
+        max-height: 600px;
+        padding: 20px;
     }
 
     .input-wrapper {
-        flex-direction: column;
+        flex-direction: row;
+        gap: 10px;
     }
 
     .send-button {
-        width: 100%;
+        width: auto;
+        min-width: 100px;
+    }
+}
+
+/* ========================================= */
+/* Desktop (1024px+) */
+/* ========================================= */
+@media screen and (min-width: 1024px) {
+    main {
+        padding: 30px;
+    }
+
+    .intro-content {
+        padding: 30px;
     }
 
     .theme-toggle {
-        bottom: 10px;
-        right: 10px;
-        width: 45px;
-        height: 45px;
-        font-size: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
     }
 }
 

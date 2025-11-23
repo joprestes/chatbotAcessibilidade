@@ -9,11 +9,15 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♿</text></svg>">
 </head>
 <body>
+    <!-- Skip Link para Acessibilidade -->
+    <a href="#main-content" class="skip-link">Pular para conteúdo principal</a>
+    
     <header role="banner">
         <div class="header-controls">
             <button 
                 id="clear-chat-button" 
                 class="clear-chat-button"
+                data-testid="btn-limpar-chat"
                 aria-label="Limpar histórico do chat"
                 title="Limpar chat"
             >
@@ -31,8 +35,8 @@
         </p>
     </header>
 
-    <main role="main">
-        <section class="intro-section" aria-labelledby="intro-title">
+    <main role="main" id="main-content">
+        <section class="intro-section" aria-labelledby="intro-title" data-testid="secao-introducao">
             <div class="intro-content">
                 <h1 id="intro-title" class="sr-only">Introdução ao Chatbot</h1>
                 <div class="intro-text" role="complementary" aria-label="Apresentação da Ada">
@@ -52,22 +56,23 @@
             </div>
         </section>
 
-        <section class="chat-section" aria-labelledby="chat-title">
+        <section class="chat-section" aria-labelledby="chat-title" data-testid="secao-chat">
             <h2 id="chat-title" class="sr-only">Área de Conversa</h2>
-            <div id="chat-container" class="chat-container" role="log" aria-live="polite" aria-label="Histórico de mensagens do chat">
+            <div id="chat-container" class="chat-container" data-testid="chat-container" role="log" aria-live="polite" aria-label="Histórico de mensagens do chat">
                 <!-- Mensagens serão inseridas aqui via JavaScript -->
             </div>
         </section>
 
-        <section class="input-section" aria-labelledby="input-title">
+        <section class="input-section" aria-labelledby="input-title" data-testid="secao-input">
             <h2 id="input-title" class="sr-only">Campo de Entrada</h2>
-            <form id="chat-form" class="chat-form" role="form" aria-label="Formulário de envio de mensagem">
+            <form id="chat-form" class="chat-form" data-testid="form-chat" role="form" aria-label="Formulário de envio de mensagem">
                 <div class="input-wrapper">
                     <label for="user-input" class="sr-only">Digite sua pergunta sobre acessibilidade digital</label>
                     <input 
                         type="text" 
                         id="user-input" 
                         name="pergunta"
+                        data-testid="input-pergunta"
                         placeholder="Digite sua pergunta sobre acessibilidade digital..."
                         class="chat-input"
                         autocomplete="off"
@@ -78,6 +83,7 @@
                         type="submit" 
                         id="send-button"
                         class="send-button"
+                        data-testid="btn-enviar"
                         aria-label="Enviar mensagem"
                     >
                         Enviar
@@ -103,6 +109,7 @@
     <button 
         id="theme-toggle" 
         class="theme-toggle"
+        data-testid="btn-toggle-tema"
         aria-label="Alternar entre tema claro e escuro"
         title="Alternar tema"
     >
