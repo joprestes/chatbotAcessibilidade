@@ -7,7 +7,6 @@ sem bypass do FastAPI (diferente do TestClient).
 
 import pytest
 from playwright.sync_api import Page, APIRequestContext
-from typing import Dict, Any
 
 pytestmark = [pytest.mark.e2e, pytest.mark.playwright]
 

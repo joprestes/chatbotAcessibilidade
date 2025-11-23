@@ -60,10 +60,10 @@ def test_xss_injection_prevention(page: Page, base_url: str):
             
             # Verifica que onerror não está presente
             assert "onerror" not in page_content.lower() or "&lt;" in page_content
-        except Exception as e:
+        except Exception:
             # Se input não está habilitado, pode ser que requisição anterior ainda está em andamento
             # Isso é aceitável, apenas verifica que não quebrou
-            pass
+            pass  # noqa: BLE001
 
 
 def test_sql_injection_prevention(page: Page, base_url: str):
@@ -111,7 +111,6 @@ def test_csrf_protection(page: Page, base_url: str):
     
     # Faz requisição GET para verificar headers de segurança
     health_response = api_context.get(f"{base_url}/api/health")
-    security_headers = health_response.headers
     
     # Verifica que resposta é bem-sucedida
     assert health_response.status == 200
