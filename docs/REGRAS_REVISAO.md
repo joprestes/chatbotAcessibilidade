@@ -16,7 +16,9 @@ Este documento define as regras, padrões e convenções que devem ser seguidos 
 
 *   **YAGNI (You Aren't Gonna Need It)**: Não implemente funcionalidades pensando no futuro. Implemente apenas o necessário para os requisitos atuais.
 
-*   **Acessibilidade**: Este é um projeto focado em acessibilidade. Sempre considere a experiência do usuário e garanta que todas as funcionalidades sejam acessíveis.
+*   **Acessibilidade**: Este é um projeto focado em acessibilidade. Sempre considere a experiência do usuário e garanta que todas as funcionalidades sejam acessíveis. Veja seção específica abaixo.
+
+*   **Mobile First**: O design deve ser pensado primeiro para dispositivos móveis, depois adaptado para desktop. Use media queries progressivas (min-width) ao invés de regressivas (max-width).
 
 ## 2. Workflow de Desenvolvimento
 
@@ -190,15 +192,159 @@ Este documento define as regras, padrões e convenções que devem ser seguidos 
 
 ## 9. Frontend
 
-*   **Acessibilidade**: O frontend deve ser acessível (WCAG 2.1 AA mínimo).
+### 9.1 Acessibilidade (WCAG 2.1 AA Mínimo)
 
-*   **Responsividade**: Deve funcionar em desktop e mobile.
+⚠️ **OBRIGATÓRIO**: Todas as funcionalidades devem ser acessíveis.
 
-*   **Tema**: Suporte a tema claro/escuro baseado nas preferências do sistema.
+*   **Semântica HTML**: Use elementos HTML semânticos (`<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<footer>`, `<button>`, `<form>`, etc.).
+
+*   **ARIA Labels**: Adicione `aria-label` ou `aria-labelledby` quando necessário:
+    ```html
+    <button aria-label="Enviar mensagem">Enviar</button>
+    <div role="status" aria-live="polite" id="status-message"></div>
+    ```
+
+*   **Contraste de Cores**: Garanta contraste mínimo de 4.5:1 para texto normal e 3:1 para texto grande (WCAG AA).
+
+*   **Navegação por Teclado**: Todos os elementos interativos devem ser acessíveis via teclado (Tab, Enter, Esc).
+
+*   **Foco Visível**: Sempre forneça indicador visual de foco (`:focus`, `:focus-visible`).
+
+*   **Alt Text**: Todas as imagens devem ter `alt` descritivo:
+    ```html
+    <img src="logo.png" alt="Logo do Chatbot de Acessibilidade">
+    <!-- Se decorativa: -->
+    <img src="decoration.png" alt="">
+    ```
+
+*   **Formulários**: Associe labels aos inputs:
+    ```html
+    <label for="pergunta">Sua pergunta:</label>
+    <input type="text" id="pergunta" name="pergunta" required>
+    ```
+
+*   **Mensagens de Erro**: Associe mensagens de erro aos campos usando `aria-describedby`:
+    ```html
+    <input aria-invalid="true" aria-describedby="erro-pergunta">
+    <span id="erro-pergunta" role="alert">Campo obrigatório</span>
+    ```
+
+*   **Skip Links**: Adicione links para pular navegação:
+    ```html
+    <a href="#main-content" class="skip-link">Pular para conteúdo principal</a>
+    ```
+
+*   **Landmarks**: Use landmarks ARIA quando apropriado (`role="banner"`, `role="navigation"`, `role="main"`, etc.).
+
+### 9.2 Mobile First
+
+⚠️ **OBRIGATÓRIO**: Design deve ser pensado primeiro para mobile.
+
+*   **Abordagem Mobile First**: Comece com estilos para telas pequenas, depois adicione media queries para telas maiores:
+    ```css
+    /* Mobile (padrão) */
+    .container {
+        padding: 1rem;
+        font-size: 14px;
+    }
+    
+    /* Tablet */
+    @media (min-width: 768px) {
+        .container {
+            padding: 2rem;
+            font-size: 16px;
+        }
+    }
+    
+    /* Desktop */
+    @media (min-width: 1024px) {
+        .container {
+            padding: 3rem;
+            font-size: 18px;
+        }
+    }
+    ```
+
+*   **Touch Targets**: Botões e elementos clicáveis devem ter no mínimo 44x44px (recomendação Apple/Google).
+
+*   **Viewport**: Sempre inclua meta viewport:
+    ```html
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    ```
+
+*   **Responsividade**: Teste em diferentes tamanhos de tela (320px, 375px, 768px, 1024px, 1920px).
+
+*   **Performance Mobile**: Otimize imagens, use lazy loading, minimize JavaScript.
+
+### 9.3 Test IDs
+
+⚠️ **OBRIGATÓRIO**: Todos os componentes interativos devem ter `data-testid`.
+
+*   **Padrão de Nomenclatura**: Use kebab-case descritivo:
+    ```html
+    <button data-testid="btn-enviar-mensagem">Enviar</button>
+    <input data-testid="input-pergunta" type="text">
+    <div data-testid="chat-mensagem-1">Mensagem</div>
+    ```
+
+*   **Estrutura Hierárquica**: Para elementos repetidos, use índices ou IDs:
+    ```html
+    <div data-testid="chat-mensagem" data-message-id="1">...</div>
+    <div data-testid="chat-mensagem" data-message-id="2">...</div>
+    ```
+
+*   **Componentes Principais**: Sempre adicione test IDs em:
+    - Botões e links
+    - Inputs e formulários
+    - Mensagens de erro/sucesso
+    - Containers principais
+    - Elementos de navegação
+
+*   **Não use test IDs em**: Elementos puramente decorativos (imagens de fundo, etc.).
+
+*   **Exemplo Completo**:
+    ```html
+    <form data-testid="form-chat">
+        <label for="pergunta">Pergunta:</label>
+        <input 
+            id="pergunta"
+            type="text"
+            data-testid="input-pergunta"
+            aria-required="true"
+        >
+        <button 
+            type="submit"
+            data-testid="btn-enviar"
+            aria-label="Enviar pergunta"
+        >
+            Enviar
+        </button>
+    </form>
+    <div data-testid="chat-respostas" role="log" aria-live="polite">
+        <!-- Mensagens -->
+    </div>
+    ```
+
+### 9.4 Outras Regras Frontend
+
+*   **Tema**: Suporte a tema claro/escuro baseado nas preferências do sistema:
+    ```css
+    @media (prefers-color-scheme: dark) {
+        /* Estilos dark mode */
+    }
+    ```
 
 *   **Markdown**: Use markdown para renderização de respostas do chatbot.
 
 *   **Timeout**: Implemente timeouts adequados para requisições ao backend.
+
+*   **Loading States**: Sempre forneça feedback visual durante operações assíncronas:
+    ```html
+    <button data-testid="btn-enviar" aria-busy="true" disabled>
+        <span aria-hidden="true">⏳</span>
+        <span class="sr-only">Enviando...</span>
+    </button>
+    ```
 
 ## 10. Documentação
 
@@ -229,7 +375,7 @@ Antes de abrir um Pull Request, verifique:
 - [ ] Tratamento de erros adequado
 - [ ] Logs apropriados (sem informações sensíveis)
 
-## 12. Regras Específicas do Projeto
+## 13. Regras Específicas do Projeto
 
 *   **Google Gemini API**: Use o Google ADK (Agent Development Kit) para interação com Gemini. Não use a API REST diretamente.
 
@@ -241,7 +387,7 @@ Antes de abrir um Pull Request, verifique:
 
 *   **Configuração**: Use Pydantic Settings para gerenciamento de configurações. Valide todas as configurações na inicialização.
 
-## 13. Performance
+## 14. Performance
 
 *   **Cache**: Use cache para respostas frequentes. Limpe cache quando apropriado.
 
@@ -251,7 +397,7 @@ Antes de abrir um Pull Request, verifique:
 
 *   **Logging**: Use logging estruturado. Não logue em excesso em produção.
 
-## 14. Manutenção
+## 15. Manutenção
 
 *   **Dependências**: Mantenha dependências atualizadas, mas teste antes de atualizar versões major.
 
