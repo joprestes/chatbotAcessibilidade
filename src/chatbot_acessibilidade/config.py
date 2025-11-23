@@ -72,6 +72,15 @@ class Settings(BaseSettings):
         description="Formato das mensagens de log",
     )
 
+    # Segurança
+    security_headers_enabled: bool = Field(
+        default=True, description="Habilitar headers de segurança HTTP"
+    )
+    csp_policy: str = Field(
+        default="",
+        description="Política CSP customizada (vazio usa padrão). Exemplo: default-src 'self'",
+    )
+
     # type: ignore necessário porque Pydantic aceita essas chaves mas MyPy não reconhece
     model_config = ConfigDict(  # type: ignore
         env_file=".env",
