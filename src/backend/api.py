@@ -108,10 +108,16 @@ class ChatRequest(BaseModel):
     @classmethod
     def validate_pergunta(cls, v: str) -> str:
         """Valida e sanitiza a pergunta"""
-        # Sanitiza entrada
-        v = sanitize_input(v, max_length=settings.max_question_length)
+        # Valida tamanho máximo ANTES de sanitizar (para dar erro correto)
+        if len(v) > settings.max_question_length:
+            raise ValueError(
+                f"A pergunta não pode ter mais de {settings.max_question_length} caracteres."
+            )
 
-        # Valida tamanho mínimo
+        # Sanitiza entrada (sem truncar, pois já validamos o tamanho)
+        v = sanitize_input(v)
+
+        # Valida tamanho mínimo (após sanitização)
         if len(v) < settings.min_question_length:
             raise ValueError(
                 f"A pergunta deve ter pelo menos {settings.min_question_length} caracteres."
