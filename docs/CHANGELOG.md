@@ -2,6 +2,31 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.3.0] - 2025-11-23
+
+### Adicionado
+- **Melhorias de UX:**
+  - Indicador de digitação (typing indicator) animado com 3 pontos pulsantes
+  - 5 tipos diferentes de mensagens de erro com cores específicas:
+    - Timeout (laranja #f59e0b)
+    - Offline (cinza #6b7280)
+    - Rate Limit (vermelho #ef4444)
+    - Server Error (vermelho escuro #dc2626)
+    - Network Error (azul #3b82f6)
+  - Animações de transição suaves para mensagens:
+    - Mensagens do usuário: slide da direita
+    - Mensagens do assistente: slide da esquerda
+    - Erros: slide horizontal
+  - Feedback visual melhorado durante processamento
+  - Typing indicator aparece durante processamento e desaparece automaticamente
+
+### Melhorado
+- Experiência do usuário mais fluida e responsiva
+- Feedback visual mais claro e diferenciado
+- Animações suaves e não intrusivas
+- Acessibilidade mantida (ARIA labels, data-testid)
+- Compatibilidade com tema claro/escuro
+
 ## [3.2.0] - 2025-11-22
 
 ### Adicionado
