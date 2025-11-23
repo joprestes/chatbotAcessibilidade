@@ -4,19 +4,20 @@ Focando nas linhas não cobertas: 191, 311, 435-439
 """
 
 import asyncio
-import pytest
 
-pytestmark = pytest.mark.unit
-from unittest.mock import AsyncMock, MagicMock, patch
+import pytest
 from google.adk.agents import Agent
 from google.api_core import exceptions as google_exceptions
+from unittest.mock import AsyncMock, MagicMock, patch
 
+from chatbot_acessibilidade.core.exceptions import APIError, QuotaExhaustedError
 from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
     OpenRouterClient,
     generate_with_fallback,
 )
-from chatbot_acessibilidade.core.exceptions import APIError, QuotaExhaustedError
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture

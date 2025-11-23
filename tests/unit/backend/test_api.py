@@ -3,13 +3,14 @@ Testes para a API FastAPI
 """
 
 import pytest
+from unittest.mock import AsyncMock, patch
+
+from fastapi.testclient import TestClient
+
+from chatbot_acessibilidade.config import settings
+from src.backend.api import app
 
 pytestmark = pytest.mark.unit
-from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock
-
-from src.backend.api import app
-from chatbot_acessibilidade.config import settings
 
 
 @pytest.fixture

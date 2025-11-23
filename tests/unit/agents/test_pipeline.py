@@ -1,10 +1,11 @@
+import asyncio
 import pytest
+from unittest.mock import AsyncMock, patch
+
+from chatbot_acessibilidade.core.formatter import extrair_primeiro_paragrafo
+from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
 
 pytestmark = pytest.mark.unit
-import asyncio
-from unittest.mock import patch, AsyncMock
-from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
-from chatbot_acessibilidade.core.formatter import extrair_primeiro_paragrafo
 
 
 @patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)

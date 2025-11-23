@@ -4,11 +4,11 @@ Testes para o módulo factory.py
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 from google.adk.agents import Agent
 
-from chatbot_acessibilidade.agents.factory import criar_agentes, NOME_MODELO_ADK
+from chatbot_acessibilidade.agents.factory import NOME_MODELO_ADK, criar_agentes
+
+pytestmark = pytest.mark.unit
 
 
 def test_nome_modelo_adk():

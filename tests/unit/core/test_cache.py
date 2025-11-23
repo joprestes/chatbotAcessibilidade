@@ -3,19 +3,20 @@ Testes para o módulo cache.py
 """
 
 import pytest
-
-pytestmark = pytest.mark.unit
 from unittest.mock import patch
+
 from cachetools import TTLCache
 
 from chatbot_acessibilidade.core.cache import (
+    clear_cache,
     get_cache,
     get_cache_key,
+    get_cache_stats,
     get_cached_response,
     set_cached_response,
-    clear_cache,
-    get_cache_stats,
 )
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture

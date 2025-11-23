@@ -3,13 +3,13 @@ Testes para o middleware de segurança
 """
 
 import pytest
-
-pytestmark = pytest.mark.unit
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from starlette.responses import JSONResponse
 
 from backend.middleware import SecurityHeadersMiddleware
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture
