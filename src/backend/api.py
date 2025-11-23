@@ -47,6 +47,13 @@ from chatbot_acessibilidade.core.cache import (  # noqa: E402
     set_cached_response,
     get_cache_stats,
 )
+from chatbot_acessibilidade.core.metrics import (  # noqa: E402
+    record_request,
+    record_cache_hit,
+    record_cache_miss,
+    get_metrics,
+    MetricsContext,
+)
 from chatbot_acessibilidade.core.validators import (  # noqa: E402
     sanitize_input,
     validate_content,
@@ -150,16 +157,6 @@ class ChatRequest(BaseModel):
 
         return v
 
-        if len(v) > settings.max_question_length:
-            raise ValueError(
-                f"A pergunta não pode ter mais de {settings.max_question_length} caracteres."
-            )
-
-        # Sanitização básica - remove caracteres de controle
-        v = "".join(char for char in v if ord(char) >= 32 or char in "\n\t")
-
-        return v
-
 
 class ChatResponse(BaseModel):
     resposta: dict
@@ -172,6 +169,23 @@ class HealthResponse(BaseModel):
 
 
 # Endpoint de saúde
+@app.get("/api/config")
+async def get_config():
+    """Retorna configurações do frontend"""
+    from chatbot_acessibilidade.core.constants import FrontendConstants  # noqa: E402
+
+    return {
+        "request_timeout_ms": FrontendConstants.REQUEST_TIMEOUT_MS,
+        "error_announcement_duration_ms": FrontendConstants.ERROR_ANNOUNCEMENT_DURATION_MS,
+    }
+
+
+@app.get("/api/metrics")
+async def get_metrics_endpoint():
+    """Retorna métricas de performance da API"""
+    return get_metrics()
+
+
 @app.get("/api/health", response_model=HealthResponse)
 async def health_check():
     """Verifica se a API está funcionando"""
@@ -206,6 +220,7 @@ async def chat(request: Request, chat_request: ChatRequest):
 
     Retorna um dicionário com as seções formatadas da resposta.
     """
+    record_request()
     logger.info(f"Processando pergunta: {chat_request.pergunta[:50]}...")
 
     try:
@@ -213,11 +228,15 @@ async def chat(request: Request, chat_request: ChatRequest):
         resposta_dict = get_cached_response(chat_request.pergunta)
 
         if resposta_dict is not None:
+            record_cache_hit()
             logger.info("Resposta retornada do cache")
             return ChatResponse(resposta=resposta_dict)
 
-        # Chama o pipeline assíncrono
-        resposta_dict = await pipeline_acessibilidade(chat_request.pergunta)
+        record_cache_miss()
+
+        # Chama o pipeline assíncrono com métricas
+        with MetricsContext():
+            resposta_dict = await pipeline_acessibilidade(chat_request.pergunta)
 
         # Salva no cache apenas se não houver erro
         if not (isinstance(resposta_dict, dict) and "erro" in resposta_dict):

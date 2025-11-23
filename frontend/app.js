@@ -8,14 +8,24 @@
 // =========================================
 const API_BASE_URL = window.location.origin; // Usa a mesma origem
 const API_CHAT_ENDPOINT = `${API_BASE_URL}/api/chat`;
+const API_CONFIG_ENDPOINT = `${API_BASE_URL}/api/config`;
 const STORAGE_KEY = 'chatbot_messages';
+
+// Configurações do frontend (serão carregadas do backend)
+let frontendConfig = {
+    request_timeout_ms: 120000, // Valor padrão até carregar do backend
+    error_announcement_duration_ms: 1000
+};
 
 // =========================================
 // Estado da Aplicação
 // =========================================
 let messages = [];
 let isLoading = false;
+let currentAbortController = null; // Para cancelar requisições
+let searchFilter = ''; // Filtro de busca no histórico
 const TYPING_MESSAGE_ID = '__typing_indicator__'; // ID especial para mensagem de digitação
+const MAX_QUESTION_LENGTH = 2000; // Máximo de caracteres (do backend)
 
 // =========================================
 // Elementos DOM
@@ -26,11 +36,54 @@ const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const themeToggle = document.getElementById('theme-toggle');
 
+// Elementos que serão criados dinamicamente
+let cancelButton = null;
+let charCounter = null;
+let searchInput = null;
+
+// =========================================
+// Carregamento de Configuração
+// =========================================
+async function loadFrontendConfig() {
+    try {
+        const response = await fetch(API_CONFIG_ENDPOINT);
+        if (response.ok) {
+            const config = await response.json();
+            frontendConfig = { ...frontendConfig, ...config };
+            console.log('Configuração do frontend carregada:', frontendConfig);
+        }
+    } catch (error) {
+        console.warn('Não foi possível carregar configuração do backend, usando valores padrão:', error);
+    }
+}
+
+// =========================================
+// Tratamento de Reconexão
+// =========================================
+function setupReconnectionHandling() {
+    // Listener para quando a conexão volta
+    window.addEventListener('online', () => {
+        console.log('Conexão restaurada');
+        // Tenta verificar saúde da API
+        checkAPIHealth().catch(() => {
+            // Ignora erros silenciosamente
+        });
+    });
+    
+    // Listener para quando a conexão cai
+    window.addEventListener('offline', () => {
+        console.log('Conexão perdida');
+    });
+}
+
 // =========================================
 // Inicialização
 // =========================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadFrontendConfig();
+    setupReconnectionHandling();
     initializeTheme();
+    createUXElements();
     loadMessagesFromStorage();
     renderMessages();
     setupEventListeners();
@@ -64,13 +117,116 @@ function updateThemeToggle() {
 }
 
 // =========================================
+// Criação de Elementos de UX
+// =========================================
+function createUXElements() {
+    // Cria contador de caracteres
+    if (!charCounter) {
+        charCounter = document.createElement('div');
+        charCounter.className = 'char-counter';
+        charCounter.setAttribute('data-testid', 'char-counter');
+        charCounter.setAttribute('aria-live', 'polite');
+        charCounter.setAttribute('aria-label', 'Contador de caracteres');
+        // Adiciona após o form
+        if (chatForm && chatForm.parentElement) {
+            chatForm.parentElement.appendChild(charCounter);
+        }
+    }
+    
+    // Cria botão cancelar
+    if (!cancelButton) {
+        cancelButton = document.createElement('button');
+        cancelButton.type = 'button';
+        cancelButton.className = 'cancel-button';
+        cancelButton.textContent = 'Cancelar';
+        cancelButton.setAttribute('data-testid', 'cancel-button');
+        cancelButton.setAttribute('aria-label', 'Cancelar envio da mensagem');
+        cancelButton.style.display = 'none';
+        cancelButton.addEventListener('click', cancelRequest);
+        sendButton.parentElement.appendChild(cancelButton);
+    }
+    
+    // Cria input de busca (se não existir)
+    if (!searchInput) {
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+            const searchWrapper = document.createElement('div');
+            searchWrapper.className = 'search-wrapper';
+            searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.className = 'search-input';
+            searchInput.placeholder = 'Buscar no histórico...';
+            searchInput.setAttribute('data-testid', 'search-input');
+            searchInput.setAttribute('aria-label', 'Buscar mensagens no histórico');
+            searchInput.addEventListener('input', (e) => {
+                searchFilter = e.target.value.toLowerCase();
+                renderMessages();
+            });
+            searchWrapper.appendChild(searchInput);
+            // Insere antes do chat-container
+            const chatContainer = document.getElementById('chat-container');
+            if (chatContainer) {
+                mainContent.insertBefore(searchWrapper, chatContainer);
+            }
+        }
+    }
+    
+    // Atualiza contador inicial
+    updateCharCounter();
+}
+
+// =========================================
+// Contador de Caracteres
+// =========================================
+function updateCharCounter() {
+    if (!charCounter) return;
+    
+    const length = userInput.value.length;
+    const remaining = MAX_QUESTION_LENGTH - length;
+    const percentage = (length / MAX_QUESTION_LENGTH) * 100;
+    
+    charCounter.textContent = `${length}/${MAX_QUESTION_LENGTH}`;
+    charCounter.setAttribute('aria-label', `${length} de ${MAX_QUESTION_LENGTH} caracteres`);
+    
+    // Muda cor baseado na quantidade
+    if (percentage >= 90) {
+        charCounter.className = 'char-counter char-counter-warning';
+    } else if (percentage >= 100) {
+        charCounter.className = 'char-counter char-counter-error';
+    } else {
+        charCounter.className = 'char-counter';
+    }
+}
+
+// =========================================
+// Cancelamento de Requisição
+// =========================================
+function cancelRequest() {
+    if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+        
+        hideTypingIndicator();
+        hideSkeletonLoading();
+        isLoading = false;
+        updateUIState();
+        
+        showToast('Requisição cancelada pelo usuário.', 'info');
+        addMessage('assistant', {
+            erro: '❌ Requisição cancelada pelo usuário.',
+            errorType: 'cancelled'
+        });
+    }
+}
+
+// =========================================
 // Event Listeners
 // =========================================
 function setupEventListeners() {
     // Formulário de envio
     chatForm.addEventListener('submit', handleFormSubmit);
     
-    // Enter no input (sem Shift = enviar, com Shift = nova linha)
+    // Enter no textarea (sem Shift = enviar, com Shift = nova linha)
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -78,6 +234,12 @@ function setupEventListeners() {
                 handleFormSubmit(e);
             }
         }
+    });
+    
+    // Auto-expansão do textarea
+    userInput.addEventListener('input', () => {
+        updateCharCounter();
+        autoResizeTextarea(userInput);
     });
     
     // Toggle de tema
@@ -161,11 +323,29 @@ function renderMessages() {
     
     chatContainer.innerHTML = '';
     
-    if (messages.length === 0) {
+    // Filtra mensagens se houver busca
+    let filteredMessages = messages;
+    if (searchFilter) {
+        filteredMessages = messages.filter(msg => {
+            if (msg.content === TYPING_MESSAGE_ID) return false; // Não mostra indicador na busca
+            const content = typeof msg.content === 'string' 
+                ? msg.content 
+                : (msg.content.erro || JSON.stringify(msg.content));
+            return content.toLowerCase().includes(searchFilter);
+        });
+    }
+    
+    if (filteredMessages.length === 0) {
+        if (searchFilter) {
+            const noResults = document.createElement('div');
+            noResults.className = 'no-results';
+            noResults.textContent = `Nenhuma mensagem encontrada para "${searchFilter}"`;
+            chatContainer.appendChild(noResults);
+        }
         return; // Deixa o ::before do CSS mostrar a mensagem padrão
     }
     
-    messages.forEach((message, index) => {
+    filteredMessages.forEach((message, index) => {
         const messageElement = createMessageElement(message, index);
         chatContainer.appendChild(messageElement);
     });
@@ -178,15 +358,33 @@ function createMessageElement(message, index) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.role}`;
     messageDiv.setAttribute('role', message.role === 'user' ? 'user' : 'assistant');
-    messageDiv.setAttribute('data-testid', `chat-mensagem`);
+    messageDiv.setAttribute('data-testid', `chat-mensagem-${message.role}`);
     messageDiv.setAttribute('data-message-id', index);
     messageDiv.setAttribute('data-message-role', message.role);
     
+    // Avatar
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.setAttribute('data-testid', `avatar-${message.role}`);
+    avatar.setAttribute('aria-hidden', 'true');
+    avatar.textContent = message.role === 'user' ? '👤' : '💜';
+    
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
+    bubble.setAttribute('data-testid', `message-bubble-${message.role}`);
+    
+    // Timestamp
+    const timestamp = document.createElement('div');
+    timestamp.className = 'message-timestamp';
+    timestamp.setAttribute('data-testid', 'message-timestamp');
+    const messageDate = message.timestamp ? new Date(message.timestamp) : new Date();
+    timestamp.textContent = messageDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     
     if (message.role === 'user') {
         bubble.textContent = message.content;
+        bubble.appendChild(timestamp);
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(bubble);
     } else {
         // Verifica se é a mensagem de digitação
         if (message.content === TYPING_MESSAGE_ID) {
@@ -214,14 +412,23 @@ function createMessageElement(message, index) {
             }
             
             bubble.appendChild(dots);
+            bubble.appendChild(timestamp);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(bubble);
         } else if (typeof message.content === 'string') {
             bubble.innerHTML = formatMarkdown(message.content);
+            bubble.appendChild(timestamp);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(bubble);
         } else if (typeof message.content === 'object') {
             if (message.content.erro) {
                 const errorType = message.content.errorType || 'generic';
                 messageDiv.className += ` error error-${errorType}`;
                 bubble.className += ` error error-${errorType}`;
                 bubble.textContent = message.content.erro;
+                bubble.appendChild(timestamp);
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(bubble);
             } else {
                 // Renderiza as seções como expanders
                 const sectionsDiv = document.createElement('div');
@@ -233,11 +440,13 @@ function createMessageElement(message, index) {
                 });
                 
                 bubble.appendChild(sectionsDiv);
+                bubble.appendChild(timestamp);
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(bubble);
             }
         }
     }
     
-    messageDiv.appendChild(bubble);
     return messageDiv;
 }
 
@@ -299,37 +508,44 @@ function formatMarkdown(text) {
     
     let html = text;
     
+    // Protege blocos de código para não processar markdown dentro deles
+    const codeBlocks = [];
+    html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+        const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+        codeBlocks.push(`<pre><code>${escapeHtml(code.trim())}</code></pre>`);
+        return placeholder;
+    });
+    
     // Headers (##, ###, ####)
     html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
     html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
     html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
     html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
     
-    // Código em bloco (```)
-    html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-        return `<pre><code>${code.trim()}</code></pre>`;
+    // Tabelas Markdown
+    html = html.replace(/(\|.+\|\n\|[-\s|:]+\|\n(?:\|.+\|\n?)+)/g, (match) => {
+        const lines = match.trim().split('\n');
+        if (lines.length < 2) return match;
+        
+        const header = lines[0];
+        const separator = lines[1];
+        const rows = lines.slice(2);
+        
+        // Processa header
+        const headerCells = header.split('|').map(cell => cell.trim()).filter(cell => cell);
+        const headerHtml = headerCells.map(cell => `<th>${cell}</th>`).join('');
+        
+        // Processa rows
+        const rowsHtml = rows.map(row => {
+            const cells = row.split('|').map(cell => cell.trim()).filter(cell => cell);
+            return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+        }).join('');
+        
+        return `<table><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table>`;
     });
     
-    // Listas ordenadas (1. item)
-    html = html.replace(/^(\d+\.\s+.+)$/gm, '<li>$1</li>');
-    html = html.replace(/(<li>\d+\.\s+)(.+)(<\/li>)/g, '<li>$2</li>');
-    // Agrupa listas ordenadas consecutivas
-    html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => {
-        if (match.includes('<li>')) {
-            return `<ol>${match}</ol>`;
-        }
-        return match;
-    });
-    
-    // Listas não ordenadas (- ou *)
-    html = html.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>');
-    // Agrupa listas não ordenadas consecutivas
-    html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => {
-        if (match.includes('<li>') && !match.includes('<ol>')) {
-            return `<ul>${match}</ul>`;
-        }
-        return match;
-    });
+    // Processa listas (ordenadas e não ordenadas) com suporte a aninhamento
+    html = processLists(html);
     
     // Links
     html = html.replace(
@@ -346,14 +562,19 @@ function formatMarkdown(text) {
     // Código inline (apenas se não for bloco)
     html = html.replace(/(?<!`)`([^`]+)`(?!`)/g, '<code>$1</code>');
     
+    // Restaura blocos de código
+    codeBlocks.forEach((block, index) => {
+        html = html.replace(`__CODE_BLOCK_${index}__`, block);
+    });
+    
     // Parágrafos (quebras de linha duplas)
     const paragraphs = html.split('\n\n');
     html = paragraphs
         .map(para => {
             para = para.trim();
             if (!para) return '';
-            // Se já é um elemento HTML (h1-h4, ul, ol, pre), não envolve em <p>
-            if (/^<(h[1-4]|ul|ol|pre|li)/.test(para)) {
+            // Se já é um elemento HTML (h1-h4, ul, ol, pre, table, li), não envolve em <p>
+            if (/^<(h[1-4]|ul|ol|pre|table|li|tr|td|th)/.test(para)) {
                 return para;
             }
             return `<p>${para}</p>`;
@@ -361,6 +582,85 @@ function formatMarkdown(text) {
         .join('\n');
     
     return html;
+}
+
+// Função auxiliar para processar listas com aninhamento
+function processLists(text) {
+    const lines = text.split('\n');
+    const result = [];
+    let inList = false;
+    let listType = null; // 'ul' ou 'ol'
+    let listStack = []; // Pilha para listas aninhadas
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+        
+        // Detecta lista ordenada
+        const orderedMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
+        // Detecta lista não ordenada
+        const unorderedMatch = trimmed.match(/^[-*]\s+(.+)$/);
+        
+        // Calcula nível de indentação (espaços ou tabs)
+        const indent = line.match(/^(\s*)/)[1].length;
+        const indentLevel = Math.floor(indent / 2); // Assume 2 espaços por nível
+        
+        if (orderedMatch || unorderedMatch) {
+            const itemText = orderedMatch ? orderedMatch[2] : unorderedMatch[1];
+            const currentType = orderedMatch ? 'ol' : 'ul';
+            
+            // Se mudou o tipo de lista ou nível, fecha listas anteriores
+            if (inList && (listType !== currentType || indentLevel < listStack.length)) {
+                // Fecha listas até o nível correto
+                while (listStack.length > indentLevel) {
+                    const lastList = listStack.pop();
+                    result.push('</li>');
+                    result.push(`</${lastList.type}>`);
+                }
+            }
+            
+            // Se precisa abrir nova lista
+            if (!inList || listStack.length < indentLevel) {
+                while (listStack.length < indentLevel) {
+                    listStack.push({ type: currentType, indent: listStack.length });
+                    result.push(`<${currentType}>`);
+                }
+            }
+            
+            result.push(`<li>${itemText}</li>`);
+            inList = true;
+            listType = currentType;
+        } else {
+            // Linha não é item de lista
+            if (inList) {
+                // Fecha todas as listas abertas
+                while (listStack.length > 0) {
+                    const lastList = listStack.pop();
+                    result.push(`</${lastList.type}>`);
+                }
+                inList = false;
+                listType = null;
+            }
+            result.push(line);
+        }
+    }
+    
+    // Fecha listas restantes
+    if (inList) {
+        while (listStack.length > 0) {
+            const lastList = listStack.pop();
+            result.push(`</${lastList.type}>`);
+        }
+    }
+    
+    return result.join('\n');
+}
+
+// Função auxiliar para escapar HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function scrollToBottom() {
@@ -443,12 +743,14 @@ async function sendMessage(pergunta) {
     
     // Adiciona indicador de digitação (typing indicator)
     showTypingIndicator();
+    // Mostra skeleton loading também
+    showSkeletonLoading();
     
-    // AbortController para timeout
-    const controller = new AbortController();
-    // Timeout de 120 segundos (usando constante do backend)
-    const FRONTEND_REQUEST_TIMEOUT_MS = 120000;
-    const timeoutId = setTimeout(() => controller.abort(), FRONTEND_REQUEST_TIMEOUT_MS);
+    // AbortController para timeout e cancelamento
+    currentAbortController = new AbortController();
+    const controller = currentAbortController;
+    // Timeout usando constante do backend
+    const timeoutId = setTimeout(() => controller.abort(), frontendConfig.request_timeout_ms);
     
     try {
         // Verifica se está offline
@@ -498,8 +800,9 @@ async function sendMessage(pergunta) {
     } catch (error) {
         clearTimeout(timeoutId);
         
-        // Remove indicador de digitação
+        // Remove indicador de digitação e skeleton
         hideTypingIndicator();
+        hideSkeletonLoading();
         
         // Mensagens de erro específicas
         let errorMessage = '';
@@ -523,20 +826,19 @@ async function sendMessage(pergunta) {
             errorType: getErrorType(error)
         });
         
-        // Anuncia erro para leitores de tela
-        const errorAnnouncement = document.createElement('div');
-        errorAnnouncement.setAttribute('role', 'alert');
-        errorAnnouncement.setAttribute('aria-live', 'assertive');
-        errorAnnouncement.className = 'sr-only';
-        errorAnnouncement.textContent = errorMessage;
-        document.body.appendChild(errorAnnouncement);
-        const ERROR_ANNOUNCEMENT_DURATION_MS = 1000;
-        setTimeout(() => errorAnnouncement.remove(), ERROR_ANNOUNCEMENT_DURATION_MS);
+        // Mostra toast notification
+        showToast(errorMessage, 'error');
         
         console.error('Erro ao enviar mensagem:', error);
     } finally {
+        // Limpa o controller
+        if (currentAbortController === controller) {
+            currentAbortController = null;
+        }
+        
         // Garante que o indicador seja removido quando terminar (sucesso ou erro)
         hideTypingIndicator();
+        hideSkeletonLoading();
         isLoading = false;
         updateUIState();
     }
@@ -550,9 +852,21 @@ function updateUIState() {
     sendButton.disabled = isLoading;
     
     if (isLoading) {
-        sendButton.textContent = 'Enviando...';
+        sendButton.style.opacity = '0.6';
+        sendButton.setAttribute('aria-label', 'Enviando mensagem...');
+        if (cancelButton) {
+            cancelButton.style.display = 'inline-block';
+        }
     } else {
-        sendButton.textContent = 'Enviar';
+        sendButton.style.opacity = '1';
+        sendButton.setAttribute('aria-label', 'Enviar mensagem');
+        if (cancelButton) {
+            cancelButton.style.display = 'none';
+        }
+        // Auto-resize textarea ao desabilitar
+        if (userInput.tagName === 'TEXTAREA') {
+            autoResizeTextarea(userInput);
+        }
         userInput.focus();
     }
 }

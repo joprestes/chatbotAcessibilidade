@@ -27,6 +27,7 @@ from chatbot_acessibilidade.core.constants import (
     ErrorMessages,
     LogMessages,
 )
+from chatbot_acessibilidade.core.metrics import record_fallback  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +102,7 @@ class GoogleGeminiClient(LLMClient):
             if not api_key:
                 logger.error(LogMessages.CONFIG_MISSING_API_KEY)
                 raise ValueError("GOOGLE_API_KEY não configurada")
-            logger.debug(f"Inicializando genai.Client com API key: {api_key[:10]}...")
+            logger.debug("Inicializando genai.Client...")
             try:
                 self._genai_client = genai.Client(api_key=api_key)
                 logger.info("genai.Client inicializado com sucesso")
@@ -398,6 +399,9 @@ async def generate_with_fallback(
         # Se fallback está desabilitado ou não há clientes de fallback, re-lança o erro
         if not settings.fallback_enabled or not fallback_clients:
             raise APIError(f"Erro no provedor primário e fallback desabilitado: {e}")
+
+        # Registra que fallback será usado
+        record_fallback()
 
         # Tenta cada cliente de fallback com seus modelos
         for client in fallback_clients:

@@ -3,120 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Chatbot de Acessibilidade Digital - Assistente inteligente para tornar a web mais acessível">
-    <title>Chatbot de Acessibilidade Digital</title>
+    <meta name="description" content="Ada - Chatbot de Acessibilidade Digital e WCAG">
+    <title>Ada | Assistente de Acessibilidade</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="/static/styles.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♿</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💜</text></svg>">
 </head>
 <body>
-    <!-- Skip Link para Acessibilidade -->
-    <a href="#main-content" class="skip-link">Pular para conteúdo principal</a>
+    <a href="#user-input" class="skip-link">Pular para o chat</a>
     
-    <header role="banner">
-        <div class="header-controls">
-            <button 
-                id="clear-chat-button" 
-                class="clear-chat-button"
-                data-testid="btn-limpar-chat"
-                aria-label="Limpar histórico do chat"
-                title="Limpar chat"
-            >
-                🗑️ Limpar Chat
-            </button>
+    <div class="app-wrapper">
+        <!-- Sidebar com Ada fixa -->
+        <aside class="sidebar" role="complementary" aria-label="Informações da Ada" data-testid="sidebar-ada">
+            <div class="sidebar-content">
+                <div class="ada-card" data-testid="ada-card">
+                    <div class="avatar-container" data-testid="avatar-container">
+                        <img src="/assets/avatar.webp" alt="Ilustração da Ada" class="avatar breathing" data-testid="avatar-ada">
+                    </div>
+                    <div class="ada-info" data-testid="ada-info">
+                        <h2>Ada</h2>
+                        <p class="ada-subtitle">Assistente de Acessibilidade</p>
+                        <p class="ada-description">
+                            Especialista em <strong>Acessibilidade Digital</strong>, WCAG e ARIA.
+                        </p>
+                    </div>
+                    <div class="suggestion-chips" data-testid="suggestion-chips">
+                        <button class="chip" onclick="fillInput('Como testar contraste de cores?')" aria-label="Perguntar sobre contraste de cores" data-testid="chip-contraste">
+                            <span aria-hidden="true">🎨</span> Contraste
+                        </button>
+                        <button class="chip" onclick="fillInput('O que é navegação por teclado?')" aria-label="Perguntar sobre navegação por teclado" data-testid="chip-teclado">
+                            <span aria-hidden="true">⌨️</span> Teclado
+                        </button>
+                        <button class="chip" onclick="fillInput('Gere um checklist WCAG AA')" aria-label="Gerar checklist WCAG AA" data-testid="chip-checklist">
+                            <span aria-hidden="true">✅</span> Checklist
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <div class="main-content-wrapper">
+            <header role="banner" class="glass-header">
+                <div class="header-content">
+                    <div class="header-branding">
+                        <h1>Chat de Acessibilidade</h1>
+                    </div>
+                    <div class="header-controls">
+                        <button 
+                            id="clear-chat-button" 
+                            class="icon-button" 
+                            data-testid="btn-limpar-chat"
+                            aria-label="Limpar histórico do chat"
+                            title="Limpar conversa"
+                        >
+                            <span aria-hidden="true">🗑️</span>
+                        </button>
+                        <button 
+                            id="theme-toggle" 
+                            class="icon-button" 
+                            data-testid="btn-toggle-tema"
+                            aria-label="Alternar para modo escuro"
+                            title="Mudar tema"
+                        >
+                            <span aria-hidden="true" id="theme-icon">🌙</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main role="main" id="main-content">
+                <div id="chat-container" class="chat-container glass-chat" role="log" aria-live="polite" aria-label="Histórico de mensagens">
+                </div>
+            </main>
+
+            <footer class="input-area-wrapper">
+                <form id="chat-form" class="chat-form" data-testid="form-chat">
+                    <div class="input-container glass-input">
+                        <label for="user-input" class="sr-only">Digite sua pergunta</label>
+                        <textarea 
+                            id="user-input" 
+                            name="pergunta"
+                            data-testid="input-pergunta"
+                            placeholder="Pergunte sobre WCAG, ARIA ou testes..."
+                            autocomplete="off"
+                            rows="1"
+                            aria-label="Campo de texto para sua pergunta"
+                        ></textarea>
+                        <button 
+                            type="submit" 
+                            id="send-button"
+                            class="send-button"
+                            data-testid="btn-enviar"
+                            aria-label="Enviar mensagem"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </footer>
         </div>
-        <img 
-            src="/assets/banner.webp" 
-            alt="Banner Acessibilidade com Qualidade, por Joelma Ferreira" 
-            class="banner"
-            loading="eager"
-        >
-        <p class="banner-credit">
-            Acessibilidade com Qualidade — desenvolvido por Joelma De O. Prestes Ferreira
-        </p>
-    </header>
 
-    <main role="main" id="main-content">
-        <section class="intro-section" aria-labelledby="intro-title" data-testid="secao-introducao">
-            <div class="intro-content">
-                <h1 id="intro-title" class="sr-only">Introdução ao Chatbot</h1>
-                <div class="intro-text" role="complementary" aria-label="Apresentação da Ada">
-                    <p>
-                        👋 Opa! Eu sou a <strong>Ada</strong> — seu bot de confiança pra falar sobre 
-                        <strong>acessibilidade digital</strong> com foco em <strong>qualidade de software</strong>.
-                        Se você é de QA e quer deixar seus testes mais inclusivos, tá no lugar certo! 
-                        Bora validar a acessibilidade juntos? ✅♿
-                    </p>
-                </div>
-                <img 
-                    src="/assets/avatar.webp" 
-                    alt="Avatar da Ada, o assistente virtual baseada em Ada Lovelace a primeira mulher programadora" 
-                    class="avatar"
-                    loading="eager"
-                >
-            </div>
-        </section>
-
-        <section class="chat-section" aria-labelledby="chat-title" data-testid="secao-chat">
-            <h2 id="chat-title" class="sr-only">Área de Conversa</h2>
-            <div id="chat-container" class="chat-container" data-testid="chat-container" role="log" aria-live="polite" aria-label="Histórico de mensagens do chat">
-                <!-- Mensagens serão inseridas aqui via JavaScript -->
-            </div>
-        </section>
-
-        <section class="input-section" aria-labelledby="input-title" data-testid="secao-input">
-            <h2 id="input-title" class="sr-only">Campo de Entrada</h2>
-            <form id="chat-form" class="chat-form" data-testid="form-chat" role="form" aria-label="Formulário de envio de mensagem">
-                <div class="input-wrapper">
-                    <label for="user-input" class="sr-only">Digite sua pergunta sobre acessibilidade digital</label>
-                    <input 
-                        type="text" 
-                        id="user-input" 
-                        name="pergunta"
-                        data-testid="input-pergunta"
-                        placeholder="Digite sua pergunta sobre acessibilidade digital..."
-                        class="chat-input"
-                        autocomplete="off"
-                        aria-required="true"
-                        aria-describedby="input-help"
-                    >
-                    <button 
-                        type="submit" 
-                        id="send-button"
-                        class="send-button"
-                        data-testid="btn-enviar"
-                        aria-label="Enviar mensagem"
-                    >
-                        Enviar
-                    </button>
-                </div>
-                <p id="input-help" class="sr-only">
-                    Digite sua pergunta e pressione Enter ou clique no botão Enviar
-                </p>
-            </form>
-        </section>
-    </main>
-
-    <footer role="contentinfo">
-        <p>
-            Desenvolvido com foco em acessibilidade digital | 
-            <a href="https://github.com/seu-usuario/chatbot-acessibilidade" target="_blank" rel="noopener noreferrer">
-                GitHub
-            </a>
-        </p>
-    </footer>
-
-    <!-- Toggle de tema -->
-    <button 
-        id="theme-toggle" 
-        class="theme-toggle"
-        data-testid="btn-toggle-tema"
-        aria-label="Alternar entre tema claro e escuro"
-        title="Alternar tema"
-    >
-        <span aria-hidden="true">🌓</span>
-    </button>
+        <!-- Toast Container -->
+        <div id="toast-container" class="toast-container" role="region" aria-live="assertive" aria-label="Notificações"></div>
+    </div>
 
     <script src="/static/app.js"></script>
+    <script>
+        // Helper global para os botões de sugestão
+        function fillInput(text) {
+            const input = document.getElementById('user-input');
+            if(input) {
+                input.value = text;
+                input.focus();
+            }
+        }
+    </script>
 </body>
 </html>
-

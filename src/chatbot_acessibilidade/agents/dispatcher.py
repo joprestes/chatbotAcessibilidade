@@ -67,8 +67,6 @@ def _should_retry(exception: Exception) -> bool:
     return False
 
 
-
-
 @retry(
     stop=stop_after_attempt(MAX_RETRY_ATTEMPTS),
     wait=wait_exponential(multiplier=1, min=2, max=10),
