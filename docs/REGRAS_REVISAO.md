@@ -95,25 +95,54 @@ Os hooks são executados automaticamente antes de cada commit:
     *   Separe responsabilidades: `agents/`, `core/`, `backend/`.
     *   Use injeção de dependências quando apropriado.
 
-## 4. Testes
+## 4. Estratégia de Testes (Pirâmide + Playwright)
+
+### 4.1 Testes Unitários (Base da Pirâmide)
 
 *   **Framework**: Pytest com `pytest-asyncio` para testes assíncronos.
 
 *   **Padrão AAA**: Organize os testes em Arrange (preparação), Act (ação) e Assert (verificação).
 
-*   **Cobertura**: A meta é manter a cobertura de código acima de **95%**. A cobertura atual é de **98.93%** e deve ser mantida.
+*   **Cobertura**: A meta é manter a cobertura de código acima de **95%**. A cobertura atual é de **95.60%** e deve ser mantida.
 
 *   **Isolamento**: Testes unitários não devem depender de serviços externos (APIs reais do Google Gemini ou OpenRouter). Use `unittest.mock` ou `pytest-mock` para mockar chamadas externas.
+
+*   **Regra**: Teste a lógica de negócio, parsers e formatadores isoladamente, **mockando chamadas de IA**.
 
 *   **Nomenclatura**: `test_funcionalidade_cenario_resultado` (ex: `test_google_gemini_client_timeout_error`, `test_pipeline_agentes_paralelos_sucesso`).
 
 *   **Estrutura de Testes**:
 
-    *   Testes unitários em `tests/test_*.py`.
+    *   Testes unitários em `tests/unit/`.
     *   Use fixtures do pytest para setup comum.
     *   Mock todas as dependências externas.
 
 *   **Testes Assíncronos**: Sempre use `@pytest.mark.asyncio` para funções assíncronas.
+
+### 4.2 Testes E2E e Acessibilidade (Playwright)
+
+*   **Ferramenta**: Playwright para testes end-to-end e acessibilidade.
+
+*   **Estratégia de Locators**:
+
+    *   **Primário**: Utilize `page.get_by_test_id("nome-do-elemento")` para interações funcionais. Isso garante que o teste não quebre se o texto do botão mudar de "Enviar" para "Mandar".
+    
+    *   **Secundário (Validação A11y)**: Use `expect(locator).to_have_attribute("aria-label", ...)` ou `get_by_role` nas asserções para garantir que, além de funcional (via test-id), o elemento está semanticamente correto para leitores de tela.
+
+*   **Testes de A11y Automatizados**:
+
+    *   Integre `axe-core` (axe-playwright) nos testes E2E.
+    *   Valide violações de WCAG automaticamente em cada view.
+    *   Testes devem fazer skip se `axe-playwright` não estiver disponível, mas devem existir.
+
+*   **Sincronização**:
+
+    *   **NUNCA use `time.sleep()`**. Confie nos `await expect(page.get_by_test_id(...)).to_be_visible()`.
+    *   Use `page.wait_for_load_state("networkidle")` quando apropriado.
+
+*   **Independência**: Cada teste cria e limpa seus próprios dados. Use fixtures para setup/teardown.
+
+*   **Estrutura**: Testes E2E em `tests/e2e/playwright/`.
 
 ## 5. Git e Versionamento
 
@@ -219,6 +248,27 @@ Os hooks são executados automaticamente antes de cada commit:
 
 ## 8. Arquitetura e Padrões
 
+### 8.1 Stack de IA (Regra de Ouro)
+
+⚠️ **PROIBIÇÃO ABSOLUTA**: É **estritamente proibido** o uso de frameworks de orquestração pesados.
+
+*   **NÃO UTILIZE**:
+    *   LangChain
+    *   LangGraph
+    *   LlamaIndex
+    *   Frameworks similares de orquestração pesados
+
+*   **USE APENAS**:
+    *   SDKs nativos/leves (ex: `google-genai`, `openai-python`, `anthropic-sdk`)
+    *   Google ADK (Agent Development Kit) - já em uso
+    *   Vercel AI SDK (Core) - se necessário para frontend
+
+*   **Controle de Fluxo**: A lógica de estado, memória e ferramentas deve ser implementada com código nativo (Python/TypeScript) simples e explícito.
+
+*   **Prompts**: Devem ser explícitos, versionados e desacoplados da lógica de negócio. Mantenha prompts em `agents/factory.py` ou arquivos dedicados.
+
+### 8.2 Multi-Agent System
+
 *   **Multi-Agent System**: O projeto usa um sistema de múltiplos agentes (Assistant, Validator, Reviewer, Tester, Aprofundador). Mantenha a separação de responsabilidades.
 
 *   **LLM Providers**: O projeto suporta múltiplos provedores de LLM (Google Gemini como primário, OpenRouter como fallback). Novos provedores devem seguir o padrão `LLMClient` em `core/llm_provider.py`.
@@ -233,9 +283,11 @@ Os hooks são executados automaticamente antes de cada commit:
 
 ## 9. Frontend
 
-### 9.1 Acessibilidade (WCAG 2.1 AA Mínimo)
+### 9.1 Acessibilidade (WCAG 2.2 AA/AAA - Prioridade Zero)
 
-⚠️ **OBRIGATÓRIO**: Todas as funcionalidades devem ser acessíveis.
+⚠️ **PRIORIDADE ZERO**: Como este é um Chat de Acessibilidade, a aplicação deve ser o **exemplo máximo de conformidade**.
+
+*   **WCAG 2.2 AA/AAA**: Todo componente deve atingir no mínimo o nível **AA**. Prefira **AAA** quando possível.
 
 *   **Semântica HTML**: Use elementos HTML semânticos (`<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<footer>`, `<button>`, `<form>`, etc.).
 
@@ -245,9 +297,13 @@ Os hooks são executados automaticamente antes de cada commit:
     <div role="status" aria-live="polite" id="status-message"></div>
     ```
 
+*   **Screen Readers**: Use `aria-live="polite"` para respostas do bot e `aria-label` quando necessário. Garanta que todas as mudanças dinâmicas sejam anunciadas.
+
 *   **Contraste de Cores**: Garanta contraste mínimo de 4.5:1 para texto normal e 3:1 para texto grande (WCAG AA).
 
-*   **Navegação por Teclado**: Todos os elementos interativos devem ser acessíveis via teclado (Tab, Enter, Esc).
+*   **Navegação por Teclado**: Todo o fluxo deve ser operável **apenas com teclado** (Tab, Enter, Esc, setas). Teste sem mouse.
+
+*   **Gerenciamento de Foco**: O foco deve ser lógico e **nunca se perder** após interações (envio de msg, fechamento de modal). Sempre retorne o foco para o elemento apropriado.
 
 *   **Foco Visível**: Sempre forneça indicador visual de foco (`:focus`, `:focus-visible`).
 
@@ -317,15 +373,26 @@ Os hooks são executados automaticamente antes de cada commit:
 
 *   **Performance Mobile**: Otimize imagens, use lazy loading, minimize JavaScript.
 
-### 9.3 Test IDs
+### 9.3 Test IDs (Obrigatório para Testabilidade)
 
-⚠️ **OBRIGATÓRIO**: Todos os componentes interativos devem ter `data-testid`.
+⚠️ **OBRIGATÓRIO**: Para garantir automação robusta e desacoplada de mudanças visuais, **TODOS** os componentes interativos, containers de layout principais e elementos dinâmicos de resposta **DEVEM** possuir um atributo identificador único.
 
-*   **Padrão de Nomenclatura**: Use kebab-case descritivo:
+*   **Obrigatoriedade**: 
+    *   Botões, inputs, links (todos os elementos interativos)
+    *   Containers de layout principais
+    *   Elementos dinâmicos de resposta (mensagens do chat, erros, etc.)
+
+*   **Padrão de Nomenclatura**: 
+    *   Use `data-testid="nome-do-elemento"` (preferencial) ou `id="nome-unico"`
+    *   Nomes em **kebab-case** e descritivos
+    *   Atributos de código em **inglês técnico** (ex: `submit-button`, `chat-input-field`)
+
+*   **Exemplos**:
     ```html
-    <button data-testid="btn-enviar-mensagem">Enviar</button>
-    <input data-testid="input-pergunta" type="text">
-    <div data-testid="chat-mensagem-1">Mensagem</div>
+    <button data-testid="send-message-button">Enviar</button>
+    <input data-testid="chat-input-field" type="text">
+    <div data-testid="bot-response-container">Resposta</div>
+    <div data-testid="chat-history-item-0">Mensagem 1</div>
     ```
 
 *   **Estrutura Hierárquica**: Para elementos repetidos, use índices ou IDs:
@@ -340,6 +407,7 @@ Os hooks são executados automaticamente antes de cada commit:
     - Mensagens de erro/sucesso
     - Containers principais
     - Elementos de navegação
+    - Elementos dinâmicos (respostas do bot, loading states, etc.)
 
 *   **Não use test IDs em**: Elementos puramente decorativos (imagens de fundo, etc.).
 
@@ -365,6 +433,8 @@ Os hooks são executados automaticamente antes de cada commit:
         <!-- Mensagens -->
     </div>
     ```
+
+*   **Lembrete**: "Testabilidade (IDs únicos) é a garantia da longevidade do código."
 
 ### 9.4 Outras Regras Frontend
 
@@ -399,22 +469,51 @@ Os hooks são executados automaticamente antes de cada commit:
 
 *   Documente configurações de ambiente no `.env.example` (sem valores reais).
 
-## 11. Checklist de Revisão
+## 11. Smoke Test Obrigatório (Manual)
 
-Antes de abrir um Pull Request, verifique:
+⚠️ **ANTES de qualquer commit**, execute manualmente:
 
-- [ ] Todos os testes passam (`make test`)
-- [ ] Cobertura de testes acima de 95% (`make test-cov`)
-- [ ] Linters passam sem erros (`make lint`)
+- [ ] **Inspeção de Código**: Verifique se os novos elementos de UI possuem `data-testid`
+- [ ] **Navegação por Teclado**: TAB funciona em tudo? Foco visível?
+- [ ] **Fluxo Feliz**: Envio de mensagem e recebimento de resposta funcionam?
+- [ ] **Leitor de Tela**: O `aria-live` anuncia a resposta?
+
+## 12. Checklist de Revisão e Definição de Pronto (DoD)
+
+Antes de abrir um Pull Request, verifique **TODOS** os itens:
+
+### Qualidade de Código
+- [ ] Linters executados sem erros (`make lint`)
 - [ ] Código formatado (`make format`)
+- [ ] Código simples usando SDK nativo (sem LangChain/LangGraph)
+- [ ] Sem dependências de LangChain ou frameworks pesados
+
+### Testes
+- [ ] Todos os testes unitários passando (100%) (`make test-unit`)
+- [ ] Cobertura de testes acima de 95% (`make test-cov`)
+- [ ] Testes E2E (Playwright) usando `get_by_test_id` passaram (`make test-e2e`)
+- [ ] Verificação axe-core sem violações críticas (se disponível)
+
+### Acessibilidade e UI
+- [ ] Elementos de UI possuem `data-testid` (todos os componentes interativos)
+- [ ] Navegação por teclado funciona completamente
+- [ ] Gerenciamento de foco correto (foco não se perde)
+- [ ] Screen readers anunciam mudanças (`aria-live`)
+
+### Git e Segurança
 - [ ] Sem commits de secrets ou informações sensíveis
-- [ ] Documentação atualizada (se necessário)
 - [ ] Mensagens de commit semânticas e em português
-- [ ] Branch criada a partir da `main` atualizada
+- [ ] Branch criada a partir da `main` atualizada (nunca commitou na main)
 - [ ] Código revisado e sem código comentado desnecessário
+
+### Documentação
+- [ ] Documentação atualizada (se necessário)
 - [ ] Type hints adicionados em novas funções
 - [ ] Tratamento de erros adequado
 - [ ] Logs apropriados (sem informações sensíveis)
+
+### Lembrete do Agente
+> "Acessibilidade é a alma do projeto. Testabilidade (IDs únicos) é a garantia da longevidade do código."
 
 ## 13. Regras Específicas do Projeto
 
@@ -427,6 +526,8 @@ Antes de abrir um Pull Request, verifique:
 *   **FastAPI**: API principal. Mantenha compatibilidade com o frontend HTML.
 
 *   **Configuração**: Use Pydantic Settings para gerenciamento de configurações. Valide todas as configurações na inicialização.
+
+*   **Tratamento de Erros**: Nunca falhe silenciosamente; exiba erros acessíveis com `aria-live="polite"` ou `role="alert"`.
 
 ## 14. Performance
 
@@ -448,7 +549,20 @@ Antes de abrir um Pull Request, verifique:
 
 ---
 
-**Última atualização**: 2025-01-22
+**Última atualização**: 2025-11-23
 
-**Versão**: 1.0.0
+**Versão**: 2.0.0
+
+---
+
+## Changelog de Regras
+
+### Versão 2.0.0 (2025-11-23)
+- Adicionada seção 8.1: Stack de IA (proibição de LangChain/LangGraph)
+- Atualizada seção 9.1: WCAG 2.2 AA/AAA (Prioridade Zero)
+- Expandida seção 9.3: Test IDs com mais detalhes e exemplos
+- Atualizada seção 4: Estratégia de Testes (Pirâmide + Playwright)
+- Adicionada seção 11: Smoke Test Obrigatório
+- Atualizada seção 12: Checklist de Revisão e DoD completo
+- Adicionado lembrete do agente sobre acessibilidade e testabilidade
 

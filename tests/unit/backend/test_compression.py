@@ -4,9 +4,8 @@ Testes para o middleware de compressão
 
 import sys
 from pathlib import Path
-import pytest
 
-pytestmark = pytest.mark.unit
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from starlette.responses import JSONResponse
@@ -17,6 +16,8 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 from backend.middleware import CompressionMiddleware  # noqa: E402
+
+pytestmark = pytest.mark.unit
 from chatbot_acessibilidade.config import settings  # noqa: E402
 
 

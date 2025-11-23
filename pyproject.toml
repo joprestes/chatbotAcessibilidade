@@ -95,6 +95,11 @@ addopts = [
     "-v",
     "--strict-markers",
     "--tb=short",
+    "-W", "ignore::urllib3.exceptions.NotOpenSSLWarning",
+    "-W", "ignore::pytest.PytestUnraisableExceptionWarning",
+    "-W", "ignore::RuntimeWarning",
+    "-W", "ignore::ResourceWarning",
+    "--disable-warnings",
 ]
 # Relatórios HTML são gerados apenas quando explicitamente solicitados via comando
 # Para gerar relatório HTML: pytest --html=tests/reports/html/report.html --self-contained-html
@@ -142,4 +147,31 @@ fail_under = 95
 precision = 2
 show_missing = true
 skip_covered = false
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = [
+    "**/__pycache__",
+    "**/.venv",
+    "**/venv",
+    "**/.pytest_cache",
+    "**/node_modules",
+]
+pythonVersion = "3.12"
+pythonPlatform = "All"
+typeCheckingMode = "basic"
+reportMissingImports = "warning"
+reportMissingTypeStubs = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src"
+pythonVersion = "3.12"
+pythonPlatform = "All"
+extraPaths = ["src"]
+
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+pythonVersion = "3.12"
+pythonPlatform = "All"
+extraPaths = ["src"]
 

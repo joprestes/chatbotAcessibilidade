@@ -4,11 +4,11 @@ Testes para o módulo factory.py
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 from google.adk.agents import Agent
 
-from chatbot_acessibilidade.agents.factory import criar_agentes, NOME_MODELO_ADK
+from chatbot_acessibilidade.agents.factory import NOME_MODELO_ADK, criar_agentes
+
+pytestmark = pytest.mark.unit
 
 
 def test_nome_modelo_adk():
@@ -91,10 +91,10 @@ def test_criar_agentes_nomes_corretos():
     agentes = criar_agentes()
 
     assert agentes["assistente"].name == "assistente_acessibilidade_digital"
-    assert agentes["validador"].name == "validador_resposta_acessibilidade"
+    assert agentes["validador"].name == "validador_code_review"
     assert agentes["revisor"].name == "revisor_clareza_acessibilidade"
-    assert agentes["testador"].name == "sugestor_testabilidade_acessibilidade"
-    assert agentes["aprofundador"].name == "guia_aprofundamento_acessibilidade"
+    assert agentes["testador"].name == "planejador_testes_qa"
+    assert agentes["aprofundador"].name == "guia_estudos_referencias"
 
 
 def test_criar_agentes_modelo_correto():

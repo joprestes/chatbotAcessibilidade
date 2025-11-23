@@ -5,17 +5,16 @@ Estes testes simulam o comportamento real do usuário,
 testando desde a requisição HTTP até a resposta final.
 """
 
-import pytest
-
-pytestmark = pytest.mark.integration
-from fastapi.testclient import TestClient
+import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from fastapi.testclient import TestClient
-from pathlib import Path
-import sys
+import pytest
 from dotenv import load_dotenv
+from fastapi.testclient import TestClient
+
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient  # noqa: F401
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -26,6 +25,8 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 from backend.api import app  # noqa: E402
+
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture
@@ -141,11 +142,13 @@ async def test_e2e_chat_flow_cache(client: TestClient):
         response1 = client.post("/api/chat", json={"pergunta": pergunta})
         # Pode ser 200 (sucesso) ou 429 (rate limit se muitos testes rodaram antes)
         assert response1.status_code in [200, 429], f"Status inesperado: {response1.status_code}"
-        
+
         if response1.status_code == 429:
             # Se rate limit foi acionado, pula o teste (comportamento esperado em CI)
-            pytest.skip("Rate limit acionado - comportamento esperado quando muitos testes rodam rapidamente")
-        
+            pytest.skip(
+                "Rate limit acionado - comportamento esperado quando muitos testes rodam rapidamente"
+            )
+
         data1 = response1.json()
 
         # 2. Segunda requisição (deve usar cache - não chama pipeline novamente)
@@ -243,8 +246,12 @@ async def test_e2e_multiple_requests(client: TestClient):
         for i, response in enumerate(responses):
             if response.status_code == 429:
                 # Se rate limit foi acionado, pula o teste (comportamento esperado em CI)
-                pytest.skip(f"Rate limit acionado na requisição {i+1} - comportamento esperado quando muitos testes rodam rapidamente")
-            assert response.status_code == 200, f"Requisição {i+1} falhou com status {response.status_code}"
+                pytest.skip(
+                    f"Rate limit acionado na requisição {i + 1} - comportamento esperado quando muitos testes rodam rapidamente"
+                )
+            assert (
+                response.status_code == 200
+            ), f"Requisição {i + 1} falhou com status {response.status_code}"
             assert "resposta" in response.json()
 
 

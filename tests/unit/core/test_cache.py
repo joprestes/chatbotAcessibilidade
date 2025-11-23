@@ -3,19 +3,20 @@ Testes para o módulo cache.py
 """
 
 import pytest
-
-pytestmark = pytest.mark.unit
 from unittest.mock import patch
+
 from cachetools import TTLCache
 
 from chatbot_acessibilidade.core.cache import (
+    clear_cache,
     get_cache,
     get_cache_key,
+    get_cache_stats,
     get_cached_response,
     set_cached_response,
-    clear_cache,
-    get_cache_stats,
 )
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture
@@ -243,3 +244,99 @@ def test_cache_ttl_expiration(mock_settings):
 
     # Simula expiração (cachetools gerencia isso automaticamente)
     # Este teste verifica que o cache foi criado corretamente
+
+
+def test_get_cached_response_nao_dict(mock_settings):
+    """Testa get_cached_response quando resposta no cache não é dict"""
+    import chatbot_acessibilidade.core.cache as cache_module
+
+    cache_module._cache = None
+
+    # Cria cache e adiciona item que não é dict
+    cache = get_cache()
+    pergunta = "O que é WCAG?"
+    key = get_cache_key(pergunta)
+    cache[key] = "não é um dict"  # Tipo incorreto
+
+    # Busca no cache - deve retornar None pois não é dict
+    resultado = get_cached_response(pergunta)
+
+    assert resultado is None
+
+
+def test_calculate_similarity():
+    """Testa calculate_similarity"""
+    from chatbot_acessibilidade.core.cache import calculate_similarity
+
+    # Textos idênticos
+    assert calculate_similarity("O que é WCAG?", "O que é WCAG?") == 1.0
+
+    # Textos similares
+    similarity = calculate_similarity("O que é WCAG?", "O que é wcag")
+    assert 0.8 < similarity < 1.0
+
+    # Textos diferentes
+    similarity = calculate_similarity("O que é WCAG?", "Como usar ARIA?")
+    assert similarity < 0.5
+
+
+def test_find_similar_questions(mock_settings):
+    """Testa find_similar_questions"""
+    from chatbot_acessibilidade.core.cache import find_similar_questions
+
+    import chatbot_acessibilidade.core.cache as cache_module
+
+    cache_module._cache = None
+
+    # Por limitação do TTLCache, a função retorna lista vazia
+    # Mas podemos testar que não quebra
+    resultado = find_similar_questions("O que é WCAG?")
+    assert isinstance(resultado, list)
+    assert len(resultado) == 0
+
+
+def test_invalidate_similar_cache(mock_settings):
+    """Testa invalidate_similar_cache"""
+    from chatbot_acessibilidade.core.cache import invalidate_similar_cache
+
+    import chatbot_acessibilidade.core.cache as cache_module
+
+    cache_module._cache = None
+
+    # Por limitação do TTLCache, a função retorna 0
+    # Mas podemos testar que não quebra
+    resultado = invalidate_similar_cache("O que é WCAG?")
+    assert resultado == 0
+
+
+def test_get_cached_response_with_similarity_cache_hit(mock_settings):
+    """Testa get_cached_response_with_similarity com cache hit exato"""
+    from chatbot_acessibilidade.core.cache import get_cached_response_with_similarity
+
+    import chatbot_acessibilidade.core.cache as cache_module
+
+    cache_module._cache = None
+
+    pergunta = "O que é WCAG?"
+    resposta = {"teste": "resposta"}
+    set_cached_response(pergunta, resposta)
+
+    # Busca exata
+    resultado = get_cached_response_with_similarity(pergunta)
+    assert resultado is not None
+    resposta_encontrada, similaridade = resultado
+    assert resposta_encontrada == resposta
+    assert similaridade == 1.0
+
+
+def test_get_cached_response_with_similarity_cache_miss(mock_settings):
+    """Testa get_cached_response_with_similarity com cache miss"""
+    from chatbot_acessibilidade.core.cache import get_cached_response_with_similarity
+
+    import chatbot_acessibilidade.core.cache as cache_module
+
+    cache_module._cache = None
+
+    # Busca pergunta que não existe
+    resultado = get_cached_response_with_similarity("Pergunta que não existe")
+    assert resultado is None

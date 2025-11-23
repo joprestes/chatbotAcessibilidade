@@ -22,10 +22,10 @@ from src.backend.api import app  # noqa: E402
 def client() -> TestClient:
     """
     Cliente de teste para integração.
-    
+
     Cria uma instância de TestClient para testar a API FastAPI
     sem precisar de um servidor HTTP real rodando.
-    
+
     Returns:
         TestClient configurado com a aplicação FastAPI
     """
@@ -36,7 +36,7 @@ def client() -> TestClient:
 def sample_question() -> str:
     """
     Pergunta de exemplo para testes de integração.
-    
+
     Returns:
         String com uma pergunta de teste válida
     """
@@ -47,13 +47,12 @@ def sample_question() -> str:
 def sample_response_data() -> dict:
     """
     Dados de resposta de exemplo para testes.
-    
+
     Returns:
         Dict com estrutura de resposta esperada
     """
     return {
         "resposta": "Resposta de teste",
         "agentes_usados": ["assistente"],
-        "tempo_resposta_ms": 100
+        "tempo_resposta_ms": 100,
     }
-

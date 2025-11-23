@@ -3,13 +3,13 @@ Testes para o middleware de cache de assets estáticos
 """
 
 import pytest
-
-pytestmark = pytest.mark.unit
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from starlette.responses import JSONResponse
 
 from backend.middleware import StaticCacheMiddleware
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture

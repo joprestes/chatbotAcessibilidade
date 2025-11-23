@@ -2,22 +2,22 @@
 Testes para o módulo config.py
 """
 
-import pytest
-
-pytestmark = pytest.mark.unit
 import os
-from unittest.mock import patch
-from pydantic import ValidationError
-
-# Importa após configurar o path
 import sys
 from pathlib import Path
 
+import pytest
+from pydantic import ValidationError
+from unittest.mock import patch
+
+# Importa após configurar o path
 src_path = Path(__file__).parent.parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 from chatbot_acessibilidade.config import Settings  # noqa: E402
+
+pytestmark = pytest.mark.unit
 
 
 def test_settings_cria_instancia_com_variaveis_ambiente():

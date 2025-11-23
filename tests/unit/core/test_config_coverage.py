@@ -3,20 +3,20 @@ Testes adicionais para aumentar cobertura de config.py
 Focando nas linhas não cobertas: 127, 150-153
 """
 
-import pytest
-
-pytestmark = pytest.mark.unit
-
 import os
-from unittest.mock import patch
 import sys
 from pathlib import Path
+
+import pytest
+from unittest.mock import patch
 
 src_path = Path(__file__).parent.parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 from chatbot_acessibilidade.config import Settings  # noqa: E402
+
+pytestmark = pytest.mark.unit
 
 
 def test_openrouter_models_list_quando_e_string():

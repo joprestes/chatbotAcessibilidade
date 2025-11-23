@@ -2,17 +2,17 @@
 Testes para o módulo validators.py
 """
 
-import pytest
-
-pytestmark = pytest.mark.unit
-
 import sys
 from pathlib import Path
+
+import pytest
 
 # Adiciona src ao path para imports
 src_path = Path(__file__).parent.parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
+
+pytestmark = pytest.mark.unit
 
 from chatbot_acessibilidade.core.validators import (  # noqa: E402
     sanitize_input,

@@ -16,48 +16,48 @@ def test_xss_injection_prevention(page: Page, base_url: str):
     """
     page.goto(base_url)
     page.wait_for_load_state("networkidle")
-    
+
     # Aguarda input estar habilitado
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.wait_for(state="visible", timeout=5000)
     # Aguarda estar habilitado
     page.wait_for_timeout(1000)
-    
+
     # Padrões XSS comuns (testa apenas alguns para não demorar muito)
     xss_patterns = [
         "<script>alert('XSS')</script>",
         "<img src=x onerror=alert(1)>",
     ]
-    
+
     for xss_pattern in xss_patterns:
         # Limpa mensagens anteriores se houver
-        clear_button = page.locator('[data-testid="btn-limpar-chat"]')
+        clear_button = page.get_by_test_id("btn-limpar-chat")
         if clear_button.is_visible():
             try:
                 clear_button.click()
                 page.wait_for_timeout(500)
             except Exception:
                 pass
-        
+
         # Aguarda input estar habilitado novamente
         page.wait_for_timeout(500)
-        
+
         # Tenta enviar padrão XSS
         try:
             input_field.fill(xss_pattern)
-            send_button = page.locator('[data-testid="btn-enviar"]')
+            send_button = page.get_by_test_id("btn-enviar")
             send_button.click()
-            
+
             # Aguarda resposta ou erro
             page.wait_for_timeout(2000)
-            
+
             # Verifica que script não foi executado
             # Verifica que conteúdo foi sanitizado no DOM
             page_content = page.content()
-            
+
             # Verifica que tags script não estão no DOM renderizado
             assert "<script>" not in page_content.lower() or "&lt;script&gt;" in page_content
-            
+
             # Verifica que onerror não está presente
             assert "onerror" not in page_content.lower() or "&lt;" in page_content
         except Exception:
@@ -74,20 +74,20 @@ def test_sql_injection_prevention(page: Page, base_url: str):
         "' OR '1'='1",
         "'; DROP TABLE users; --",
     ]
-    
+
     api_context = page.request
-    
+
     for sql_pattern in sql_patterns:
         try:
             response = api_context.post(
                 f"{base_url}/api/chat",
                 data={"pergunta": sql_pattern},
             )
-            
+
             # Pode ser rejeitado (400/422), aceito e sanitizado (200), ou erro do servidor (500)
             # O importante é que não quebra o sistema
             assert response.status in [200, 400, 422, 500]
-            
+
             if response.status == 200:
                 # Se aceito, verifica que resposta não contém SQL
                 try:
@@ -108,17 +108,17 @@ def test_csrf_protection(page: Page, base_url: str):
     Testa proteção CSRF e headers de segurança.
     """
     api_context = page.request
-    
+
     # Faz requisição GET para verificar headers de segurança
     health_response = api_context.get(f"{base_url}/api/health")
-    
+
     # Verifica que resposta é bem-sucedida
     assert health_response.status == 200
-    
+
     # Verifica headers de segurança comuns (se configurados)
     # X-Frame-Options, CSP, etc. (depende da configuração do middleware)
     # Por enquanto, apenas verifica que resposta funciona
-    
+
     # Testa CORS fazendo requisição POST
     try:
         post_response = api_context.post(
@@ -138,26 +138,27 @@ def test_rate_limiting_real(page: Page, base_url: str):
     Testa rate limiting real enviando muitas requisições.
     """
     api_context = page.request
-    
+
     # Envia requisições rápidas até atingir limite
     # rate_limit_triggered = False
-    
+
     for i in range(15):  # Mais que o limite padrão de 10/min
         response = api_context.post(
             f"{base_url}/api/chat",
             data={"pergunta": f"Rate limit test {i}"},
         )
-        
+
         if response.status == 429:
             # rate_limit_triggered = True
             try:
                 data = response.json()
-                assert "rate limit" in str(data).lower() or "muitas requisições" in str(data).lower()
+                assert (
+                    "rate limit" in str(data).lower() or "muitas requisições" in str(data).lower()
+                )
             except Exception:
                 pass
             break
-    
+
     # Se rate limit foi acionado, o teste passou
     # Se não foi, pode ser que limite seja maior ou esteja desabilitado
     # Por enquanto, apenas verifica que não quebrou
-

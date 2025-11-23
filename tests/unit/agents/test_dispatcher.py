@@ -3,13 +3,14 @@ Testes para o módulo dispatcher.py
 """
 
 import pytest
-
-pytestmark = pytest.mark.unit
 from unittest.mock import MagicMock, patch
+
 from google.adk.agents import Agent
 
 from chatbot_acessibilidade.agents.dispatcher import get_agent_response
 from chatbot_acessibilidade.core.exceptions import APIError
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture

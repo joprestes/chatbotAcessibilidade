@@ -1,13 +1,13 @@
 import pytest
 
-pytestmark = pytest.mark.unit
-
 from chatbot_acessibilidade.core.formatter import (
     eh_erro,
     extrair_primeiro_paragrafo,
     formatar_resposta_final,
     gerar_dica_final,
 )
+
+pytestmark = pytest.mark.unit
 
 
 def test_eh_erro_verdadeiro():

@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000?style=for-the-badge)](https://github.com/psf/black)
 [![Tests](https://img.shields.io/badge/tests-98%25%2B-success?style=for-the-badge)](docs/TESTES.md)
-[![WCAG](https://img.shields.io/badge/WCAG-2.1%20AA-7C3AED?style=for-the-badge)](https://www.w3.org/WAI/WCAG21/quickref/)
+[![WCAG](https://img.shields.io/badge/WCAG-2.2%20AA-7C3AED?style=for-the-badge)](https://www.w3.org/WAI/WCAG22/quickref/)
 [![CI](https://github.com/joprestes/chatbotAcessibilidade/workflows/CI/badge.svg)](https://github.com/joprestes/chatbotAcessibilidade/actions)
 
 [Português 🇧🇷](#-versão-em-português)
@@ -67,7 +67,7 @@
 
 O **Chatbot de Acessibilidade Digital** é uma solução inteligente e educativa desenvolvida para profissionais, desenvolvedores e equipes de QA que buscam aprimorar seus conhecimentos sobre acessibilidade digital.
 
-Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback automático** para múltiplos LLMs via OpenRouter, o chatbot gera respostas completas, testáveis e com referências confiáveis, seguindo os padrões **WCAG 2.1 AA** e **ARIA**.
+Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback automático** para múltiplos LLMs via OpenRouter, o chatbot gera respostas completas, testáveis e com referências confiáveis, seguindo os padrões **WCAG 2.2 AA/AAA** e **ARIA 1.2**.
 
 #### 🎯 Por que usar este projeto?
 
@@ -90,7 +90,7 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 | **🧪 Testes** | Como testar contraste de cores? |
 | **⌨️ Navegação** | O que é navegação por teclado? |
 | **🔊 Leitores de Tela** | Como tornar um site acessível a leitores de tela? |
-| **📋 WCAG** | Quais são os critérios de sucesso do WCAG 2.1? |
+| **📋 WCAG** | Quais são os critérios de sucesso do WCAG 2.2? |
 | **🛠️ Ferramentas** | Quais ferramentas usar para testar acessibilidade? |
 
 </div>
@@ -170,7 +170,9 @@ chatbot-acessibilidade/
 │   ├── chatbot_acessibilidade/   # Core do chatbot
 │   │   ├── agents/               # Agentes especializados
 │   │   ├── core/                 # Utilitários e formatters
-│   │   └── pipeline.py           # Orquestração dos agentes
+│   │   └── pipeline/             # Orquestração dos agentes
+│   │       ├── orquestrador.py   # PipelineOrquestrador
+│   │       └── __init__.py       # Wrapper pipeline_acessibilidade()
 │   └── backend/                  # API REST
 │       └── api.py                # FastAPI endpoints
 │
@@ -320,6 +322,7 @@ Acesse: **http://localhost:8000**
 |:---:|:---|
 | [📝 CHANGELOG.md](docs/CHANGELOG.md) | Histórico de mudanças |
 | [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Regras e padrões do projeto (inclui linters) |
+| [♿ PADROES_ACESSIBILIDADE.md](docs/PADROES_ACESSIBILIDADE.md) | Padrões de acessibilidade e gerenciamento de foco |
 | [🚀 DEPLOY.md](docs/DEPLOY.md) | Guia completo de deploy |
 | [🧪 TESTES.md](docs/TESTES.md) | Documentação de testes |
 | [📚 API Interativa](http://localhost:8000/docs) | Swagger UI (quando servidor rodando) |
@@ -395,7 +398,7 @@ O projeto utiliza **GitHub Actions** para automação completa de testes e valid
 
 2. **Accessibility Tests**
    - Executa testes de acessibilidade com axe-core
-   - Valida conformidade WCAG 2.1 AA
+   - Valida conformidade WCAG 2.2 AA/AAA
    - Executa diariamente via schedule e em PRs
 
 **Status do CI:**

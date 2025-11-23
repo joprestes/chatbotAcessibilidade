@@ -14,7 +14,7 @@ from typing import Dict, Any
 def mock_llm_response() -> Dict[str, Any]:
     """
     Mock de resposta LLM padrão para testes unitários.
-    
+
     Returns:
         Dict com estrutura de resposta LLM simulada
     """
@@ -22,8 +22,8 @@ def mock_llm_response() -> Dict[str, Any]:
         "text": "Resposta de teste do LLM",
         "metadata": {
             "model": "test-model",
-            "usage": {"prompt_tokens": 10, "completion_tokens": 20}
-        }
+            "usage": {"prompt_tokens": 10, "completion_tokens": 20},
+        },
     }
 
 
@@ -31,7 +31,7 @@ def mock_llm_response() -> Dict[str, Any]:
 def mock_async_llm_client() -> AsyncMock:
     """
     Mock de cliente LLM assíncrono para testes.
-    
+
     Returns:
         AsyncMock configurado para simular chamadas LLM
     """
@@ -44,14 +44,8 @@ def mock_async_llm_client() -> AsyncMock:
 def mock_cache_stats() -> Dict[str, Any]:
     """
     Mock de estatísticas de cache para testes.
-    
+
     Returns:
         Dict com estatísticas simuladas de cache
     """
-    return {
-        "hits": 5,
-        "misses": 3,
-        "size": 8,
-        "max_size": 100
-    }
-
+    return {"hits": 5, "misses": 3, "size": 8, "max_size": 100}

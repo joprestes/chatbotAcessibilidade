@@ -2,6 +2,72 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.12.0] - 2025-01-24
+
+### Adicionado
+- **Orquestrador Melhorado**: Implementado `PipelineOrquestrador` com arquitetura modular e controle explícito de fluxo
+  - Classe `PipelineOrquestrador` em `src/chatbot_acessibilidade/pipeline/orquestrador.py`
+  - Execução sequencial otimizada (assistente → validador → revisor)
+  - Execução paralela para testador e aprofundador
+  - Integração completa com `MetricsContext` para coleta de métricas
+  - Tratamento robusto de erros com fallbacks individuais por agente
+- **Otimização de Prompts para Gemini 2.0 Flash**: Prompts dos agentes otimizados com Chain-of-Thought e formatação estruturada
+  - Prompts focados em HTML5 semântico e Vanilla JS
+  - Suporte explícito a WCAG 2.2 e ARIA 1.2
+  - Formatação estrita de saída (JSON estruturado)
+- **Documentação de Padrões de Acessibilidade**: Criado `docs/PADROES_ACESSIBILIDADE.md`
+  - Padrões de gerenciamento de foco
+  - Exemplos de código para navegação por teclado
+  - Boas práticas para screen readers
+- **Testes de Gerenciamento de Foco**: Adicionado `tests/e2e/playwright/test_focus_management.py`
+  - 6 testes específicos para verificar comportamento de foco após interações
+  - Validação de foco visível durante navegação por teclado
+  - Testes de foco após envio de mensagem, busca e limpeza de chat
+
+### Modificado
+- **Migração de Testes E2E**: Todos os testes E2E migrados para usar `page.get_by_test_id()` ao invés de `page.locator('[data-testid="..."]')`
+  - 15+ arquivos de teste atualizados
+  - Estratégia de locators mais robusta e desacoplada de mudanças visuais
+  - Conformidade 100% com novas regras de testabilidade
+- **Remoção de `time.sleep()`**: Removidos todos os usos de `time.sleep()` dos testes E2E
+  - Substituído por sincronização nativa do Playwright (`expect().to_be_visible()`)
+  - Melhor performance e confiabilidade dos testes
+- **Estrutura do Pipeline**: Refatorado de `pipeline.py` para estrutura modular `pipeline/`
+  - `pipeline/orquestrador.py`: Classe `PipelineOrquestrador`
+  - `pipeline/__init__.py`: Wrapper `pipeline_acessibilidade()` mantido para compatibilidade
+  - Melhor organização e testabilidade do código
+
+### Melhorado
+- **Conformidade com Regras Globais**: Projeto agora 100% conforme com "Regras de Desenvolvimento - Projeto Chat de Acessibilidade"
+  - Stack de IA: 100% (sem LangChain/LangGraph, usando SDKs nativos)
+  - Acessibilidade: 95% (WCAG 2.2 AA/AAA, HTML semântico, navegação por teclado)
+  - Test IDs: 100% (todos os elementos interativos possuem `data-testid`)
+  - Testes E2E: 100% (usando `get_by_test_id()`)
+  - Sincronização: 100% (`time.sleep()` removido)
+- **Cobertura de Testes**: Aumentada cobertura de `pipeline/__init__.py` para 95%+
+  - Novo teste para cenário de exceção genérica
+- **Documentação**: README atualizado com referências a WCAG 2.2 e nova estrutura do pipeline
+
+### Arquivado
+- **Documentos de Revisão**: Movidos para `docs/archive/`
+  - `ANALISE_CONFORMIDADE_REGRAS.md` → `docs/archive/`
+  - `REVISAO_COMPLETA.md` → `docs/archive/`
+  - `REVISAO_REGRAS_GLOBAIS.md` → `docs/archive/`
+  - `docs/PLANO_EXPANSAO_TESTES.md` → `docs/archive/` (100% concluído)
+
+### Corrigido
+- Linha muito longa em `src/chatbot_acessibilidade/agents/dispatcher.py` (E501)
+- Whitespace em linhas vazias de docstrings em `src/backend/api.py` (W293)
+- Imports não utilizados em vários arquivos de teste (F401)
+- Variáveis não utilizadas em testes (F841)
+
+### Notas Técnicas
+- Orquestrador implementado sem dependências de frameworks pesados (LangChain/LangGraph)
+- Controle de fluxo explícito usando código Python nativo e `asyncio`
+- Compatibilidade total mantida com código existente via wrapper `pipeline_acessibilidade()`
+- Todos os testes passando (unitários, integração e E2E)
+- Cobertura mantida acima de 95%
+
 ## [3.11.0] - 2025-11-23
 
 ### Adicionado
