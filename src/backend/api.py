@@ -48,7 +48,7 @@ limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 # Handler de rate limit - usa o handler padrão do slowapi
 # type: ignore necessário porque slowapi usa tipos específicos que MyPy não reconhece
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
 
 # Configura CORS com origens permitidas
 app.add_middleware(

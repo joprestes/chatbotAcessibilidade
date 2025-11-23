@@ -73,11 +73,11 @@ class Settings(BaseSettings):
     )
 
     # type: ignore necessário porque Pydantic aceita essas chaves mas MyPy não reconhece
-    model_config = ConfigDict(  # type: ignore[typeddict-unknown-key]
+    model_config = ConfigDict(  # type: ignore
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-    )  # type: ignore[assignment]
+    )
 
     @field_validator("cors_origins")
     @classmethod
@@ -139,4 +139,4 @@ if os.getenv("PYTEST_CURRENT_TEST"):
 
 # type: ignore necessário porque Settings() pode ser inicializado sem argumentos
 # quando as variáveis de ambiente estão definidas (como em testes)
-settings = Settings()  # type: ignore[call-arg]
+settings = Settings()  # type: ignore
