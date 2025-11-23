@@ -148,3 +148,32 @@ precision = 2
 show_missing = true
 skip_covered = false
 
+[tool.pyright]
+include = ["src", "tests"]
+exclude = [
+    "**/__pycache__",
+    "**/.venv",
+    "**/venv",
+    "**/.pytest_cache",
+    "**/node_modules",
+]
+pythonVersion = "3.12"
+pythonPlatform = "All"
+typeCheckingMode = "basic"
+reportMissingImports = "warning"
+reportMissingTypeStubs = false
+executionEnvironments = [
+    {
+        "root": "src",
+        "pythonVersion": "3.12",
+        "pythonPlatform": "All",
+        "extraPaths": ["src"],
+    },
+    {
+        "root": "tests",
+        "pythonVersion": "3.12",
+        "pythonPlatform": "All",
+        "extraPaths": ["src"],
+    },
+]
+
