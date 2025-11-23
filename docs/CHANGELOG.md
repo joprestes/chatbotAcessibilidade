@@ -2,6 +2,62 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.8.0] - 2025-11-23
+
+### Adicionado
+- **Documentação Completa da API:**
+  - Documentação interativa Swagger UI em `/docs`
+  - Documentação alternativa ReDoc em `/redoc`
+  - Especificação OpenAPI 3.0 em `/openapi.json`
+  - Guia completo da API em `docs/API.md` com exemplos em cURL, Python e JavaScript
+  - Descrições detalhadas em todos os endpoints com exemplos de requisição/resposta
+  - Tags organizadas (Chat, Health, Config, Frontend) para melhor navegação
+  - Modelos Pydantic com exemplos e descrições completas
+  - Documentação de códigos de erro (400, 429, 500)
+  - Informações de segurança, performance e fallback automático
+
+- **Estrutura de Testes Playwright:**
+  - Configuração completa do Playwright para testes E2E
+  - Testes de API usando requisições HTTP reais (`test_api_playwright.py`)
+  - Testes de frontend validando interface e interações (`test_frontend_playwright.py`)
+  - Testes de acessibilidade com axe-core (`test_accessibility.py`)
+  - Fixtures reutilizáveis para navegador, contexto e página
+  - Suporte para múltiplos navegadores (Chromium, Firefox, WebKit)
+  - Documentação do plano de implementação em `docs/PLANO_PLAYWRIGHT.md`
+
+- **Comandos Makefile:**
+  - `make test-playwright`: Executa todos os testes Playwright
+  - `make test-playwright-ui`: Executa com UI (headed mode)
+  - `make test-playwright-api`: Apenas testes de API
+  - `make test-playwright-frontend`: Apenas testes de frontend
+  - `make test-playwright-accessibility`: Apenas testes de acessibilidade
+  - `make playwright-install`: Instala navegadores do Playwright
+
+### Modificado
+- **FastAPI App:**
+  - Descrição completa com markdown e informações de contato
+  - Tags organizadas para melhor categorização dos endpoints
+  - Versão atualizada para 3.8.0
+
+- **Modelos Pydantic:**
+  - `ChatRequest`: Adicionados exemplos e validações detalhadas
+  - `ChatResponse`: Estrutura de resposta documentada com exemplos
+  - `HealthResponse`: Exemplos completos de resposta
+
+- **Endpoints:**
+  - `POST /api/chat`: Documentação completa com fluxo de processamento, exemplos e códigos de erro
+  - `GET /api/health`: Descrição detalhada e casos de uso
+  - `GET /api/config`: Explicação das configurações do frontend
+  - `GET /api/metrics`: Descrição completa das métricas retornadas
+
+- **Dependências:**
+  - Adicionado `pytest-playwright>=0.4.0` para testes E2E
+  - Adicionado `playwright>=1.40.0` para automação de navegadores
+  - Adicionado `axe-playwright>=1.0.0` para testes de acessibilidade
+
+- **Configuração pytest:**
+  - Adicionados markers para organizar testes (playwright, api, frontend, accessibility, e2e, slow)
+
 ## [3.7.0] - 2025-11-23
 
 ### Adicionado
