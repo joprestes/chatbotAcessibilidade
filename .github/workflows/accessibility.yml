@@ -1,55 +1,101 @@
+# ============================================
+# Pipeline de Testes de Acessibilidade
+# ============================================
+# 
+# Esta pipeline foca especificamente em testes de acessibilidade
+# Valida conformidade com WCAG 2.1 AA usando Playwright e axe-core
+#
+# Executa em:
+# - Push e pull requests para main/develop
+# - Diariamente às 2h UTC (agendado)
+# ============================================
+
 name: Accessibility Tests
 
+# ============================================
+# Triggers: Quando a pipeline é executada
+# ============================================
 on:
+  # Executa quando há push nas branches principais
   push:
     branches: [ main, develop ]
+  # Executa quando há pull request para essas branches
   pull_request:
     branches: [ main, develop ]
+  # Executa automaticamente todos os dias às 2h UTC
+  # Útil para garantir que acessibilidade não regride ao longo do tempo
   schedule:
-    # Executa testes de acessibilidade diariamente às 2h UTC
-    - cron: '0 2 * * *'
+    - cron: '0 2 * * *'  # 2h UTC = 23h BRT (horário de Brasília -3)
+
+# ============================================
+# Jobs: Tarefas executadas na pipeline
+# ============================================
 
 jobs:
+  # ============================================
+  # Job: Testes de Acessibilidade
+  # ============================================
+  # Executa testes específicos de acessibilidade usando Playwright
+  # Valida: contraste, navegação por teclado, leitores de tela, etc.
   accessibility:
     runs-on: ubuntu-latest
     
     steps:
+      # Step 1: Baixa o código do repositório
       - name: Checkout code
         uses: actions/checkout@v4
       
+      # Step 2: Configura Python 3.12
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: 'pip'
+          cache: 'pip'  # Cache do pip para builds mais rápidos
       
+      # Step 3: Instala dependências e navegador Chromium
+      # Chromium é suficiente para testes de acessibilidade básicos
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # Instala apenas Chromium (mais leve que instalar todos os navegadores)
           playwright install --with-deps chromium
       
+      # Step 4: Inicia o servidor FastAPI
+      # Os testes de acessibilidade precisam do servidor rodando
       - name: Start FastAPI server
         run: |
           uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 &
-          sleep 5
+          sleep 5  # Aguarda servidor iniciar
+          # Verifica se servidor está respondendo
           curl -f http://localhost:8000/api/health || exit 1
         env:
+          # Variáveis necessárias para o servidor funcionar
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          FALLBACK_ENABLED: "false"
+          FALLBACK_ENABLED: "false"  # Desabilita fallback para testes mais rápidos
       
+      # Step 5: Executa testes de acessibilidade
+      # Estes testes verificam:
+      # - Contraste de cores (WCAG AA: 4.5:1)
+      # - Navegação por teclado
+      # - Labels ARIA
+      # - Estrutura semântica HTML
+      # - Compatibilidade com leitores de tela
       - name: Run accessibility tests
         run: pytest tests/e2e/playwright/test_accessibility.py -v
         env:
-          PLAYWRIGHT_BASE_URL: http://localhost:8000
-          PLAYWRIGHT_HEADLESS: "true"
+          PLAYWRIGHT_BASE_URL: http://localhost:8000  # URL base para testes
+          PLAYWRIGHT_HEADLESS: "true"  # Executa sem interface gráfica
       
+      # Step 6: Faz upload de relatórios de acessibilidade
+      # if: always() = sempre faz upload, mesmo se testes falharem
+      # Útil para analisar problemas de acessibilidade mesmo em caso de falha
       - name: Upload accessibility reports
-        if: always()
+        if: always()  # Sempre executa, mesmo em caso de falha
         uses: actions/upload-artifact@v4
         with:
-          name: accessibility-reports
-          path: reports/
-          retention-days: 30
+          name: accessibility-reports  # Nome do artefato
+          path: reports/  # Pasta com relatórios de acessibilidade
+          retention-days: 30  # Mantém relatórios por 30 dias (mais tempo que CI normal)
 

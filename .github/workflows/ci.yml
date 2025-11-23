@@ -1,91 +1,260 @@
+# ============================================
+# Pipeline CI/CD - Chatbot de Acessibilidade
+# ============================================
+# 
+# Esta pipeline executa automaticamente:
+# 1. Linting e verificação de tipos
+# 2. Testes unitários e de integração
+# 3. Testes E2E com Playwright em múltiplos navegadores
+#
+# Executa em: push e pull requests para main/develop
+# ============================================
+
 name: CI
 
+# ============================================
+# Triggers: Quando a pipeline é executada
+# ============================================
 on:
+  # Executa quando há push nas branches principais
   push:
     branches: [ main, develop ]
+  # Executa quando há pull request para essas branches
   pull_request:
     branches: [ main, develop ]
 
+# ============================================
+# Jobs: Tarefas executadas na pipeline
+# ============================================
+
 jobs:
+  # ============================================
+  # Job 1: Lint e Testes Unitários/Integração
+  # ============================================
+  # Este job executa verificações rápidas que não requerem servidor
   lint-and-unit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Executa no Ubuntu mais recente
+    
     steps:
+      # Step 1: Baixa o código do repositório
       - name: Checkout code
         uses: actions/checkout@v4
       
+      # Step 2: Configura Python 3.12
+      # Cache: Acelera instalação de dependências reutilizando cache do pip
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: 'pip'
+          cache: 'pip'  # Habilita cache do pip para builds mais rápidos
       
+      # Step 3: Instala dependências do projeto
+      # PYTHONUNBUFFERED: Garante que logs apareçam em tempo real
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+        env:
+          PYTHONUNBUFFERED: "1"  # Logs não são bufferizados
       
+      # Step 4: Verifica qualidade do código com Ruff
+      # Ruff é um linter rápido que verifica estilo e problemas comuns
+      # Ignora E402 em testes (imports após pytestmark são intencionais para configurar path)
       - name: Lint with ruff
-        run: ruff check src/ tests/
+        run: ruff check src/ tests/ --ignore E402 || (echo "❌ Linting falhou" && exit 1)
       
+      # Step 5: Verifica tipos com MyPy
+      # MyPy verifica se os type hints estão corretos
+      # Não crítico: avisos não impedem a pipeline de continuar
       - name: Type check with mypy
-        run: mypy src/ || true
+        run: mypy src/ || echo "⚠️ Type checking com avisos (não crítico)"
       
+      # Step 6: Executa testes unitários
+      # Testes rápidos que verificam unidades individuais de código
+      # Cobre todos os módulos:
+      # - tests/unit/agents/: dispatcher, factory, pipeline
+      # - tests/unit/backend/: api, compression, security_headers, static_cache, validation
+      # - tests/unit/core/: cache, config, constants, formatter, llm_provider, validators
+      # --tb=short: Mostra traceback resumido em caso de falha
+      # --cov=src: Calcula cobertura de código do diretório src
+      # --cov-report=term-missing: Mostra linhas não cobertas no terminal
       - name: Run unit tests
-        run: pytest tests/unit/ -v -m "unit"
+        run: |
+          echo "🧪 Executando testes unitários..."
+          echo "📁 Testando: agents, backend, core"
+          pytest tests/unit/ -v -m "unit" --tb=short --cov=src --cov-report=term-missing --cov-report=html
+        env:
+          PYTHONUNBUFFERED: "1"
       
+      # Step 7: Executa testes de integração
+      # Testes que verificam integração entre componentes
+      # Cobre:
+      # - tests/integration/test_cache_advanced.py: Cache com TTL, métricas
+      # - tests/integration/test_fallback.py: Fallback automático entre LLMs
+      # - tests/integration/test_user_flow.py: Fluxo completo do usuário
+      # FALLBACK_ENABLED=false: Desabilita fallback para testes mais rápidos
       - name: Run integration tests
-        run: pytest tests/integration/ -v -m "integration"
+        run: |
+          echo "🔗 Executando testes de integração..."
+          echo "📁 Testando: cache avançado, fallback, fluxo de usuário"
+          pytest tests/integration/ -v -m "integration" --tb=short
+        env:
+          PYTHONUNBUFFERED: "1"
+          FALLBACK_ENABLED: "false"  # Desabilita fallback automático
+      
+      # Step 8: Upload de relatório de cobertura
+      # Faz upload do relatório HTML de cobertura gerado pelos testes unitários
+      - name: Upload coverage report
+        if: always()  # Sempre faz upload, mesmo em caso de falha
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
   
+  # ============================================
+  # Job 2: Testes E2E (End-to-End)
+  # ============================================
+  # Este job executa testes completos que simulam uso real da aplicação
+  # Executa em múltiplos navegadores para garantir compatibilidade
   test-e2e:
     runs-on: ubuntu-latest
-    needs: lint-and-unit
+    needs: lint-and-unit  # Só executa se o job anterior passou
+    
+    # ============================================
+    # Matrix Strategy: Executa testes em paralelo
+    # ============================================
+    # Cria uma combinação de Python version e navegadores
+    # Resultado: 3 jobs paralelos (um para cada navegador)
     strategy:
       matrix:
         python-version: ["3.12"]
-        browser: [chromium, firefox, webkit]
+        browser: [chromium, firefox, webkit]  # 3 navegadores diferentes
     
     steps:
+      # Step 1: Baixa o código
       - name: Checkout code
         uses: actions/checkout@v4
       
+      # Step 2: Configura Python (usando versão da matrix)
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       
+      # Step 3: Instala dependências e navegadores do Playwright
+      # --with-deps: Instala dependências do sistema necessárias
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # Instala o navegador específico da matrix (chromium, firefox ou webkit)
           playwright install --with-deps ${{ matrix.browser }}
       
+      # Step 4: Inicia o servidor FastAPI em background
+      # Este step é crítico: os testes E2E precisam do servidor rodando
       - name: Start FastAPI server
         run: |
-          uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 &
-          sleep 5
-          curl -f http://localhost:8000/api/health || exit 1
+          echo "🚀 Iniciando servidor FastAPI..."
+          # Inicia servidor em background e salva logs
+          uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 > /tmp/uvicorn.log 2>&1 &
+          SERVER_PID=$!
+          echo "📝 PID do servidor: $SERVER_PID"
+          
+          # ============================================
+          # Retry Loop: Aguarda servidor iniciar
+          # ============================================
+          # Tenta até 30 vezes (60 segundos total) verificar se servidor está pronto
+          # Isso garante que o servidor tenha tempo de inicializar completamente
+          echo "⏳ Aguardando servidor iniciar..."
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/api/health > /dev/null 2>&1; then
+              echo "✅ Servidor está respondendo!"
+              curl -f http://localhost:8000/api/health
+              exit 0
+            fi
+            echo "Tentativa $i/30: Servidor ainda não está pronto..."
+            sleep 2
+          done
+          
+          # Se chegou aqui, servidor não iniciou
+          echo "❌ Servidor não iniciou após 60 segundos"
+          echo "📋 Logs do servidor:"
+          cat /tmp/uvicorn.log
+          exit 1
         env:
+          # Variáveis de ambiente necessárias para o servidor
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}  # Chave da API Google (secreto)
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}  # Chave OpenRouter (secreto)
+          FALLBACK_ENABLED: "false"  # Desabilita fallback para testes mais rápidos
+          LOG_LEVEL: "INFO"  # Nível de log
+          PYTHONUNBUFFERED: "1"  # Logs em tempo real
+      
+      # Step 5: Verifica se servidor está realmente funcionando
+      # Double-check antes de executar testes caros
+      - name: Verify server is running
+        run: |
+          echo "🔍 Verificando se servidor está rodando..."
+          curl -f http://localhost:8000/api/health || (echo "❌ Servidor não está respondendo" && exit 1)
+          echo "✅ Servidor está funcionando corretamente"
+      
+      # Step 6: Executa testes E2E com Playwright
+      # Estes testes simulam uso real: abrem navegador, interagem com a interface
+      # Executa TODOS os testes do Playwright em tests/e2e/playwright/:
+      # ✅ test_api_playwright.py: Testes de API via Playwright
+      # ✅ test_frontend_playwright.py: Testes de interface do usuário
+      # ✅ test_accessibility.py: Testes básicos de acessibilidade (WCAG)
+      # ✅ test_accessibility_advanced.py: Testes avançados de acessibilidade
+      # ✅ test_error_handling.py: Tratamento de erros (timeout, offline, rate limit)
+      # ✅ test_security.py: Testes de segurança (XSS, SQL injection, CSRF, rate limiting)
+      # ✅ test_performance.py: Testes de performance (múltiplas requisições, cache)
+      # ✅ test_ui_interactions.py: Interações de UI (expanders, toasts, textarea, tema)
+      # ✅ test_responsive_detailed.py: Responsividade detalhada (múltiplos breakpoints)
+      # ✅ test_browser_compatibility.py: Compatibilidade entre navegadores
+      # 
+      # Marcadores: -m "e2e and playwright" garante que apenas testes E2E do Playwright sejam executados
+      - name: Run E2E tests
+        run: |
+          echo "🎭 Executando testes E2E com Playwright..."
+          echo "📊 Navegador: ${{ matrix.browser }}"
+          echo "📁 Executando todos os testes em tests/e2e/playwright/"
+          pytest tests/e2e/playwright/ -v -m "e2e and playwright" --tb=short
+        env:
+          # Configurações do Playwright
+          PLAYWRIGHT_BASE_URL: http://localhost:8000  # URL base para testes
+          PLAYWRIGHT_HEADLESS: "true"  # Executa sem interface gráfica (mais rápido)
+          PLAYWRIGHT_BROWSER: ${{ matrix.browser }}  # Navegador da matrix
+          PLAYWRIGHT_RECORD_VIDEO: "false"  # Não grava vídeos (economiza espaço)
+          PLAYWRIGHT_ENABLE_TRACE: "true"  # Habilita trace para debug
+          
+          # Variáveis do servidor (necessárias para testes que fazem requisições)
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           FALLBACK_ENABLED: "false"
+          LOG_LEVEL: "INFO"
+          PYTHONUNBUFFERED: "1"
       
-      - name: Run E2E tests
-        run: pytest tests/e2e/ -v -m "e2e"
-        env:
-          PLAYWRIGHT_BASE_URL: http://localhost:8000
-          PLAYWRIGHT_HEADLESS: "true"
-          PLAYWRIGHT_BROWSER: ${{ matrix.browser }}
-          PLAYWRIGHT_RECORD_VIDEO: "false"
-          PLAYWRIGHT_ENABLE_TRACE: "true"
+      # Step 7: Para o servidor (cleanup)
+      # if: always() = executa mesmo se testes falharem
+      # Importante para não deixar processos órfãos rodando
+      - name: Stop FastAPI server
+        if: always()  # Sempre executa, mesmo em caso de falha
+        run: |
+          echo "🛑 Parando servidor..."
+          pkill -f "uvicorn src.backend.api:app" || true  # || true = não falha se processo não existir
+          sleep 2
       
+      # Step 8: Faz upload de relatórios e cobertura
+      # if: always() = sempre faz upload, mesmo se testes falharem
+      # Útil para debug: você pode baixar os relatórios mesmo em caso de falha
       - name: Upload test reports
-        if: always()
+        if: always()  # Sempre faz upload, mesmo em caso de falha
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-${{ matrix.browser }}
+          name: test-reports-${{ matrix.browser }}  # Nome único por navegador
           path: |
-            tests/reports/
-            htmlcov/
-          retention-days: 7
+            tests/reports/  # Relatórios HTML, screenshots, traces
+            htmlcov/  # Relatório de cobertura de código
+          retention-days: 7  # Mantém arquivos por 7 dias (economiza espaço)
 
