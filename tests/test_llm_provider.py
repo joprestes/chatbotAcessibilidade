@@ -1384,9 +1384,7 @@ def test_openrouter_client_get_client_cache(mock_settings, mock_async_client_cla
 
 @patch("chatbot_acessibilidade.core.llm_provider.settings")
 @pytest.mark.asyncio
-async def test_generate_with_fallback_todos_modelos_falham_detalhado(
-    mock_settings, mock_agent
-):
+async def test_generate_with_fallback_todos_modelos_falham_detalhado(mock_settings, mock_agent):
     """Testa generate_with_fallback quando todos os modelos falham (linha 421-425)"""
     mock_settings.fallback_enabled = True
     mock_settings.api_timeout_seconds = 60

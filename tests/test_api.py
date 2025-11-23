@@ -193,9 +193,7 @@ def test_compression_enabled(client):
     import gzip
 
     # Faz requisição com Accept-Encoding: gzip
-    response = client.get(
-        "/api/health", headers={"Accept-Encoding": "gzip, deflate, br"}
-    )
+    response = client.get("/api/health", headers={"Accept-Encoding": "gzip, deflate, br"})
 
     assert response.status_code == 200
 
@@ -235,7 +233,7 @@ def test_compression_large_response(mock_pipeline, client):
 
     # Verifica se foi comprimido (resposta grande deve ser comprimida)
     content_encoding = response.headers.get("Content-Encoding")
-    
+
     # Se compressão está habilitada e resposta foi comprimida, verifica conteúdo
     if content_encoding == "gzip" and settings.compression_enabled:
         # Descomprime e verifica conteúdo
@@ -261,15 +259,14 @@ def test_compression_disabled():
         mock_settings.compression_enabled = False
 
         client = TestClient(app)
-        response = client.get(
-            "/api/health", headers={"Accept-Encoding": "gzip"}
-        )
+        response = client.get("/api/health", headers={"Accept-Encoding": "gzip"})
 
         assert response.status_code == 200
         # Não deve ter Content-Encoding quando desabilitado
-        assert "Content-Encoding" not in response.headers or response.headers.get(
-            "Content-Encoding"
-        ) != "gzip"
+        assert (
+            "Content-Encoding" not in response.headers
+            or response.headers.get("Content-Encoding") != "gzip"
+        )
 
 
 @patch("src.backend.api.pipeline_acessibilidade", new_callable=AsyncMock)

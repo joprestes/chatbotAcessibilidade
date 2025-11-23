@@ -8,6 +8,11 @@ from typing import Optional, Dict, Any
 from cachetools import TTLCache  # type: ignore[import-untyped]
 
 from chatbot_acessibilidade.config import settings
+from chatbot_acessibilidade.core.constants import (
+    CACHE_MAX_SIZE,
+    CACHE_TTL_SECONDS,
+    LogMessages,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +33,10 @@ def get_cache() -> Optional[TTLCache]:
         return None
 
     if _cache is None:
-        max_size = getattr(settings, "cache_max_size", 100)
-        ttl = getattr(settings, "cache_ttl_seconds", 3600)
+        max_size = getattr(settings, "cache_max_size", CACHE_MAX_SIZE)
+        ttl = getattr(settings, "cache_ttl_seconds", CACHE_TTL_SECONDS)
         _cache = TTLCache(maxsize=max_size, ttl=ttl)
-        logger.info(f"Cache inicializado: max_size={max_size}, ttl={ttl}s")
+        logger.info(LogMessages.CACHE_INITIALIZED.format(max_size=max_size, ttl=ttl))
 
     return _cache
 
@@ -69,13 +74,13 @@ def get_cached_response(pergunta: str) -> Optional[Dict[str, Any]]:
     resposta = cache.get(key)
 
     if resposta is not None:
-        logger.debug(f"Cache HIT para pergunta: {pergunta[:50]}...")
+        logger.debug(LogMessages.CACHE_HIT.format(pergunta=pergunta[:50]))
         # Garante que retorna dict[str, Any] ou None
         if isinstance(resposta, dict):
             return resposta
         return None
 
-    logger.debug(f"Cache MISS para pergunta: {pergunta[:50]}...")
+    logger.debug(LogMessages.CACHE_MISS.format(pergunta=pergunta[:50]))
     return None
 
 
@@ -93,7 +98,7 @@ def set_cached_response(pergunta: str, resposta: Dict[str, Any]) -> None:
 
     key = get_cache_key(pergunta)
     cache[key] = resposta
-    logger.debug(f"Resposta cacheada para pergunta: {pergunta[:50]}...")
+    logger.debug(LogMessages.CACHE_CACHED.format(pergunta=pergunta[:50]))
 
 
 def clear_cache() -> None:
@@ -103,7 +108,7 @@ def clear_cache() -> None:
     global _cache
     if _cache is not None:
         _cache.clear()
-        logger.info("Cache limpo")
+        logger.info(LogMessages.CACHE_CLEARED)
 
 
 def get_cache_stats() -> Dict[str, Any]:

@@ -310,8 +310,6 @@ def test_settings_parse_openrouter_models_string_vazia():
         assert len(models_list) == 0
 
 
-
-
 def test_settings_parse_openrouter_models_com_virgulas_multiplas():
     """Testa parse de modelos OpenRouter com múltiplas vírgulas"""
     with patch.dict(

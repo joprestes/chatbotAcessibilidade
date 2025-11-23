@@ -16,6 +16,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from chatbot_acessibilidade.agents.factory import criar_agentes
 from chatbot_acessibilidade.config import settings
 from chatbot_acessibilidade.core.exceptions import APIError, AgentError
+from chatbot_acessibilidade.core.constants import ErrorMessages, MAX_RETRY_ATTEMPTS, LogMessages
 from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
     OpenRouterClient,
@@ -66,8 +67,10 @@ def _should_retry(exception: Exception) -> bool:
     return False
 
 
+
+
 @retry(
-    stop=stop_after_attempt(3),
+    stop=stop_after_attempt(MAX_RETRY_ATTEMPTS),
     wait=wait_exponential(multiplier=1, min=2, max=10),
     retry=retry_if_exception_type(
         (google_exceptions.ResourceExhausted, google_exceptions.GoogleAPICallError)
@@ -75,7 +78,11 @@ def _should_retry(exception: Exception) -> bool:
     reraise=True,
     before_sleep=lambda retry_state: (
         logger.warning(
-            f"Tentativa {retry_state.attempt_number}/3 para agente após erro: {retry_state.outcome.exception()}"
+            LogMessages.RETRY_ATTEMPT.format(
+                attempt=retry_state.attempt_number,
+                max=MAX_RETRY_ATTEMPTS,
+                error=retry_state.outcome.exception() if retry_state.outcome else "Unknown",
+            )
         )
         if retry_state.outcome
         else None
@@ -130,7 +137,8 @@ async def rodar_agente(agent: Agent, prompt: str, user_id="user", session_prefix
         error_msg = str(e)
         if "Timeout" in error_msg:
             raise APIError(
-                f"Timeout: A requisição demorou mais de {settings.api_timeout_seconds} segundos para responder. Por favor, tente novamente."
+                ErrorMessages.TIMEOUT_GEMINI.format(timeout=settings.api_timeout_seconds)
+                + " Por favor, tente novamente."
             )
         elif "quota" in error_msg.lower() or "rate limit" in error_msg.lower():
             raise APIError(

@@ -9,6 +9,7 @@ from chatbot_acessibilidade.core.formatter import (
     extrair_primeiro_paragrafo,
 )
 from chatbot_acessibilidade.core.exceptions import APIError, AgentError, ValidationError
+from chatbot_acessibilidade.core.constants import ErrorMessages
 from chatbot_acessibilidade.config import settings
 
 logger = logging.getLogger(__name__)
@@ -52,16 +53,16 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
     # Validação de entrada
     pergunta = pergunta.strip()
     if not pergunta:
-        raise ValidationError("❌ Por favor, digite uma pergunta sobre acessibilidade digital.")
+        raise ValidationError(ErrorMessages.PERGUNTA_VAZIA)
 
     if len(pergunta) < settings.min_question_length:
         raise ValidationError(
-            f"❌ A pergunta deve ter pelo menos {settings.min_question_length} caracteres."
+            ErrorMessages.PERGUNTA_MUITO_CURTA.format(min=settings.min_question_length)
         )
 
     if len(pergunta) > settings.max_question_length:
         raise ValidationError(
-            f"❌ A pergunta não pode ter mais de {settings.max_question_length} caracteres."
+            ErrorMessages.PERGUNTA_MUITO_LONGA.format(max=settings.max_question_length)
         )
 
     logger.info(f"Iniciando pipeline para pergunta: {pergunta[:50]}...")
@@ -75,7 +76,7 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
         resposta_inicial = await get_agent_response("assistente", prompt_assistente, "assistente")
         if eh_erro(resposta_inicial):
             logger.error(f"Erro na resposta inicial: {resposta_inicial}")
-            return {"erro": f"❌ Falha ao gerar a resposta inicial: {resposta_inicial}"}
+            return {"erro": ErrorMessages.AGENT_ERROR_INITIAL.format(error=resposta_inicial)}
     except (APIError, AgentError) as e:
         logger.error(f"Erro no agente assistente: {e}")
         return {"erro": str(e)}

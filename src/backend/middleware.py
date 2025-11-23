@@ -81,9 +81,19 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 class StaticCacheMiddleware(BaseHTTPMiddleware):
     """Middleware que adiciona headers de cache para assets estáticos."""
 
-    # TTLs em segundos
-    STATIC_TTL = 86400  # 1 dia para CSS/JS
-    ASSETS_TTL = 604800  # 7 dias para imagens
+    # TTLs em segundos (usando constantes)
+    STATIC_TTL = None  # Será definido via constantes
+    ASSETS_TTL = None  # Será definido via constantes
+
+    def __init__(self, app):
+        super().__init__(app)
+        from chatbot_acessibilidade.core.constants import (
+            STATIC_CACHE_TTL_SECONDS,
+            ASSETS_CACHE_TTL_SECONDS,
+        )
+
+        self.STATIC_TTL = STATIC_CACHE_TTL_SECONDS
+        self.ASSETS_TTL = ASSETS_CACHE_TTL_SECONDS
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         """Adiciona headers de cache para assets estáticos"""
@@ -120,7 +130,13 @@ class CompressionMiddleware(BaseHTTPMiddleware):
     ]
 
     # Tamanho mínimo para comprimir (em bytes)
-    MIN_SIZE = 500
+    MIN_SIZE = None  # Será definido via constantes
+
+    def __init__(self, app):
+        super().__init__(app)
+        from chatbot_acessibilidade.core.constants import COMPRESSION_MIN_SIZE_BYTES
+
+        self.MIN_SIZE = COMPRESSION_MIN_SIZE_BYTES
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         """Comprime resposta se necessário"""

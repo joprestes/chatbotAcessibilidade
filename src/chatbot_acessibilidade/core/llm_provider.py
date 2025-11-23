@@ -22,6 +22,11 @@ from chatbot_acessibilidade.core.exceptions import (
     QuotaExhaustedError,
     ModelUnavailableError,
 )
+from chatbot_acessibilidade.core.constants import (
+    OPENROUTER_MAX_TOKENS,
+    ErrorMessages,
+    LogMessages,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -94,14 +99,14 @@ class GoogleGeminiClient(LLMClient):
             # Usa a API key das configurações
             api_key = settings.google_api_key
             if not api_key:
-                logger.error("GOOGLE_API_KEY não configurada nas settings")
+                logger.error(LogMessages.CONFIG_MISSING_API_KEY)
                 raise ValueError("GOOGLE_API_KEY não configurada")
             logger.debug(f"Inicializando genai.Client com API key: {api_key[:10]}...")
             try:
                 self._genai_client = genai.Client(api_key=api_key)
                 logger.info("genai.Client inicializado com sucesso")
             except Exception as e:
-                logger.error(f"Erro ao inicializar genai.Client: {e}")
+                logger.error(LogMessages.CONFIG_GENAI_INIT_ERROR.format(error=e))
                 raise
         return self._genai_client
 
@@ -152,15 +157,17 @@ class GoogleGeminiClient(LLMClient):
             try:
                 await asyncio.wait_for(coletar_resposta(), timeout=settings.api_timeout_seconds)
             except asyncio.TimeoutError:
-                logger.error(f"Timeout ao executar Gemini após {settings.api_timeout_seconds}s")
+                logger.error(
+                    LogMessages.TIMEOUT_GEMINI.format(timeout=settings.api_timeout_seconds)
+                )
                 raise APIError(
-                    f"Timeout: A requisição demorou mais de {settings.api_timeout_seconds} segundos para responder."
+                    ErrorMessages.TIMEOUT_GEMINI.format(timeout=settings.api_timeout_seconds)
                 )
 
             # Verifica se a resposta recebida é válida
             if not final_response_content or not final_response_content.parts:
                 logger.warning("Resposta vazia do Gemini")
-                raise APIError("Erro: A resposta da API veio vazia.")
+                raise APIError(ErrorMessages.API_ERROR_EMPTY_RESPONSE)
 
             # Verifica se foi bloqueado por segurança
             primeira_parte = final_response_content.parts[0]
@@ -169,9 +176,7 @@ class GoogleGeminiClient(LLMClient):
                 and primeira_parte.finish_reason == types.FinishReason.SAFETY
             ):
                 logger.warning("Pergunta bloqueada por segurança no Gemini")
-                raise APIError(
-                    "Erro: Sua pergunta não pôde ser processada devido às diretrizes de segurança."
-                )
+                raise APIError(ErrorMessages.API_ERROR_SAFETY_BLOCK)
 
             # Constrói o resultado
             resultado = "".join(
@@ -184,21 +189,23 @@ class GoogleGeminiClient(LLMClient):
 
         except asyncio.TimeoutError:
             raise APIError(
-                f"Timeout: A requisição demorou mais de {settings.api_timeout_seconds} segundos."
+                ErrorMessages.TIMEOUT_GEMINI.format(timeout=settings.api_timeout_seconds)
             )
-        except google_exceptions.ResourceExhausted as e:
-            logger.error(f"Rate limit excedido no Gemini: {e}")
-            raise QuotaExhaustedError("Rate limit excedido no Google Gemini")
-        except google_exceptions.PermissionDenied as e:
-            logger.error(f"Erro de autenticação no Gemini: {e}")
-            raise APIError("Erro: Houve um problema com a configuração do servidor.")
+        except google_exceptions.ResourceExhausted:
+            logger.error(LogMessages.API_ERROR_GEMINI_RATE_LIMIT)
+            raise QuotaExhaustedError(
+                ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini")
+            )
+        except google_exceptions.PermissionDenied:
+            logger.error(LogMessages.API_ERROR_GEMINI_AUTH)
+            raise APIError(ErrorMessages.API_ERROR_SERVER_CONFIG)
         except google_exceptions.GoogleAPICallError as e:
             error_str = str(e).lower()
             if "503" in error_str or "overloaded" in error_str:
                 logger.warning(f"API sobrecarregada no Gemini: {e}")
-                raise ModelUnavailableError("API do Google sobrecarregada")
-            logger.error(f"Erro de API do Google: {e}")
-            raise APIError("Erro: Ocorreu um problema de comunicação com a API.")
+                raise ModelUnavailableError(ErrorMessages.MODEL_UNAVAILABLE_GEMINI)
+            logger.error(LogMessages.API_ERROR_GEMINI_COMMUNICATION.format(error=e))
+            raise APIError(ErrorMessages.API_ERROR_COMMUNICATION)
         except APIError:
             # Re-raise APIError para que seja propagado corretamente
             raise
@@ -206,6 +213,7 @@ class GoogleGeminiClient(LLMClient):
             logger.error(f"Erro inesperado no Gemini: {e}", exc_info=True)
             # Loga o erro completo para debug
             import traceback
+
             logger.error(f"Traceback completo: {traceback.format_exc()}")
             raise AgentError(f"Erro: Ocorreu uma falha inesperada. Detalhes: {str(e)}")
 
@@ -279,7 +287,7 @@ class OpenRouterClient(LLMClient):
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.7,
-            "max_tokens": 2000,
+            "max_tokens": OPENROUTER_MAX_TOKENS,
         }
 
         try:
@@ -312,25 +320,31 @@ class OpenRouterClient(LLMClient):
         except httpx.HTTPStatusError as e:
             status_code = e.response.status_code
             if status_code == 429:
-                logger.error(f"Rate limit excedido no OpenRouter modelo '{model}'")
-                raise QuotaExhaustedError(f"Rate limit excedido no modelo {model}")
+                logger.error(LogMessages.API_ERROR_OPENROUTER_RATE_LIMIT.format(model=model))
+                raise QuotaExhaustedError(
+                    ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider=f"modelo {model}")
+                )
             elif status_code == 503:
                 logger.warning(f"Modelo '{model}' indisponível no OpenRouter")
-                raise ModelUnavailableError(f"Modelo {model} indisponível")
+                raise ModelUnavailableError(
+                    ErrorMessages.MODEL_UNAVAILABLE_OPENROUTER.format(model=model)
+                )
             elif status_code == 401 or status_code == 403:
-                logger.error("Erro de autenticação no OpenRouter")
-                raise APIError("Erro: Chave API do OpenRouter inválida.")
+                logger.error(LogMessages.API_ERROR_OPENROUTER_AUTH)
+                raise APIError(ErrorMessages.API_ERROR_OPENROUTER_INVALID_KEY)
             else:
-                logger.error(f"Erro HTTP {status_code} do OpenRouter: {e}")
+                logger.error(
+                    LogMessages.API_ERROR_OPENROUTER_HTTP.format(status_code=status_code, error=e)
+                )
                 raise APIError(
-                    f"Erro: Ocorreu um problema de comunicação com o OpenRouter (HTTP {status_code})."
+                    ErrorMessages.API_ERROR_OPENROUTER_COMMUNICATION.format(status_code=status_code)
                 )
         except httpx.RequestError as e:
-            logger.error(f"Erro de requisição ao OpenRouter: {e}")
-            raise APIError("Erro: Não foi possível conectar ao OpenRouter.")
+            logger.error(LogMessages.API_ERROR_OPENROUTER_REQUEST.format(error=e))
+            raise APIError(ErrorMessages.API_ERROR_OPENROUTER_CONNECTION)
         except Exception as e:
-            logger.error(f"Erro inesperado no OpenRouter: {e}", exc_info=True)
-            raise APIError("Erro: Ocorreu uma falha inesperada ao usar o OpenRouter.")
+            logger.error(LogMessages.API_ERROR_OPENROUTER_GENERIC.format(error=e), exc_info=True)
+            raise APIError(ErrorMessages.API_ERROR_OPENROUTER_GENERIC)
 
     def should_fallback(self, exception: Exception) -> bool:
         """Determina se deve acionar fallback para outro modelo"""

@@ -1,6 +1,7 @@
 # chatbot_acessibilidade/core/formatter.py
 
 from typing import Dict
+from chatbot_acessibilidade.core.constants import MIN_PARAGRAPH_LENGTH
 
 
 def eh_erro(texto: str) -> bool:
@@ -22,7 +23,7 @@ def gerar_dica_final(pergunta: str, resposta: str) -> str:
 
 
 def extrair_primeiro_paragrafo(texto: str) -> str:
-    paragrafos = [p.strip() for p in texto.split("\n\n") if len(p.strip()) > 30]
+    paragrafos = [p.strip() for p in texto.split("\n\n") if len(p.strip()) > MIN_PARAGRAPH_LENGTH]
     if paragrafos:
         return paragrafos[0]
     return texto[:300].rsplit(".", 1)[0] + "." if "." in texto[:300] else texto[:300] + "..."

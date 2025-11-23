@@ -165,4 +165,3 @@ def test_security_headers_all_endpoints(client):
     # Testa 404 também deve ter headers
     response2 = client.get("/nonexistent")
     assert "Strict-Transport-Security" in response2.headers
-

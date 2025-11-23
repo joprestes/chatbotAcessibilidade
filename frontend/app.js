@@ -422,7 +422,9 @@ async function sendMessage(pergunta) {
     
     // AbortController para timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 segundos
+    // Timeout de 120 segundos (usando constante do backend)
+    const FRONTEND_REQUEST_TIMEOUT_MS = 120000;
+    const timeoutId = setTimeout(() => controller.abort(), FRONTEND_REQUEST_TIMEOUT_MS);
     
     try {
         // Verifica se está offline
@@ -498,7 +500,8 @@ async function sendMessage(pergunta) {
         errorAnnouncement.className = 'sr-only';
         errorAnnouncement.textContent = errorMessage;
         document.body.appendChild(errorAnnouncement);
-        setTimeout(() => errorAnnouncement.remove(), 1000);
+        const ERROR_ANNOUNCEMENT_DURATION_MS = 1000;
+        setTimeout(() => errorAnnouncement.remove(), ERROR_ANNOUNCEMENT_DURATION_MS);
         
         console.error('Erro ao enviar mensagem:', error);
     } finally {

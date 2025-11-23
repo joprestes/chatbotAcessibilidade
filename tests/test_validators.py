@@ -164,14 +164,14 @@ def test_sanitize_html_remove_style():
 
 def test_sanitize_html_remove_event_handlers():
     """Testa remoção de event handlers"""
-    text = '<p onclick="alert(\'xss\')">Texto</p>'
+    text = "<p onclick=\"alert('xss')\">Texto</p>"
     result = sanitize_html(text, allow_basic=True)
     assert "onclick" not in result.lower()
 
 
 def test_sanitize_html_remove_javascript_url():
     """Testa remoção de javascript: URLs"""
-    text = '<a href="javascript:alert(\'xss\')">Link</a>'
+    text = "<a href=\"javascript:alert('xss')\">Link</a>"
     result = sanitize_html(text, allow_basic=True)
     assert "javascript:" not in result.lower()
 
@@ -190,4 +190,3 @@ def test_sanitize_html_nao_string():
     """Testa sanitização de não-string"""
     result = sanitize_html(None)
     assert result == ""
-

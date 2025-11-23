@@ -21,7 +21,9 @@ def test_app():
 
     @app.get("/static/test.js")
     async def static_js():
-        return JSONResponse({"content": "console.log('test');"}, media_type="application/javascript")
+        return JSONResponse(
+            {"content": "console.log('test');"}, media_type="application/javascript"
+        )
 
     @app.get("/assets/test.jpg")
     async def asset_image():
@@ -99,4 +101,3 @@ def test_static_cache_different_ttls(client):
 
     # Imagens devem ter TTL de 7 dias (604800)
     assert "max-age=604800" in image_ttl
-

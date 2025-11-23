@@ -137,12 +137,16 @@ class ChatRequest(BaseModel):
         is_valid, reason = validate_content(v, strict=False)
         if not is_valid and reason:
             # Loga mas não rejeita em modo não-strict
-            logger.warning(f"Padrão suspeito detectado na pergunta: {reason}")
+            from chatbot_acessibilidade.core.constants import LogMessages  # noqa: E402
+
+            logger.warning(LogMessages.VALIDATION_SUSPICIOUS_PATTERN.format(reason=reason))
 
         # Detecta padrões de injection para logging
         detected = detect_injection_patterns(v)
         if detected:
-            logger.warning(f"Padrões suspeitos detectados: {', '.join(detected)}")
+            logger.warning(
+                LogMessages.VALIDATION_INJECTION_PATTERNS.format(patterns=", ".join(detected))
+            )
 
         return v
 
@@ -181,8 +185,14 @@ async def health_check():
 
 
 # Endpoint principal de chat
+from chatbot_acessibilidade.core.constants import (  # noqa: E402
+    FALLBACK_RATE_LIMIT_PER_MINUTE,
+)
+
 rate_limit_str = (
-    f"{settings.rate_limit_per_minute}/minute" if settings.rate_limit_enabled else "1000/minute"
+    f"{settings.rate_limit_per_minute}/minute"
+    if settings.rate_limit_enabled
+    else f"{FALLBACK_RATE_LIMIT_PER_MINUTE}/minute"
 )
 
 
@@ -229,9 +239,11 @@ async def chat(request: Request, chat_request: ChatRequest):
         raise
     except Exception as e:
         logger.error(f"Erro inesperado: {str(e)}", exc_info=True)
+        from chatbot_acessibilidade.core.constants import ErrorMessages  # noqa: E402
+
         raise HTTPException(
             status_code=500,
-            detail="❌ Ocorreu um erro inesperado ao processar sua pergunta. Por favor, tente novamente.",
+            detail=ErrorMessages.API_ERROR_GENERIC,
         )
 
 

@@ -14,11 +14,16 @@ try:
 except ImportError:
     pass
 
+from chatbot_acessibilidade.core.constants import LogMessages  # noqa: E402
+
 
 # Padrões suspeitos comuns de injection
 INJECTION_PATTERNS = [
     # SQL Injection
-    (r"(?i)(union\s+select|drop\s+table|insert\s+into|delete\s+from|update\s+set)", "SQL injection"),
+    (
+        r"(?i)(union\s+select|drop\s+table|insert\s+into|delete\s+from|update\s+set)",
+        "SQL injection",
+    ),
     (r"(?i)(or\s+1\s*=\s*1|or\s+'1'\s*=\s*'1')", "SQL injection"),
     # Command Injection
     (r"[;&|`$(){}[\]<>]", "Command injection"),
@@ -62,7 +67,7 @@ def sanitize_input(text: str, max_length: Optional[int] = None) -> str:
     if max_length and len(text) > max_length:
         text = text[:max_length]
         if logger:
-            logger.warning(f"Texto truncado para {max_length} caracteres")
+            logger.warning(LogMessages.CACHE_TRUNCATED_WARNING.format(max_length=max_length))
 
     return text.strip()
 
@@ -162,4 +167,3 @@ def sanitize_html(text: str, allow_basic: bool = True) -> str:
         text = re.sub(r"<[^>]+>", "", text)
 
     return text.strip()
-

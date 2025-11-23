@@ -74,28 +74,32 @@ def test_compression_disabled():
 
         assert response.status_code == 200
         # Quando desabilitado, não deve ter Content-Encoding
-        assert "Content-Encoding" not in response.headers or response.headers.get("Content-Encoding") != "gzip"
+        assert (
+            "Content-Encoding" not in response.headers
+            or response.headers.get("Content-Encoding") != "gzip"
+        )
 
 
 def test_compression_no_accept_encoding():
     """Testa que compressão não é aplicada sem Accept-Encoding"""
     from unittest.mock import Mock
-    
+
     # Mock do request sem Accept-Encoding
     mock_request = Mock()
     mock_request.headers = {}  # Sem Accept-Encoding
-    
+
     # Mock do call_next que retorna resposta grande
     async def mock_call_next(request):
         response = JSONResponse({"data": "x" * 1000})
         return response
-    
+
     middleware = CompressionMiddleware(app=None)
-    
+
     # Simula dispatch sem Accept-Encoding
     import asyncio
+
     response = asyncio.run(middleware.dispatch(mock_request, mock_call_next))
-    
+
     # Sem Accept-Encoding, não deve ter Content-Encoding (linha 110)
     assert response.headers.get("Content-Encoding") != "gzip"
 
@@ -103,23 +107,24 @@ def test_compression_no_accept_encoding():
 def test_compression_already_compressed():
     """Testa que compressão não é aplicada se já está comprimida"""
     from unittest.mock import Mock
-    
+
     # Mock do request com Accept-Encoding
     mock_request = Mock()
     mock_request.headers = {"Accept-Encoding": "gzip"}
-    
+
     # Mock do call_next que retorna resposta já comprimida
     async def mock_call_next(request):
         response = JSONResponse({"data": "test"})
         response.headers["Content-Encoding"] = "gzip"
         return response
-    
+
     middleware = CompressionMiddleware(app=None)
-    
+
     # Simula dispatch com resposta já comprimida
     import asyncio
+
     response = asyncio.run(middleware.dispatch(mock_request, mock_call_next))
-    
+
     # Deve manter o Content-Encoding original (não comprimir novamente)
     assert response.headers.get("Content-Encoding") == "gzip"
 
@@ -130,7 +135,10 @@ def test_compression_wrong_content_type(client):
 
     assert response.status_code == 200
     # Tipos não comprimíveis (como image/png) não devem ser comprimidos
-    assert "Content-Encoding" not in response.headers or response.headers.get("Content-Encoding") != "gzip"
+    assert (
+        "Content-Encoding" not in response.headers
+        or response.headers.get("Content-Encoding") != "gzip"
+    )
 
 
 def test_compression_small_response(client):
@@ -147,7 +155,7 @@ def test_compression_large_response(client):
     response = client.get("/large", headers={"Accept-Encoding": "gzip"})
 
     assert response.status_code == 200
-    
+
     # TestClient automaticamente descomprime, então verificamos que:
     # 1. A resposta existe e é válida
     # 2. O middleware processou (mesmo que não vejamos o gzip devido ao TestClient)
@@ -181,12 +189,9 @@ def test_compression_accept_encoding_variations(client):
     ]
 
     for accept_encoding in variations:
-        response = client.get(
-            "/large", headers={"Accept-Encoding": accept_encoding}
-        )
+        response = client.get("/large", headers={"Accept-Encoding": accept_encoding})
 
         assert response.status_code == 200
         # TestClient descomprime automaticamente, então verificamos que a resposta é válida
         assert response.json() is not None
         assert "data" in response.json()
-
