@@ -3,6 +3,8 @@ Testes para o módulo cache.py
 """
 
 import pytest
+
+pytestmark = pytest.mark.unit
 from unittest.mock import patch
 from cachetools import TTLCache
 

@@ -6,6 +6,8 @@ testando desde a requisição HTTP até a resposta final.
 """
 
 import pytest
+
+pytestmark = pytest.mark.integration
 from fastapi.testclient import TestClient
 from typing import TYPE_CHECKING
 
@@ -19,7 +21,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Adiciona src ao path
-src_path = Path(__file__).parent.parent.parent / "src"
+src_path = Path(__file__).parent.parent.parent.parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 

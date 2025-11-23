@@ -3,6 +3,8 @@ Testes para o middleware de segurança
 """
 
 import pytest
+
+pytestmark = pytest.mark.unit
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from starlette.responses import JSONResponse

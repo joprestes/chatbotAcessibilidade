@@ -9,6 +9,8 @@ import pytest
 from playwright.sync_api import Page, APIRequestContext
 from typing import Dict, Any
 
+pytestmark = [pytest.mark.e2e, pytest.mark.playwright]
+
 
 @pytest.fixture
 def api_context(page: Page, base_url: str) -> APIRequestContext:

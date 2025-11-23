@@ -3,6 +3,8 @@ Testes para a API FastAPI
 """
 
 import pytest
+
+pytestmark = pytest.mark.unit
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 

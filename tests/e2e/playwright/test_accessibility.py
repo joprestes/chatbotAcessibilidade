@@ -8,6 +8,8 @@ import pytest
 from playwright.sync_api import Page
 from axe_playwright.sync_playwright import Axe
 
+pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
+
 
 @pytest.fixture
 def axe() -> Axe:

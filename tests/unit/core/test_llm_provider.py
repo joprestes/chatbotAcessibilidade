@@ -4,6 +4,8 @@ Testes para o módulo llm_provider.py
 
 import asyncio
 import pytest
+
+pytestmark = pytest.mark.unit
 from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 from google.adk.agents import Agent

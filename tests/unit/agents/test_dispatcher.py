@@ -3,6 +3,8 @@ Testes para o módulo dispatcher.py
 """
 
 import pytest
+
+pytestmark = pytest.mark.unit
 from unittest.mock import MagicMock, patch
 from google.adk.agents import Agent
 

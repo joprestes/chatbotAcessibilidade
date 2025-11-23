@@ -19,8 +19,20 @@ format: ## Formata código (black + ruff)
 type-check: ## Verifica tipos (mypy)
 	mypy src/
 
-test: ## Executa testes
-	pytest -v
+test: ## Executa todos os testes
+	pytest tests/ -v
+
+test-unit: ## Executa apenas testes unitários
+	pytest tests/unit/ -v -m "unit"
+
+test-integration: ## Executa apenas testes de integração
+	pytest tests/integration/ -v -m "integration"
+
+test-e2e: ## Executa apenas testes E2E
+	pytest tests/e2e/ -v -m "e2e"
+
+test-fast: ## Executa testes rápidos (unit + integration)
+	pytest tests/unit/ tests/integration/ -v
 
 test-cov: ## Executa testes com cobertura
 	pytest --cov=src.chatbot_acessibilidade --cov=src.backend --cov-report=html --cov-report=term

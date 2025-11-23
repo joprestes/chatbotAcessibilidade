@@ -9,6 +9,8 @@ import pytest
 from playwright.sync_api import Page, expect
 from typing import Generator
 
+pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.frontend]
+
 
 def test_homepage_loads(page: Page, base_url: str):
     """

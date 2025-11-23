@@ -5,6 +5,8 @@ Focando nas linhas não cobertas: 191, 311, 435-439
 
 import asyncio
 import pytest
+
+pytestmark = pytest.mark.unit
 from unittest.mock import AsyncMock, MagicMock, patch
 from google.adk.agents import Agent
 from google.api_core import exceptions as google_exceptions

@@ -3,6 +3,8 @@ Testes para o módulo config.py
 """
 
 import pytest
+
+pytestmark = pytest.mark.unit
 import os
 from unittest.mock import patch
 from pydantic import ValidationError

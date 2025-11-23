@@ -36,7 +36,10 @@ jobs:
         run: mypy src/ || true
       
       - name: Run unit tests
-        run: pytest tests/ -v --ignore=tests/e2e/playwright/ --ignore=tests/e2e/test_user_flow.py
+        run: pytest tests/unit/ -v -m "unit"
+      
+      - name: Run integration tests
+        run: pytest tests/integration/ -v -m "integration"
       
       - name: Start FastAPI server
         run: |
@@ -48,8 +51,8 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           FALLBACK_ENABLED: "false"
       
-      - name: Run Playwright E2E tests
-        run: pytest tests/e2e/playwright/ -v
+      - name: Run E2E tests
+        run: pytest tests/e2e/ -v -m "e2e"
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:8000
           PLAYWRIGHT_HEADLESS: "true"

@@ -4,19 +4,64 @@
 
 ## 📊 Estrutura de Testes
 
+A estrutura de testes segue a **Pirâmide de Testes**, organizando os testes por tipo:
+
 ```
 tests/
-├── conftest.py              # Configuração global de testes
-├── test_api.py              # Testes da API FastAPI
-├── test_cache.py            # Testes do módulo de cache
-├── test_config.py           # Testes de configuração
-├── test_dispatcher.py       # Testes do dispatcher de agentes
-├── test_factory.py          # Testes da factory de agentes
-├── test_formatter.py        # Testes de formatação
-├── test_llm_provider.py     # Testes de provedores LLM
-├── test_pipeline.py         # Testes do pipeline principal
-├── unit/                    # Testes unitários (futuro)
-└── integration/            # Testes de integração (futuro)
+├── conftest.py                    # Configuração global de testes
+│
+├── unit/                          # 🧪 Testes Unitários (Base da Pirâmide)
+│   ├── conftest.py               # Fixtures específicas de unitários
+│   ├── core/                     # Testes dos módulos core
+│   │   ├── test_cache.py
+│   │   ├── test_config.py
+│   │   ├── test_formatter.py
+│   │   ├── test_validators.py
+│   │   └── test_llm_provider.py
+│   ├── agents/                   # Testes dos agentes
+│   │   ├── test_dispatcher.py
+│   │   ├── test_factory.py
+│   │   └── test_pipeline.py
+│   └── backend/                  # Testes do backend
+│       ├── test_api.py
+│       ├── test_security_headers.py
+│       └── test_compression.py
+│
+├── integration/                   # 🔄 Testes de Integração (Meio da Pirâmide)
+│   ├── conftest.py               # Fixtures específicas de integração
+│   └── test_user_flow.py         # Fluxo completo do usuário
+│
+└── e2e/                           # 🎭 Testes End-to-End (Topo da Pirâmide)
+    └── playwright/                # Testes com Playwright
+        ├── conftest.py
+        ├── test_api_playwright.py
+        ├── test_frontend_playwright.py
+        └── test_accessibility.py
+```
+
+### Execução Seletiva
+
+```bash
+# Apenas testes unitários (rápido)
+make test-unit
+# ou
+pytest tests/unit/ -v -m "unit"
+
+# Apenas testes de integração
+make test-integration
+# ou
+pytest tests/integration/ -v -m "integration"
+
+# Apenas testes E2E
+make test-e2e
+# ou
+pytest tests/e2e/ -v -m "e2e"
+
+# Testes rápidos (unit + integration)
+make test-fast
+
+# Todos os testes
+make test
 ```
 
 ## 🎯 Cobertura por Módulo
@@ -80,24 +125,50 @@ tests/
 
 ## 🚀 Executando Testes
 
-### Testes Básicos
+### Testes por Tipo
+
 ```bash
-pytest -v
+# Todos os testes
+make test
+# ou
+pytest tests/ -v
+
+# Apenas testes unitários (rápido)
+make test-unit
+# ou
+pytest tests/unit/ -v -m "unit"
+
+# Apenas testes de integração
+make test-integration
+# ou
+pytest tests/integration/ -v -m "integration"
+
+# Apenas testes E2E
+make test-e2e
+# ou
+pytest tests/e2e/ -v -m "e2e"
+
+# Testes rápidos (unit + integration)
+make test-fast
 ```
 
 ### Com Cobertura
 ```bash
-pytest --cov=src.chatbot_acessibilidade --cov=src.backend --cov-report=term-missing --cov-report=html
-```
-
-### Apenas Testes Rápidos
-```bash
-pytest -v -m "not slow"
+make test-cov
+# ou
+pytest --cov=src.chatbot_acessibilidade --cov=src.backend --cov-report=term-missing --cov-report=html tests/
 ```
 
 ### Teste Específico
 ```bash
-pytest tests/test_formatter.py -v
+# Teste unitário específico
+pytest tests/unit/core/test_formatter.py -v
+
+# Teste de integração
+pytest tests/integration/test_user_flow.py -v
+
+# Teste E2E específico
+pytest tests/e2e/playwright/test_frontend_playwright.py -v
 ```
 
 ## 📈 Verificando Cobertura
