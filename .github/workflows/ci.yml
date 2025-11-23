@@ -63,12 +63,13 @@ jobs:
       - name: Start FastAPI server
         run: |
           uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 &
-          sleep 5
+          sleep 10
           curl -f http://localhost:8000/api/health || exit 1
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           FALLBACK_ENABLED: "false"
+          LOG_LEVEL: "INFO"
       
       - name: Run E2E tests
         run: pytest tests/e2e/ -v -m "e2e"
@@ -78,6 +79,10 @@ jobs:
           PLAYWRIGHT_BROWSER: ${{ matrix.browser }}
           PLAYWRIGHT_RECORD_VIDEO: "false"
           PLAYWRIGHT_ENABLE_TRACE: "true"
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          FALLBACK_ENABLED: "false"
+          LOG_LEVEL: "INFO"
       
       - name: Upload test reports
         if: always()
