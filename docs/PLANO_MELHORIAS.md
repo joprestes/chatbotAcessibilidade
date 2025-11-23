@@ -19,10 +19,13 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 | 🔴 Alta | Aumentar cobertura de `config.py` | ⏳ Pendente | 2-3h |
 | 🔴 Alta | Aumentar cobertura de `llm_provider.py` | ⏳ Pendente | 3-4h |
 | 🟡 Média | Melhorar segurança (headers) | ⏳ Pendente | 2-3h |
+| 🟡 Média | Validação de conteúdo robusta | ⏳ Pendente | 2-3h |
 | 🟡 Média | Otimizações de performance | ⏳ Pendente | 4-5h |
+| 🟡 Média | CDN para assets estáticos | ⏳ Pendente | 1-2h |
 | 🟢 Baixa | Melhorias de UX | ⏳ Pendente | 3-4h |
+| 🟢 Baixa | Arquivo de constantes | ⏳ Pendente | 1-2h |
 
-**Total Estimado:** 14-19 horas
+**Total Estimado:** 20-28 horas
 
 ---
 
@@ -223,6 +226,113 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 
 ---
 
+### 3.1 Validação de Conteúdo Robusta (Proteção contra Injection)
+
+**Objetivo:** Implementar validação mais robusta de entrada para prevenir injection attacks (XSS, SQL injection, command injection, etc.).
+
+#### Tarefas
+
+1. **Criar módulo de validação de conteúdo**
+   - **Arquivo:** `src/chatbot_acessibilidade/core/validators.py` (novo)
+   - **Funções:** `sanitize_input()`, `validate_content()`, `detect_injection_patterns()`
+   - **Descrição:** Funções para sanitizar e validar conteúdo de entrada
+   - **Estimativa:** 1.5h
+
+2. **Implementar sanitização de HTML/JavaScript**
+   - **Arquivo:** `src/chatbot_acessibilidade/core/validators.py`
+   - **Descrição:** Remover ou escapar tags HTML e scripts JavaScript
+   - **Estimativa:** 1h
+
+3. **Implementar detecção de padrões suspeitos**
+   - **Arquivo:** `src/chatbot_acessibilidade/core/validators.py`
+   - **Descrição:** Detectar padrões comuns de injection (SQL, command, etc.)
+   - **Estimativa:** 1h
+
+4. **Integrar validação na API**
+   - **Arquivo:** `src/backend/api.py`
+   - **Descrição:** Aplicar validação antes de processar perguntas
+   - **Estimativa:** 30min
+
+5. **Testes para validação**
+   - **Arquivo:** `tests/test_validators.py` (novo)
+   - **Descrição:** Testar sanitização e detecção de padrões suspeitos
+   - **Estimativa:** 1h
+
+**Arquivos a Criar:**
+- `src/chatbot_acessibilidade/core/validators.py`
+- `tests/test_validators.py`
+
+**Arquivos a Modificar:**
+- `src/backend/api.py`
+
+**Critérios de Aceitação:**
+- [ ] Sanitização de HTML/JavaScript implementada
+- [ ] Detecção de padrões suspeitos funcionando
+- [ ] Validação integrada na API
+- [ ] Testes cobrindo casos de injection
+- [ ] Documentação atualizada
+
+**Estimativa Total:** 2-3 horas
+
+---
+
+### 3.2 HTTPS e Configurações de Produção
+
+**Objetivo:** Documentar e configurar HTTPS para produção.
+
+#### Tarefas
+
+1. **Documentar configuração HTTPS**
+   - **Arquivo:** `docs/DEPLOY.md` (novo)
+   - **Descrição:** Guia para configurar HTTPS em produção (Nginx, Caddy, etc.)
+   - **Estimativa:** 1h
+
+2. **Adicionar configuração de SSL/TLS no Uvicorn**
+   - **Arquivo:** `docs/DEPLOY.md`
+   - **Descrição:** Exemplos de configuração com certificados SSL
+   - **Estimativa:** 30min
+
+3. **Adicionar variáveis de ambiente para SSL**
+   - **Arquivo:** `src/chatbot_acessibilidade/config.py`
+   - **Campos:** `ssl_certfile`, `ssl_keyfile` (opcionais)
+   - **Descrição:** Configurações para SSL quando disponíveis
+   - **Estimativa:** 30min
+
+**Arquivos a Criar:**
+- `docs/DEPLOY.md`
+
+**Arquivos a Modificar:**
+- `src/chatbot_acessibilidade/config.py`
+- `.env.example`
+
+**Critérios de Aceitação:**
+- [ ] Documentação de deploy com HTTPS
+- [ ] Configurações SSL opcionais no código
+- [ ] Exemplos de configuração para diferentes servidores
+- [ ] Variáveis de ambiente documentadas
+
+**Estimativa Total:** 1-2 horas
+
+---
+
+### 3.3 Rate Limiting por Usuário (Futuro)
+
+**Status:** ⏳ **FUTURO** - Requer sistema de autenticação
+
+**Descrição:** Implementar rate limiting por usuário autenticado ao invés de apenas por IP. Isso requer:
+- Sistema de autenticação
+- Identificação de usuário
+- Armazenamento de limites por usuário
+
+**Notas:**
+- Pode ser implementado quando sistema de autenticação for adicionado
+- Pode usar Redis para armazenar limites por usuário
+- Considerar diferentes limites para usuários autenticados vs. anônimos
+
+**Estimativa:** 4-6 horas (quando autenticação estiver implementada)
+
+---
+
 ### 4. Otimizações de Performance
 
 **Objetivo:** Melhorar performance da aplicação com cache persistente e compressão.
@@ -309,7 +419,41 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 
 **Estimativa:** 1.5-2 horas
 
-**Estimativa Total (Performance):** 5.5-7 horas (ou 1.5-2h se apenas compressão)
+#### 4.3 CDN para Assets Estáticos
+
+**Tarefas:**
+
+1. **Documentar configuração de CDN**
+   - **Arquivo:** `docs/DEPLOY.md`
+   - **Descrição:** Guia para configurar CDN (Cloudflare, AWS CloudFront, etc.)
+   - **Estimativa:** 1h
+
+2. **Configurar cache headers para assets estáticos**
+   - **Arquivo:** `src/backend/api.py`
+   - **Descrição:** Adicionar headers `Cache-Control` apropriados para assets
+   - **Estimativa:** 30min
+
+3. **Criar script de build para assets**
+   - **Arquivo:** `scripts/build_assets.sh` (novo)
+   - **Descrição:** Script para otimizar e preparar assets para CDN
+   - **Estimativa:** 30min
+
+**Arquivos a Criar:**
+- `scripts/build_assets.sh`
+
+**Arquivos a Modificar:**
+- `src/backend/api.py`
+- `docs/DEPLOY.md`
+
+**Critérios de Aceitação:**
+- [ ] Documentação de configuração de CDN
+- [ ] Headers de cache configurados
+- [ ] Script de build para assets
+- [ ] Assets otimizados (minificação, compressão)
+
+**Estimativa:** 1-2 horas
+
+**Estimativa Total (Performance):** 6.5-9 horas (ou 2.5-4h se apenas compressão e CDN)
 
 ---
 
@@ -387,6 +531,72 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 
 ---
 
+## 🟢 Baixa Prioridade (Cont.)
+
+### 6. Arquivo de Constantes
+
+**Objetivo:** Centralizar valores mágicos em um arquivo de constantes para facilitar manutenção.
+
+#### Tarefas
+
+1. **Criar arquivo de constantes**
+   - **Arquivo:** `src/chatbot_acessibilidade/core/constants.py` (novo)
+   - **Descrição:** Definir constantes para valores mágicos (timeouts, limites, mensagens, etc.)
+   - **Estimativa:** 1h
+
+2. **Identificar valores mágicos no código**
+   - **Arquivos:** Todos os arquivos do projeto
+   - **Descrição:** Buscar números, strings e valores hardcoded
+   - **Estimativa:** 1h
+
+3. **Substituir valores mágicos por constantes**
+   - **Arquivos:** Múltiplos arquivos
+   - **Descrição:** Refatorar código para usar constantes
+   - **Estimativa:** 1h
+
+4. **Testes para constantes**
+   - **Arquivo:** `tests/test_constants.py` (novo)
+   - **Descrição:** Verificar que constantes estão definidas corretamente
+   - **Estimativa:** 30min
+
+**Arquivos a Criar:**
+- `src/chatbot_acessibilidade/core/constants.py`
+- `tests/test_constants.py`
+
+**Arquivos a Modificar:**
+- Múltiplos arquivos (identificar durante implementação)
+
+**Critérios de Aceitação:**
+- [ ] Arquivo de constantes criado
+- [ ] Valores mágicos identificados e substituídos
+- [ ] Código mais manutenível
+- [ ] Testes passando
+- [ ] Documentação atualizada
+
+**Estimativa Total:** 1-2 horas
+
+**Exemplos de Constantes a Criar:**
+
+```python
+# Timeouts
+DEFAULT_API_TIMEOUT_SECONDS = 30
+OPENROUTER_TIMEOUT_SECONDS = 60
+
+# Limites
+MAX_QUESTION_LENGTH = 1000
+MIN_QUESTION_LENGTH = 3
+
+# Mensagens
+ERROR_MESSAGE_TIMEOUT = "Tempo de espera esgotado. Tente novamente."
+ERROR_MESSAGE_QUOTA = "Limite de uso atingido. Tente novamente mais tarde."
+
+# Cache
+CACHE_TTL_SECONDS = 3600
+CACHE_MAX_SIZE = 1000
+```
+
+---
+
 ## 📅 Cronograma Sugerido
 
 ### Semana 1: Alta Prioridade
@@ -396,12 +606,14 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 
 ### Semana 2: Média Prioridade
 - **Dia 1-2:** Implementar headers de segurança
-- **Dia 3-4:** Implementar compressão de respostas
-- **Dia 5:** Testes e documentação
+- **Dia 3:** Implementar validação de conteúdo robusta
+- **Dia 4:** Implementar compressão de respostas
+- **Dia 5:** Documentar HTTPS e CDN, testes
 
 ### Semana 3: Baixa Prioridade (Opcional)
 - **Dia 1-2:** Melhorias de UX
-- **Dia 3:** Testes e ajustes finais
+- **Dia 3:** Criar arquivo de constantes
+- **Dia 4:** Testes e ajustes finais
 
 ---
 
@@ -415,17 +627,33 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
    - Melhora segurança sem impacto em funcionalidade
    - Fácil de testar e validar
 
-3. ✅ **Compressão de respostas** (Média Prioridade)
+3. ✅ **Validação de conteúdo robusta** (Média Prioridade)
+   - Protege contra injection attacks
+   - Importante para segurança
+
+4. ✅ **Compressão de respostas** (Média Prioridade)
    - Melhora performance sem mudanças grandes
    - Impacto imediato na experiência do usuário
 
-4. ⏳ **Cache Redis** (Média Prioridade - Opcional)
+5. ✅ **CDN para assets** (Média Prioridade)
+   - Melhora performance de carregamento
+   - Importante para produção
+
+6. ⏳ **Cache Redis** (Média Prioridade - Opcional)
    - Apenas se necessário para escala
    - Pode ser adiado se cache em memória for suficiente
 
-5. ⏳ **Melhorias de UX** (Baixa Prioridade)
+7. ⏳ **HTTPS e deploy** (Média Prioridade)
+   - Documentação importante para produção
+   - Configuração de SSL/TLS
+
+8. ⏳ **Melhorias de UX** (Baixa Prioridade)
    - Melhorias incrementais
    - Pode ser feito conforme necessidade
+
+9. ⏳ **Arquivo de constantes** (Baixa Prioridade)
+   - Melhora manutenibilidade
+   - Facilita futuras mudanças
 
 ---
 
@@ -514,10 +742,15 @@ Implementar as melhorias identificadas na revisão do projeto, priorizadas por i
 ### Performance
 - ✅ Redução de tamanho de resposta: >= 50% (com compressão)
 - ✅ Tempo de resposta: Sem degradação
+- ✅ Assets servidos via CDN (em produção)
+- ✅ Cache headers configurados corretamente
 
 ### Segurança
 - ✅ Todos os headers de segurança implementados
 - ✅ CSP configurado e testado
+- ✅ Validação de conteúdo robusta implementada
+- ✅ Proteção contra injection attacks
+- ✅ Documentação de HTTPS para produção
 - ✅ Sem vulnerabilidades conhecidas
 
 ### UX
