@@ -25,7 +25,8 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 # Carrega .env antes de importar settings
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
+
 load_dotenv()
 
 from chatbot_acessibilidade.config import settings  # noqa: E402
