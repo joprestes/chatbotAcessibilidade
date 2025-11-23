@@ -77,3 +77,74 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         return response
 
+
+class CompressionMiddleware(BaseHTTPMiddleware):
+    """Middleware que comprime respostas usando gzip"""
+
+    # Tipos de conteúdo que devem ser comprimidos
+    COMPRESSIBLE_TYPES = [
+        "text/html",
+        "text/css",
+        "text/javascript",
+        "application/javascript",
+        "application/json",
+        "application/xml",
+        "text/xml",
+        "text/plain",
+    ]
+
+    # Tamanho mínimo para comprimir (em bytes)
+    MIN_SIZE = 500
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        """Comprime resposta se necessário"""
+        response = await call_next(request)
+
+        # Verifica se compressão está habilitada
+        if not settings.compression_enabled:
+            return response
+
+        # Verifica se o cliente aceita gzip
+        accept_encoding = request.headers.get("Accept-Encoding", "")
+        if "gzip" not in accept_encoding.lower():
+            return response
+
+        # Verifica se a resposta já está comprimida
+        if response.headers.get("Content-Encoding"):
+            return response
+
+        # Verifica o tipo de conteúdo
+        content_type = response.headers.get("Content-Type", "")
+        if not any(ct in content_type for ct in self.COMPRESSIBLE_TYPES):
+            return response
+
+        # Verifica o tamanho do conteúdo
+        body = b""
+        async for chunk in response.body_iterator:
+            body += chunk
+
+        if len(body) < self.MIN_SIZE:
+            # Resposta muito pequena, não comprime
+            return Response(
+                content=body,
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                media_type=response.media_type,
+            )
+
+        # Comprime o conteúdo
+        compressed_body = gzip.compress(body, compresslevel=6)
+
+        # Atualiza headers
+        headers = dict(response.headers)
+        headers["Content-Encoding"] = "gzip"
+        headers["Content-Length"] = str(len(compressed_body))
+        # Remove Content-Length original se existir
+        headers.pop("Content-Length", None)
+
+        return Response(
+            content=compressed_body,
+            status_code=response.status_code,
+            headers=headers,
+            media_type=response.media_type,
+        )
