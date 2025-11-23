@@ -377,3 +377,28 @@ def test_pipeline_agentes_paralelos_excecao_geral_no_gather(mock_get_agent_respo
         chave_aprofundar = "📚 **Quer se Aprofundar?**"
         assert "Não foi possível gerar" in resultado[chave_testes]
         assert "Não foi possível gerar" in resultado[chave_aprofundar]
+
+
+@patch("chatbot_acessibilidade.pipeline.orquestrador.PipelineOrquestrador")
+def test_pipeline_erro_inesperado(mock_orquestrador_class):
+    """
+    Testa que pipeline_acessibilidade trata erros inesperados (não APIError/AgentError)
+    e retorna mensagem genérica de erro.
+    """
+    from unittest.mock import MagicMock
+
+    # Simula erro inesperado (ex: AttributeError, KeyError, etc)
+    mock_orquestrador = MagicMock()
+    mock_orquestrador.executar = AsyncMock(side_effect=KeyError("Chave não encontrada"))
+    mock_orquestrador_class.return_value = mock_orquestrador
+
+    pergunta = "O que é WCAG?"
+
+    # Executa o pipeline
+    resultado = asyncio.run(pipeline_acessibilidade(pergunta))
+
+    # Verifica que retornou erro genérico
+    assert isinstance(resultado, dict)
+    assert "erro" in resultado
+    # A mensagem deve ser a genérica de ErrorMessages.API_ERROR_GENERIC
+    assert len(resultado["erro"]) > 0
