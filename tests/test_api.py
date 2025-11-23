@@ -238,7 +238,7 @@ def test_compression_large_response(client):
         if settings.compression_enabled and content_encoding == "gzip":
             # Descomprime e verifica conteúdo
             decompressed = gzip.decompress(response.content)
-            assert b"Introdução" in decompressed
+            assert "Introdução".encode("utf-8") in decompressed
 
 
 def test_compression_disabled():
