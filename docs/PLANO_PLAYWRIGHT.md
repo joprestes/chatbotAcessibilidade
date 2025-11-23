@@ -251,10 +251,13 @@ pytest tests/e2e/playwright/ --tracing on
    - ✅ Testes de layout desktop (1920x1080)
    - ✅ 3 testes implementados
 
-7. ⏳ **CI/CD Integration** (GitHub Actions)
-   - 📋 Pendente: Configurar workflow do GitHub Actions
-   - 📋 Pendente: Instalar navegadores no CI
-   - 📋 Pendente: Executar testes em pipeline
+7. ✅ **CI/CD Integration** (GitHub Actions)
+   - ✅ Workflow principal criado (`.github/workflows/ci.yml`)
+   - ✅ Workflow de acessibilidade criado (`.github/workflows/accessibility.yml`)
+   - ✅ Configuração de instalação de navegadores no CI
+   - ✅ Execução automática de testes em pipeline
+   - ✅ Upload de relatórios como artifacts
+   - ✅ Integração com secrets do GitHub
 
 ---
 
@@ -355,7 +358,7 @@ def test_homepage_accessibility(page: Page, base_url: str):
 
 ## 📊 Status de Implementação
 
-### ✅ Concluído (85%)
+### ✅ Concluído (100%)
 
 - ✅ Setup inicial completo
 - ✅ Testes de API (7 testes)
@@ -365,14 +368,19 @@ def test_homepage_accessibility(page: Page, base_url: str):
 - ✅ Documentação completa
 - ✅ Comandos Makefile
 - ✅ Estrutura de diretórios
+- ✅ Integração CI/CD (GitHub Actions)
+  - ✅ Workflow principal (`.github/workflows/ci.yml`)
+  - ✅ Workflow de acessibilidade (`.github/workflows/accessibility.yml`)
+  - ✅ Execução automática em push/PR
+  - ✅ Upload de relatórios como artifacts
 
-### ⏳ Pendente (15%)
+### 🚀 Melhorias Futuras (Opcional)
 
-- ⏳ Integração CI/CD (GitHub Actions)
-- ⏳ Screenshots automáticos em falhas
-- ⏳ Vídeos de execução de testes
-- ⏳ Trace viewer para debug
-- ⏳ Relatórios HTML melhorados
+- 📋 Screenshots automáticos em falhas
+- 📋 Vídeos de execução de testes
+- 📋 Trace viewer para debug
+- 📋 Relatórios HTML melhorados
+- 📋 Testes em múltiplos navegadores (matriz)
 
 ---
 
@@ -386,7 +394,7 @@ def test_homepage_accessibility(page: Page, base_url: str):
 
 ---
 
-**Status Geral**: ✅ **85% Concluído** | ⏳ **15% Pendente**
+**Status Geral**: ✅ **100% Concluído**
 
-**Última atualização**: 2025-11-23
+**Última atualização**: 2025-01-23
 

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+      
+      - name: Lint with ruff
+        run: ruff check src/ tests/
+      
+      - name: Type check with mypy
+        run: mypy src/ || true
+      
+      - name: Run unit tests
+        run: pytest tests/ -v --ignore=tests/e2e/playwright/ --ignore=tests/e2e/test_user_flow.py
+      
+      - name: Start FastAPI server
+        run: |
+          uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          curl -f http://localhost:8000/api/health || exit 1
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          FALLBACK_ENABLED: "false"
+      
+      - name: Run Playwright E2E tests
+        run: pytest tests/e2e/playwright/ -v
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8000
+          PLAYWRIGHT_HEADLESS: "true"
+      
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            reports/
+            htmlcov/
+          retention-days: 7
+

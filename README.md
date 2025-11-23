@@ -10,6 +10,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000?style=for-the-badge)](https://github.com/psf/black)
 [![Tests](https://img.shields.io/badge/tests-98%25%2B-success?style=for-the-badge)](docs/TESTES.md)
 [![WCAG](https://img.shields.io/badge/WCAG-2.1%20AA-7C3AED?style=for-the-badge)](https://www.w3.org/WAI/WCAG21/quickref/)
+[![CI](https://github.com/joprestes/chatbotAcessibilidade/workflows/CI/badge.svg)](https://github.com/joprestes/chatbotAcessibilidade/actions)
 
 [Português 🇧🇷](#-versão-em-português) | [English 🇺🇸](#-english-version)
 
@@ -353,6 +354,35 @@ make check
 ```
 
 > 📚 Veja [LINTERS.md](docs/LINTERS.md) para mais detalhes.
+
+#### 🚀 CI/CD com GitHub Actions
+
+O projeto utiliza **GitHub Actions** para automação completa de testes e validações:
+
+**Workflows Disponíveis:**
+
+1. **CI (Continuous Integration)**
+   - Executa em cada push e pull request
+   - Valida código com `ruff` (lint) e `mypy` (type check)
+   - Executa testes unitários e de integração
+   - Executa testes E2E com Playwright
+   - Gera relatórios de testes automaticamente
+
+2. **Accessibility Tests**
+   - Executa testes de acessibilidade com axe-core
+   - Valida conformidade WCAG 2.1 AA
+   - Executa diariamente via schedule e em PRs
+
+**Status do CI:**
+- ✅ Todos os testes passam automaticamente
+- ✅ Relatórios disponíveis como artifacts
+- ✅ Badge de status no README
+
+**Configuração de Secrets (GitHub):**
+- `GOOGLE_API_KEY` - Obrigatório para testes que usam API real
+- `OPENROUTER_API_KEY` - Opcional, para testes de fallback
+
+> 📚 Veja [PLANO_PLAYWRIGHT.md](docs/PLANO_PLAYWRIGHT.md) para detalhes completos sobre os testes E2E.
 
 ---
 

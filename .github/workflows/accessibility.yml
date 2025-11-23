@@ -1,0 +1,55 @@
+name: Accessibility Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Executa testes de acessibilidade diariamente às 2h UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  accessibility:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+      
+      - name: Start FastAPI server
+        run: |
+          uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          curl -f http://localhost:8000/api/health || exit 1
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          FALLBACK_ENABLED: "false"
+      
+      - name: Run accessibility tests
+        run: pytest tests/e2e/playwright/test_accessibility.py -v
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8000
+          PLAYWRIGHT_HEADLESS: "true"
+      
+      - name: Upload accessibility reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-reports
+          path: reports/
+          retention-days: 30
+

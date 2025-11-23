@@ -2,6 +2,43 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.9.0] - 2025-01-23
+
+### Adicionado
+- **CI/CD com GitHub Actions:**
+  - Workflow principal (`.github/workflows/ci.yml`) executando em push e pull requests
+  - Workflow de acessibilidade (`.github/workflows/accessibility.yml`) com execução diária via schedule
+  - Execução automática de lint (ruff), type check (mypy) e testes
+  - Execução de testes unitários, de integração e E2E com Playwright
+  - Upload automático de relatórios de testes como artifacts
+  - Suporte para secrets do GitHub (GOOGLE_API_KEY, OPENROUTER_API_KEY)
+  - Health check do servidor FastAPI antes de executar testes E2E
+  - Badge de status do CI no README
+
+- **Documentação CI/CD:**
+  - Seção completa sobre CI/CD no README.md
+  - Documentação dos workflows disponíveis
+  - Instruções para configuração de secrets
+  - Atualização do PLANO_PLAYWRIGHT.md para 100% concluído
+
+### Modificado
+- **README.md:**
+  - Adicionado badge de status do CI/CD
+  - Nova seção "CI/CD com GitHub Actions" na documentação
+  - Links para workflows e artifacts
+
+- **docs/PLANO_PLAYWRIGHT.md:**
+  - Status atualizado de 85% para 100% concluído
+  - CI/CD Integration marcado como completo
+  - Melhorias futuras movidas para seção opcional
+
+### Melhorias
+- **Automação:**
+  - Testes executam automaticamente em cada push/PR
+  - Validação de código antes de merge
+  - Relatórios disponíveis para download
+  - Execução de testes de acessibilidade diariamente
+
 ## [3.8.0] - 2025-11-23
 
 ### Adicionado
