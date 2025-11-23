@@ -73,11 +73,11 @@ class Settings(BaseSettings):
     )
 
     # type: ignore necessário porque Pydantic aceita essas chaves mas MyPy não reconhece
-    model_config = ConfigDict(  # type: ignore[typeddict-unknown-key,assignment]
+    model_config = ConfigDict(  # type: ignore[typeddict-unknown-key]
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-    )
+    )  # type: ignore[assignment]
 
     @field_validator("cors_origins")
     @classmethod
@@ -127,7 +127,7 @@ class Settings(BaseSettings):
 # Instância global de configurações
 # Em ambiente de teste, as variáveis são definidas em conftest.py antes da importação
 # Em produção, devem estar no .env
-import os
+import os  # noqa: E402
 
 # Verifica se está em ambiente de teste
 if os.getenv("PYTEST_CURRENT_TEST"):
@@ -137,4 +137,6 @@ if os.getenv("PYTEST_CURRENT_TEST"):
     if "OPENROUTER_API_KEY" not in os.environ:
         os.environ["OPENROUTER_API_KEY"] = ""
 
-settings = Settings()
+# type: ignore necessário porque Settings() pode ser inicializado sem argumentos
+# quando as variáveis de ambiente estão definidas (como em testes)
+settings = Settings()  # type: ignore[call-arg]
