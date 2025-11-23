@@ -77,13 +77,27 @@ def test_compression_disabled():
         assert "Content-Encoding" not in response.headers or response.headers.get("Content-Encoding") != "gzip"
 
 
-def test_compression_no_accept_encoding(client):
+def test_compression_no_accept_encoding():
     """Testa que compressão não é aplicada sem Accept-Encoding"""
-    response = client.get("/large")  # Sem header Accept-Encoding
-
-    assert response.status_code == 200
-    # Sem Accept-Encoding, não deve comprimir
-    assert "Content-Encoding" not in response.headers or response.headers.get("Content-Encoding") != "gzip"
+    from unittest.mock import Mock
+    
+    # Mock do request sem Accept-Encoding
+    mock_request = Mock()
+    mock_request.headers = {}  # Sem Accept-Encoding
+    
+    # Mock do call_next que retorna resposta grande
+    async def mock_call_next(request):
+        response = JSONResponse({"data": "x" * 1000})
+        return response
+    
+    middleware = CompressionMiddleware(app=None)
+    
+    # Simula dispatch sem Accept-Encoding
+    import asyncio
+    response = asyncio.run(middleware.dispatch(mock_request, mock_call_next))
+    
+    # Sem Accept-Encoding, não deve ter Content-Encoding (linha 110)
+    assert response.headers.get("Content-Encoding") != "gzip"
 
 
 def test_compression_already_compressed():
