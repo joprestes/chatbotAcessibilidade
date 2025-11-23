@@ -247,11 +247,11 @@ async def test_e2e_multiple_requests(client: TestClient):
             if response.status_code == 429:
                 # Se rate limit foi acionado, pula o teste (comportamento esperado em CI)
                 pytest.skip(
-                    f"Rate limit acionado na requisição {i+1} - comportamento esperado quando muitos testes rodam rapidamente"
+                    f"Rate limit acionado na requisição {i + 1} - comportamento esperado quando muitos testes rodam rapidamente"
                 )
-            assert (
-                response.status_code == 200
-            ), f"Requisição {i+1} falhou com status {response.status_code}"
+            assert response.status_code == 200, (
+                f"Requisição {i + 1} falhou com status {response.status_code}"
+            )
             assert "resposta" in response.json()
 
 

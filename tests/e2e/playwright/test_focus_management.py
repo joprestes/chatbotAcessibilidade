@@ -128,9 +128,9 @@ def test_keyboard_navigation_focus_visible(page: Page, base_url: str):
             focused_elements.append(focused_info)
             # Verifica que elemento é visível
             element_id = focused_info["id"]
-            assert focused_info[
-                "isVisible"
-            ], f"Elemento {element_id} deve ser visível quando focado"
+            assert focused_info["isVisible"], (
+                f"Elemento {element_id} deve ser visível quando focado"
+            )
 
     # Verifica que pelo menos alguns elementos receberam foco
     assert len(focused_elements) > 0, "Deve haver elementos focáveis na página"

@@ -27,7 +27,7 @@ def test_multiple_sequential_requests(page: Page, base_url: str):
 
     # Envia 10 requisições sequenciais
     for i in range(10):
-        input_field.fill(f"Pergunta {i+1}")
+        input_field.fill(f"Pergunta {i + 1}")
         send_button.click()
 
         # Aguarda resposta ou timeout
@@ -49,7 +49,7 @@ def test_parallel_requests_blocking(page: Page, base_url: str):
 
     # Tenta enviar 5 mensagens rapidamente
     for i in range(5):
-        input_field.fill(f"Paralela {i+1}")
+        input_field.fill(f"Paralela {i + 1}")
         send_button.click()
         page.wait_for_timeout(100)  # Pequeno delay entre cliques
 
@@ -87,9 +87,9 @@ def test_long_message_limits(page: Page, base_url: str, server_running: bool):
     if char_counter.is_visible(timeout=2000):
         counter_text = char_counter.inner_text(timeout=2000)
         # Aceita qualquer número no contador (pode ser 2000 ou formato diferente)
-        assert any(
-            char.isdigit() for char in counter_text
-        ), f"Contador não mostra número: {counter_text}"
+        assert any(char.isdigit() for char in counter_text), (
+            f"Contador não mostra número: {counter_text}"
+        )
 
     # Envia mensagem
     send_button.click()
@@ -124,7 +124,7 @@ def test_large_history_performance(page: Page, base_url: str, server_running: bo
     # Cria 10 mensagens (reduzido para não demorar muito e evitar timeouts)
     # Em produção, pode aumentar para 20 ou 100
     for i in range(10):
-        input_field.fill(f"Mensagem {i+1} para histórico grande")
+        input_field.fill(f"Mensagem {i + 1} para histórico grande")
         send_button.click()
         page.wait_for_timeout(2000)  # Aguarda resposta (aumentado para dar tempo)
 

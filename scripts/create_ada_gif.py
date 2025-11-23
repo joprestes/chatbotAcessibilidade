@@ -90,7 +90,7 @@ def create_ada_gif():
     print(f"  📁 Local: {output_path}")
     print(f"  📊 Tamanho: {file_size:.1f} KB")
     print(f"  🖼️  Frames: {len(images)}")
-    print(f"  ⏱️  Duração total: {sum(durations)/1000:.1f}s")
+    print(f"  ⏱️  Duração total: {sum(durations) / 1000:.1f}s")
 
     return True
 
