@@ -102,7 +102,8 @@ chatbot-acessibilidade/
 │   ├── development/              # Guias de desenvolvimento
 │   ├── CHANGELOG.md              # Histórico de mudanças
 │   ├── INSTRUCOES_EXECUCAO.md   # Guia de execução
-│   └── LINTERS.md                # Guia de linters
+│   ├── LINTERS.md                # Guia de linters
+│   └── REGRAS_REVISAO.md         # Regras e padrões do projeto
 │
 ├── 🤖 src/                       # Código fonte
 │   ├── chatbot_acessibilidade/   # Core do chatbot
@@ -237,6 +238,7 @@ Acesse: **http://localhost:8501**
 | [🔍 LINTERS.md](docs/LINTERS.md) | Guia de linters e formatação |
 | [📝 CHANGELOG.md](docs/CHANGELOG.md) | Histórico de mudanças |
 | [✨ MELHORIAS_IMPLEMENTADAS.md](docs/MELHORIAS_IMPLEMENTADAS.md) | Melhorias da Fase 1 |
+| [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Regras e padrões do projeto |
 
 ---
 
@@ -491,10 +493,11 @@ Access: **http://localhost:8501**
 
 | Document | Description |
 |:--------:|:------------|
-| [📘 INSTRUCOES_EXECUCAO.md](INSTRUCOES_EXECUCAO.md) | Detailed execution guide |
-| [🔍 LINTERS.md](LINTERS.md) | Linters and formatting guide |
-| [📝 CHANGELOG.md](CHANGELOG.md) | Change history |
-| [✨ MELHORIAS_IMPLEMENTADAS.md](MELHORIAS_IMPLEMENTADAS.md) | Phase 1 improvements |
+| [📘 INSTRUCOES_EXECUCAO.md](docs/INSTRUCOES_EXECUCAO.md) | Detailed execution guide |
+| [🔍 LINTERS.md](docs/LINTERS.md) | Linters and formatting guide |
+| [📝 CHANGELOG.md](docs/CHANGELOG.md) | Change history |
+| [✨ MELHORIAS_IMPLEMENTADAS.md](docs/MELHORIAS_IMPLEMENTADAS.md) | Phase 1 improvements |
+| [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Project rules and standards |
 
 ---
 
