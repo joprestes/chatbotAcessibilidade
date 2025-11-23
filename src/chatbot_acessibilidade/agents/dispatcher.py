@@ -140,7 +140,8 @@ async def rodar_agente(agent: Agent, prompt: str, user_id="user", session_prefix
             )
         elif "quota" in error_msg.lower() or "rate limit" in error_msg.lower():
             raise APIError(
-                "Erro: Estou recebendo muitas perguntas no momento! Por favor, aguarde um minuto e tente novamente. 🕒"
+                "Erro: Estou recebendo muitas perguntas no momento! "
+                "Por favor, aguarde um minuto e tente novamente. 🕒"
             )
         elif "todos os provedores" in error_msg.lower():
             raise APIError(
