@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 from starlette.responses import JSONResponse
 
 from backend.middleware import SecurityHeadersMiddleware
-from chatbot_acessibilidade.config import settings
 
 
 @pytest.fixture
