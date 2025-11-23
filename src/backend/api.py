@@ -1,9 +1,6 @@
 """
 API FastAPI para o Chatbot de Acessibilidade Digital
 """
-"""
-API FastAPI para o Chatbot de Acessibilidade Digital
-"""
 import logging
 import time
 from pathlib import Path
@@ -17,9 +14,18 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
+import sys
+from pathlib import Path
+
+# Adiciona src ao path para imports
+src_path = Path(__file__).parent.parent
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 from chatbot_acessibilidade.config import settings
 from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
 from chatbot_acessibilidade.core.exceptions import ValidationError
+from chatbot_acessibilidade.core.cache import get_cached_response, set_cached_response, get_cache_stats
 
 # Configuração de logging
 logging.basicConfig(
@@ -98,14 +104,18 @@ class ChatResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     message: str
+    cache: dict = None
 
 # Endpoint de saúde
 @app.get("/api/health", response_model=HealthResponse)
 async def health_check():
     """Verifica se a API está funcionando"""
+    cache_stats = get_cache_stats()
+    
     return {
         "status": "ok",
-        "message": "API do Chatbot de Acessibilidade Digital está funcionando"
+        "message": "API do Chatbot de Acessibilidade Digital está funcionando",
+        "cache": cache_stats
     }
 
 # Endpoint principal de chat
@@ -124,8 +134,19 @@ async def chat(request: Request, chat_request: ChatRequest):
     logger.info(f"Processando pergunta: {chat_request.pergunta[:50]}...")
     
     try:
+        # Verifica cache antes de processar
+        resposta_dict = get_cached_response(chat_request.pergunta)
+        
+        if resposta_dict is not None:
+            logger.info("Resposta retornada do cache")
+            return ChatResponse(resposta=resposta_dict)
+        
         # Chama o pipeline assíncrono
         resposta_dict = await pipeline_acessibilidade(chat_request.pergunta)
+        
+        # Salva no cache apenas se não houver erro
+        if not (isinstance(resposta_dict, dict) and "erro" in resposta_dict):
+            set_cached_response(chat_request.pergunta, resposta_dict)
         
         # Verifica se houve erro no pipeline
         if isinstance(resposta_dict, dict) and "erro" in resposta_dict:
@@ -155,21 +176,23 @@ async def chat(request: Request, chat_request: ChatRequest):
         )
 
 # Servir arquivos estáticos do frontend e assets
-# Verifica se os diretórios existem antes de montar
-frontend_path = Path("frontend")
-assets_path = Path("assets")
+# Caminhos relativos à raiz do projeto
+project_root = Path(__file__).parent.parent.parent
+frontend_path = project_root / "frontend"
+static_path = project_root / "static"
 
 if frontend_path.exists():
     # Serve arquivos do frontend (CSS, JS) em /static
-    app.mount("/static", StaticFiles(directory="frontend"), name="static")
+    app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
     
     # Serve index.html na raiz
     @app.get("/")
     async def read_root():
         """Serve a página principal do frontend"""
-        return FileResponse("frontend/index.html")
+        return FileResponse(str(frontend_path / "index.html"))
 
-if assets_path.exists():
+static_images_path = static_path / "images"
+if static_images_path.exists():
     # Serve assets (imagens) em /assets
-    app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+    app.mount("/assets", StaticFiles(directory=str(static_images_path)), name="assets")
 

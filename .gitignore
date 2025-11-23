@@ -17,6 +17,7 @@ dist/
 build/
 .vscode/
 relatorio_testes.html
+tests/reports/*.html
 .DS_Store
 Thumbs.db
 *.log

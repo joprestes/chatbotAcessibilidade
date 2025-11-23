@@ -10,20 +10,20 @@ install: ## Instala dependências e pre-commit hooks
 	pre-commit install
 
 lint: ## Executa linters (ruff)
-	ruff check chatbot_acessibilidade/ backend/ tests/
+	ruff check src/ tests/
 
 format: ## Formata código (black + ruff)
-	black chatbot_acessibilidade/ backend/ tests/
-	ruff format chatbot_acessibilidade/ backend/ tests/
+	black src/ tests/
+	ruff format src/ tests/
 
 type-check: ## Verifica tipos (mypy)
-	mypy chatbot_acessibilidade/ backend/
+	mypy src/
 
 test: ## Executa testes
 	pytest -v
 
 test-cov: ## Executa testes com cobertura
-	pytest --cov=chatbot_acessibilidade --cov=backend --cov-report=html --cov-report=term
+	pytest --cov=src.chatbot_acessibilidade --cov=src.backend --cov-report=html --cov-report=term
 
 check: lint type-check test ## Executa todas as verificações
 

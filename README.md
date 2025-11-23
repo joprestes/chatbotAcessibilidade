@@ -96,13 +96,21 @@ O chatbot utiliza **5 agentes especializados** trabalhando em conjunto:
 
 ```
 chatbot-acessibilidade/
-├── 🤖 chatbot_acessibilidade/    # Core do chatbot
-│   ├── agents/                   # Agentes especializados
-│   ├── core/                     # Utilitários e formatters
-│   └── pipeline.py               # Orquestração dos agentes
+├── 📚 docs/                       # Documentação completa
+│   ├── guides/                   # Guias de uso
+│   ├── api/                      # Documentação da API
+│   ├── development/              # Guias de desenvolvimento
+│   ├── CHANGELOG.md              # Histórico de mudanças
+│   ├── INSTRUCOES_EXECUCAO.md   # Guia de execução
+│   └── LINTERS.md                # Guia de linters
 │
-├── 🌐 backend/                   # API REST
-│   └── api.py                    # FastAPI endpoints
+├── 🤖 src/                       # Código fonte
+│   ├── chatbot_acessibilidade/   # Core do chatbot
+│   │   ├── agents/               # Agentes especializados
+│   │   ├── core/                 # Utilitários e formatters
+│   │   └── pipeline.py           # Orquestração dos agentes
+│   └── backend/                  # API REST
+│       └── api.py                # FastAPI endpoints
 │
 ├── 💻 frontend/                  # Interface Web
 │   ├── index.html                # HTML acessível
@@ -110,13 +118,23 @@ chatbot-acessibilidade/
 │   └── app.js                    # Lógica JavaScript
 │
 ├── 🧪 tests/                     # Testes automatizados
-│   ├── test_api.py               # Testes da API
-│   ├── test_dispatcher.py        # Testes dos agentes
-│   └── test_formatter.py         # Testes de formatação
+│   ├── unit/                     # Testes unitários
+│   ├── integration/              # Testes de integração
+│   ├── reports/                  # Relatórios de testes
+│   └── test_*.py                 # Arquivos de teste
 │
-├── 📦 assets/                    # Recursos estáticos
-├── 📄 app.py                     # Interface Streamlit (alternativa)
-└── ⚙️  requirements.txt          # Dependências
+├── 📦 static/                     # Recursos estáticos
+│   └── images/                   # Imagens (banner, avatar)
+│
+├── 🔧 scripts/                   # Scripts auxiliares
+│   ├── streamlit/                # App Streamlit (alternativa)
+│   └── setup/                    # Scripts de configuração
+│
+├── 📄 README.md                   # Este arquivo
+├── ⚙️  requirements.txt          # Dependências Python
+├── 🛠️  pyproject.toml            # Configuração do projeto
+├── 🔨 Makefile                   # Comandos de automação
+└── 📜 LICENSE                    # Licença do projeto
 ```
 
 ---
@@ -152,6 +170,11 @@ Crie um arquivo `.env` na raiz do projeto:
 # Chave da API Google Gemini (obrigatória)
 GOOGLE_API_KEY="sua_chave_aqui"
 
+# OpenRouter (opcional - para fallback automático)
+OPENROUTER_API_KEY="sua_chave_openrouter"
+FALLBACK_ENABLED=true
+OPENROUTER_MODELS=meta-llama/llama-3.3-70b-instruct:free,google/gemini-flash-1.5:free,mistralai/mistral-7b-instruct:free
+
 # CORS (opcional - padrão: *)
 CORS_ORIGINS="*"
 
@@ -165,12 +188,33 @@ LOG_LEVEL=INFO
 
 > 💡 **Dica:** Veja `.env.example` para todas as opções disponíveis.
 
+#### 🔄 Sistema de Fallback Automático
+
+O chatbot agora suporta **fallback automático** entre múltiplos LLMs:
+
+1. **Provedor Primário**: Google Gemini (padrão)
+2. **Provedor Secundário**: OpenRouter com modelos gratuitos
+3. **Comportamento**: Se o Gemini esgotar quota ou falhar, o sistema automaticamente tenta modelos OpenRouter em sequência
+
+**Modelos OpenRouter Gratuitos Recomendados:**
+- `meta-llama/llama-3.3-70b-instruct:free`
+- `google/gemini-flash-1.5:free`
+- `mistralai/mistral-7b-instruct:free`
+- `qwen/qwen-2.5-7b-instruct:free`
+- `microsoft/phi-3-medium-4k-instruct:free`
+
+**Para habilitar o fallback:**
+1. Obtenha uma chave API do [OpenRouter](https://openrouter.ai/)
+2. Configure `OPENROUTER_API_KEY` no `.env`
+3. Configure `FALLBACK_ENABLED=true`
+4. Opcionalmente, ajuste `OPENROUTER_MODELS` com seus modelos preferidos
+
 #### ▶️ Execução
 
 **Opção 1: Frontend Web (Recomendado)** ⭐
 
 ```bash
-uvicorn backend.api:app --reload --port 8000
+uvicorn src.backend.api:app --reload --port 8000
 ```
 
 Acesse: **http://localhost:8000**
@@ -178,7 +222,7 @@ Acesse: **http://localhost:8000**
 **Opção 2: Interface Streamlit**
 
 ```bash
-streamlit run app.py
+streamlit run scripts/streamlit/app.py
 ```
 
 Acesse: **http://localhost:8501**
@@ -189,10 +233,10 @@ Acesse: **http://localhost:8501**
 
 | Documento | Descrição |
 |:---------:|:----------|
-| [📘 INSTRUCOES_EXECUCAO.md](INSTRUCOES_EXECUCAO.md) | Guia detalhado de execução |
-| [🔍 LINTERS.md](LINTERS.md) | Guia de linters e formatação |
-| [📝 CHANGELOG.md](CHANGELOG.md) | Histórico de mudanças |
-| [✨ MELHORIAS_IMPLEMENTADAS.md](MELHORIAS_IMPLEMENTADAS.md) | Melhorias da Fase 1 |
+| [📘 INSTRUCOES_EXECUCAO.md](docs/INSTRUCOES_EXECUCAO.md) | Guia detalhado de execução |
+| [🔍 LINTERS.md](docs/LINTERS.md) | Guia de linters e formatação |
+| [📝 CHANGELOG.md](docs/CHANGELOG.md) | Histórico de mudanças |
+| [✨ MELHORIAS_IMPLEMENTADAS.md](docs/MELHORIAS_IMPLEMENTADAS.md) | Melhorias da Fase 1 |
 
 ---
 
@@ -428,7 +472,7 @@ LOG_LEVEL=INFO
 **Option 1: Web Frontend (Recommended)** ⭐
 
 ```bash
-uvicorn backend.api:app --reload --port 8000
+uvicorn src.backend.api:app --reload --port 8000
 ```
 
 Access: **http://localhost:8000**
@@ -436,7 +480,7 @@ Access: **http://localhost:8000**
 **Option 2: Streamlit Interface**
 
 ```bash
-streamlit run app.py
+streamlit run scripts/streamlit/app.py
 ```
 
 Access: **http://localhost:8501**
