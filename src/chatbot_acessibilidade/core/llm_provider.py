@@ -91,7 +91,11 @@ class GoogleGeminiClient(LLMClient):
         """Inicializa o cliente Gemini de forma lazy"""
         if self._genai_client is None:
             logger.info("Inicializando cliente Gemini")
-            self._genai_client = genai.Client()
+            # Usa a API key das configurações
+            api_key = settings.google_api_key
+            if not api_key:
+                raise ValueError("GOOGLE_API_KEY não configurada")
+            self._genai_client = genai.Client(api_key=api_key)
         return self._genai_client
 
     async def generate(self, prompt: str, model: Optional[str] = None) -> str:
