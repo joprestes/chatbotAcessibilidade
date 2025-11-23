@@ -88,7 +88,7 @@ def test_compression_no_accept_encoding(client):
 
 def test_compression_already_compressed():
     """Testa que compressão não é aplicada se já está comprimida"""
-    from unittest.mock import Mock, AsyncMock
+    from unittest.mock import Mock
     
     # Mock do request com Accept-Encoding
     mock_request = Mock()
