@@ -2,6 +2,72 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.6.0] - 2025-01-22
+
+### Adicionado
+- **Layout Moderno com Sidebar:**
+  - Sidebar fixa no lado esquerdo com informações da Ada
+  - Avatar da Ada com animação de "respiração"
+  - Chips de sugestões rápidas na sidebar
+  - Layout responsivo que se adapta a mobile (sidebar vira header)
+
+- **Paleta "Lavanda Inclusiva":**
+  - Design moderno com tons de roxo, lilás e lavanda
+  - Contraste WCAG AA/AAA garantido
+  - Dark mode "Beringela" (roxo profundo)
+  - Glassmorphism no header e input
+
+- **Melhorias de UX:**
+  - Textarea auto-expansível (cresce conforme o usuário digita)
+  - Toast notifications acessíveis (role="alert", aria-live)
+  - Skeleton loading durante carregamento
+  - Avatares nas mensagens (👤 usuário, 💜 assistente)
+  - Timestamps em todas as mensagens
+  - Botão de envio apenas com ícone SVG
+  - Skip link melhorado (visível ao focar)
+
+- **Testes E2E:**
+  - Suite completa de testes end-to-end (`tests/e2e/test_user_flow.py`)
+  - 12 testes cobrindo fluxo completo do usuário
+  - Testes de cache, rate limiting, CORS, e tratamento de erros
+
+- **Métricas de Performance:**
+  - Novo módulo `src/chatbot_acessibilidade/core/metrics.py`
+  - Endpoint `/api/metrics` para expor estatísticas
+  - Coleta de: tempo de resposta, uso de agentes, taxa de fallback, cache hit/miss
+
+- **Endpoint de Configuração:**
+  - Novo endpoint `/api/config` para expor configurações do frontend
+  - Frontend carrega configurações dinamicamente (timeout, limites, etc.)
+
+### Modificado
+- **Frontend:**
+  - Input transformado em textarea auto-expansível
+  - Caminhos de arquivos estáticos corrigidos (`/static/` e `/assets/`)
+  - Sistema de mensagens melhorado com avatares e timestamps
+  - Animações mais suaves e profissionais
+  - Tipografia: Fonte Atkinson Hyperlegible aplicada
+  - Largura de linha limitada (65ch) para melhor legibilidade
+
+- **Backend:**
+  - Integração de métricas em todos os endpoints
+  - Cache com invalidação inteligente baseada em similaridade
+  - Logging melhorado (sem exposição de informações sensíveis)
+
+### Removido
+- `scripts/streamlit/app.py` - App Streamlit antigo não utilizado
+- `docs/ANALISE_PROJETO.md` - Análise obsoleta (substituída por REVISAO_PROJETO_2025-11-22.md)
+- `docs/REORGANIZACAO.md` - Documentação histórica de reorganização já concluída
+- `docs/PLANO_MELHORIAS.md` - Redundante com MELHORIAS_IMPLEMENTADAS.md
+- Pastas vazias: `docs/api/`, `docs/development/`, `docs/guides/`
+- `.DS_Store` removido do rastreamento do Git
+
+### Melhorado
+- Acessibilidade: Skip link mais visível, toast notifications com aria-live
+- Performance: Skeleton loading, cache inteligente, métricas de performance
+- UX: Feedback visual melhorado, animações suaves, design moderno
+- Manutenibilidade: Código mais limpo, documentação atualizada
+
 ## [3.5.0] - 2025-01-22
 
 ### Adicionado

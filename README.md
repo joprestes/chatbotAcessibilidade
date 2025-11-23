@@ -74,9 +74,12 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK), o chatbot gera
 | 🎨 **Interface** | 🔧 **Técnico** | 📚 **Educativo** |
 |:---:|:---:|:---:|
 | ✅ Interface acessível (WCAG AA) | ✅ Validação técnica WCAG/ARIA | ✅ Exemplos práticos |
-| ✅ Tema claro/escuro | ✅ Multiagente especializado | ✅ Sugestões de testes |
-| ✅ Responsivo | ✅ Rate limiting | ✅ Materiais de estudo |
-| ✅ Navegação por teclado | ✅ Logging estruturado | ✅ Links e referências |
+| ✅ Layout moderno com sidebar | ✅ Multiagente especializado | ✅ Sugestões de testes |
+| ✅ Paleta "Lavanda Inclusiva" | ✅ Rate limiting | ✅ Materiais de estudo |
+| ✅ Tema claro/escuro | ✅ Logging estruturado | ✅ Links e referências |
+| ✅ Toast notifications | ✅ Métricas de performance | ✅ Histórico de conversas |
+| ✅ Skeleton loading | ✅ Cache inteligente | ✅ Busca no histórico |
+| ✅ Textarea auto-expansível | ✅ Testes E2E completos | ✅ Timestamps nas mensagens |
 
 </div>
 
@@ -128,7 +131,6 @@ chatbot-acessibilidade/
 │   └── images/                   # Imagens (banner, avatar)
 │
 ├── 🔧 scripts/                   # Scripts auxiliares
-│   ├── streamlit/                # App Streamlit (alternativa)
 │   └── setup/                    # Scripts de configuração
 │
 ├── 📄 README.md                   # Este arquivo
@@ -212,7 +214,7 @@ O chatbot agora suporta **fallback automático** entre múltiplos LLMs:
 
 #### ▶️ Execução
 
-**Opção 1: Frontend Web (Recomendado)** ⭐
+**Frontend Web Moderno** ⭐
 
 ```bash
 uvicorn src.backend.api:app --reload --port 8000
@@ -220,13 +222,15 @@ uvicorn src.backend.api:app --reload --port 8000
 
 Acesse: **http://localhost:8000**
 
-**Opção 2: Interface Streamlit**
-
-```bash
-streamlit run scripts/streamlit/app.py
-```
-
-Acesse: **http://localhost:8501**
+**Características da Interface:**
+- 🎨 Layout moderno com sidebar fixa (Ada no lado esquerdo)
+- 💜 Paleta "Lavanda Inclusiva" (roxo/lilás acessível)
+- 📱 Design responsivo e mobile-first
+- 🔔 Toast notifications acessíveis
+- ⏳ Skeleton loading durante processamento
+- 📝 Textarea auto-expansível com glassmorphism
+- 👤 Avatares e timestamps nas mensagens
+- 🌙 Tema claro/escuro com transições suaves
 
 ---
 
@@ -296,12 +300,12 @@ O projeto implementa várias camadas de segurança:
 
 ### 🌐 Deploy
 
-#### ☁️ Streamlit Cloud
-
-1. Acesse [streamlit.io/cloud](https://streamlit.io/cloud)
-2. Conecte seu GitHub
-3. Configure o Secret `GOOGLE_API_KEY`
-4. Clique em **Deploy**
+Veja o guia completo de deploy em [docs/DEPLOY.md](docs/DEPLOY.md) que inclui:
+- Configuração de servidor web (Nginx, Caddy)
+- Configuração HTTPS com Certbot
+- CDN (Cloudflare, AWS CloudFront)
+- Variáveis de ambiente de produção
+- Monitoramento e logs
 
 #### 🐳 Docker (Em breve)
 
@@ -319,11 +323,11 @@ docker-compose up
 | Categoria | Tecnologias |
 |:---------:|:-----------|
 | **🐍 Backend** | Python 3.12+, FastAPI, Uvicorn |
-| **🤖 IA** | Google Gemini 2.0 Flash, Google ADK |
-| **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla) |
-| **🧪 Testes** | Pytest, Pytest-cov |
+| **🤖 IA** | Google Gemini 2.0 Flash, Google ADK, OpenRouter (fallback) |
+| **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla), Glassmorphism |
+| **🧪 Testes** | Pytest, Pytest-cov, Testes E2E |
 | **🔍 Qualidade** | Black, Ruff, MyPy, Pre-commit |
-| **📦 Outros** | Streamlit (alternativa) |
+| **📊 Métricas** | Coleta de performance e uso |
 
 </div>
 
@@ -400,13 +404,13 @@ The chatbot uses **5 specialized agents** working together:
 
 ```
 chatbot-acessibilidade/
-├── 🤖 chatbot_acessibilidade/    # Chatbot core
-│   ├── agents/                   # Specialized agents
-│   ├── core/                     # Utilities and formatters
-│   └── pipeline.py               # Agent orchestration
-│
-├── 🌐 backend/                   # REST API
-│   └── api.py                    # FastAPI endpoints
+├── 🤖 src/                       # Source code
+│   ├── chatbot_acessibilidade/   # Chatbot core
+│   │   ├── agents/               # Specialized agents
+│   │   ├── core/                 # Utilities and formatters
+│   │   └── pipeline.py           # Agent orchestration
+│   └── backend/                   # REST API
+│       └── api.py                # FastAPI endpoints
 │
 ├── 💻 frontend/                  # Web Interface
 │   ├── index.html                # Accessible HTML
@@ -414,12 +418,13 @@ chatbot-acessibilidade/
 │   └── app.js                    # JavaScript logic
 │
 ├── 🧪 tests/                     # Automated tests
-│   ├── test_api.py               # API tests
-│   ├── test_dispatcher.py        # Agent tests
-│   └── test_formatter.py         # Formatting tests
+│   ├── unit/                     # Unit tests
+│   ├── integration/              # Integration tests
+│   ├── e2e/                      # End-to-end tests
+│   └── reports/                  # Test reports
 │
-├── 📦 assets/                    # Static resources
-├── 📄 app.py                     # Streamlit interface (alternative)
+├── 📦 static/                     # Static resources
+│   └── images/                   # Images (banner, avatar)
 └── ⚙️  requirements.txt          # Dependencies
 ```
 
@@ -471,7 +476,7 @@ LOG_LEVEL=INFO
 
 #### ▶️ Running
 
-**Option 1: Web Frontend (Recommended)** ⭐
+**Modern Web Frontend** ⭐
 
 ```bash
 uvicorn src.backend.api:app --reload --port 8000
@@ -479,13 +484,15 @@ uvicorn src.backend.api:app --reload --port 8000
 
 Access: **http://localhost:8000**
 
-**Option 2: Streamlit Interface**
-
-```bash
-streamlit run scripts/streamlit/app.py
-```
-
-Access: **http://localhost:8501**
+**Interface Features:**
+- 🎨 Modern layout with fixed sidebar (Ada on the left)
+- 💜 "Lavanda Inclusiva" palette (accessible purple/lavender)
+- 📱 Responsive and mobile-first design
+- 🔔 Accessible toast notifications
+- ⏳ Skeleton loading during processing
+- 📝 Auto-expandable textarea with glassmorphism
+- 👤 Avatars and timestamps in messages
+- 🌙 Light/dark theme with smooth transitions
 
 ---
 
@@ -578,11 +585,11 @@ docker-compose up
 | Category | Technologies |
 |:--------:|:------------|
 | **🐍 Backend** | Python 3.12+, FastAPI, Uvicorn |
-| **🤖 AI** | Google Gemini 2.0 Flash, Google ADK |
-| **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla) |
-| **🧪 Testing** | Pytest, Pytest-cov |
+| **🤖 AI** | Google Gemini 2.0 Flash, Google ADK, OpenRouter (fallback) |
+| **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla), Glassmorphism |
+| **🧪 Testing** | Pytest, Pytest-cov, E2E Tests |
 | **🔍 Quality** | Black, Ruff, MyPy, Pre-commit |
-| **📦 Others** | Streamlit (alternative) |
+| **📊 Metrics** | Performance and usage collection |
 
 </div>
 
