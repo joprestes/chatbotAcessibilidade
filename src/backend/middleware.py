@@ -78,6 +78,32 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
+class StaticCacheMiddleware(BaseHTTPMiddleware):
+    """Middleware que adiciona headers de cache para assets estáticos."""
+
+    # TTLs em segundos
+    STATIC_TTL = 86400  # 1 dia para CSS/JS
+    ASSETS_TTL = 604800  # 7 dias para imagens
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        """Adiciona headers de cache para assets estáticos"""
+        response = await call_next(request)
+
+        # Verifica se é um asset estático
+        path = request.url.path
+
+        if path.startswith("/static/"):
+            # CSS, JS, etc. - cache por 1 dia
+            response.headers["Cache-Control"] = f"public, max-age={self.STATIC_TTL}, immutable"
+            response.headers["Vary"] = "Accept-Encoding"
+        elif path.startswith("/assets/"):
+            # Imagens - cache por 7 dias
+            response.headers["Cache-Control"] = f"public, max-age={self.ASSETS_TTL}, immutable"
+            response.headers["Vary"] = "Accept-Encoding"
+
+        return response
+
+
 class CompressionMiddleware(BaseHTTPMiddleware):
     """Middleware que comprime respostas usando gzip"""
 

@@ -2,6 +2,35 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.2.0] - 2025-11-22
+
+### Adicionado
+- **CDN e Cache para Assets Estáticos:**
+  - `StaticCacheMiddleware` para adicionar headers de cache apropriados
+  - Cache de 1 dia para arquivos `/static/` (CSS, JS)
+  - Cache de 7 dias para arquivos `/assets/` (imagens)
+  - Header `Vary: Accept-Encoding` para suporte a compressão
+  - Script `build_assets.sh` para otimização de assets (minificação, compressão)
+  - Documentação completa de deploy (`docs/DEPLOY.md`) com:
+    - Guia de configuração HTTPS (Nginx, Caddy, Certbot)
+    - Instruções para CDN (Cloudflare, AWS CloudFront)
+    - Configuração de servidor web
+    - Variáveis de ambiente de produção
+    - Monitoramento e logs
+
+### Melhorado
+- Cobertura de testes aumentada para 97.52% (de 97.47%)
+- Middleware com 100% de cobertura de testes
+- 5 novos testes para validação de cache de assets
+
+### Testes
+- Adicionados 5 testes em `tests/test_static_cache.py`:
+  - Teste de headers de cache para CSS
+  - Teste de headers de cache para JavaScript
+  - Teste de headers de cache para imagens
+  - Teste de endpoints de API sem cache
+  - Teste de TTLs diferentes para diferentes tipos de assets
+
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 

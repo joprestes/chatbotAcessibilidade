@@ -33,6 +33,7 @@ from chatbot_acessibilidade.config import settings  # noqa: E402
 from backend.middleware import (  # noqa: E402
     SecurityHeadersMiddleware,
     CompressionMiddleware,
+    StaticCacheMiddleware,
 )
 
 # Garante que GOOGLE_API_KEY está disponível como variável de ambiente
@@ -73,7 +74,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # ty
 # Middleware de segurança (deve ser adicionado primeiro)
 app.add_middleware(SecurityHeadersMiddleware)
 
-# Middleware de compressão (após segurança, antes de CORS)
+# Middleware de cache para assets estáticos (após segurança)
+app.add_middleware(StaticCacheMiddleware)
+
+# Middleware de compressão (após cache, antes de CORS)
 app.add_middleware(CompressionMiddleware)
 
 # Configura CORS com origens permitidas
