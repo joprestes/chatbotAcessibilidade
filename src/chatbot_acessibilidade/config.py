@@ -139,4 +139,4 @@ if os.getenv("PYTEST_CURRENT_TEST"):
 
 # type: ignore necessário porque Settings() pode ser inicializado sem argumentos
 # quando as variáveis de ambiente estão definidas (como em testes)
-settings = Settings()  # type: ignore
+settings = Settings()  # type: ignore[misc]
