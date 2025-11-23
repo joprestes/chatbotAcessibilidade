@@ -40,6 +40,9 @@ const themeToggle = document.getElementById('theme-toggle');
 let cancelButton = null;
 let charCounter = null;
 let searchInput = null;
+let searchToggle = null;
+let searchWrapper = null;
+let suggestionChipsEmpty = null;
 
 // =========================================
 // Carregamento de Configuração
@@ -109,11 +112,66 @@ function toggleTheme() {
 
 function updateThemeToggle() {
     const theme = document.documentElement.getAttribute('data-theme');
+    const themeIcon = document.getElementById('theme-icon');
+    
     themeToggle.setAttribute('aria-label', 
         theme === 'dark' 
             ? 'Alternar para tema claro' 
             : 'Alternar para tema escuro'
     );
+    
+    // Atualiza o ícone SVG (lua para sol e vice-versa)
+    if (themeIcon) {
+        const moonPath = themeIcon.querySelector('.theme-icon-moon');
+        let sunGroup = themeIcon.querySelector('.theme-icon-sun');
+        
+        if (theme === 'dark') {
+            // Modo escuro ativo - mostra ícone de sol (para alternar para claro)
+            if (moonPath) moonPath.style.display = 'none';
+            
+            if (!sunGroup) {
+                // Cria o ícone do sol se não existir
+                sunGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                sunGroup.setAttribute('class', 'theme-icon-sun');
+                
+                // Círculo do sol
+                const sun = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                sun.setAttribute('cx', '12');
+                sun.setAttribute('cy', '12');
+                sun.setAttribute('r', '5');
+                sunGroup.appendChild(sun);
+                
+                // Raios do sol
+                const rays = [
+                    {x1: '12', y1: '1', x2: '12', y2: '3'},
+                    {x1: '12', y1: '21', x2: '12', y2: '23'},
+                    {x1: '4.22', y1: '4.22', x2: '5.64', y2: '5.64'},
+                    {x1: '18.36', y1: '18.36', x2: '19.78', y2: '19.78'},
+                    {x1: '1', y1: '12', x2: '3', y2: '12'},
+                    {x1: '21', y1: '12', x2: '23', y2: '12'},
+                    {x1: '4.22', y1: '19.78', x2: '5.64', y2: '18.36'},
+                    {x1: '18.36', y1: '5.64', x2: '19.78', y2: '4.22'}
+                ];
+                
+                rays.forEach(ray => {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', ray.x1);
+                    line.setAttribute('y1', ray.y1);
+                    line.setAttribute('x2', ray.x2);
+                    line.setAttribute('y2', ray.y2);
+                    sunGroup.appendChild(line);
+                });
+                
+                themeIcon.appendChild(sunGroup);
+            } else {
+                sunGroup.style.display = '';
+            }
+        } else {
+            // Modo claro ativo - mostra ícone de lua (para alternar para escuro)
+            if (sunGroup) sunGroup.style.display = 'none';
+            if (moonPath) moonPath.style.display = '';
+        }
+    }
 }
 
 // =========================================
@@ -133,46 +191,88 @@ function createUXElements() {
         }
     }
     
-    // Cria botão cancelar
-    if (!cancelButton) {
-        cancelButton = document.createElement('button');
-        cancelButton.type = 'button';
-        cancelButton.className = 'cancel-button';
-        cancelButton.textContent = 'Cancelar';
-        cancelButton.setAttribute('data-testid', 'cancel-button');
-        cancelButton.setAttribute('aria-label', 'Cancelar envio da mensagem');
-        cancelButton.style.display = 'none';
-        cancelButton.addEventListener('click', cancelRequest);
-        sendButton.parentElement.appendChild(cancelButton);
+    // Busca botão cancelar (já existe no HTML)
+    cancelButton = document.getElementById('cancel-button');
+    if (cancelButton) {
+        // Remove todos os event listeners anteriores (evita duplicação)
+        const newCancelButton = cancelButton.cloneNode(true);
+        cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+        cancelButton = newCancelButton;
+        
+        // Adiciona novo event listener
+        cancelButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            cancelRequest(e);
+        });
+        
+        // Também adiciona via onclick como fallback
+        cancelButton.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            cancelRequest(e);
+        };
+        
+        console.log('Botão cancelar configurado com múltiplos listeners');
+    } else {
+        console.warn('Botão cancelar não encontrado no DOM');
     }
     
-    // Cria input de busca (se não existir)
-    if (!searchInput) {
-        const mainContent = document.getElementById('main-content');
-        if (mainContent) {
-            const searchWrapper = document.createElement('div');
-            searchWrapper.className = 'search-wrapper';
-            searchInput = document.createElement('input');
-            searchInput.type = 'text';
-            searchInput.className = 'search-input';
-            searchInput.placeholder = 'Buscar no histórico...';
-            searchInput.setAttribute('data-testid', 'search-input');
-            searchInput.setAttribute('aria-label', 'Buscar mensagens no histórico');
-            searchInput.addEventListener('input', (e) => {
-                searchFilter = e.target.value.toLowerCase();
+    // Busca elementos de busca e sugestões
+    searchToggle = document.getElementById('search-toggle');
+    searchWrapper = document.getElementById('search-wrapper');
+    searchInput = document.getElementById('search-input');
+    suggestionChipsEmpty = document.getElementById('suggestion-chips-empty');
+    
+    // Configura busca
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchFilter = e.target.value.toLowerCase();
+            renderMessages();
+        });
+    }
+    
+    if (searchToggle && searchWrapper) {
+        searchToggle.addEventListener('click', () => {
+            const isHidden = searchWrapper.classList.contains('hidden');
+            if (isHidden) {
+                searchWrapper.classList.remove('hidden');
+                searchToggle.setAttribute('aria-expanded', 'true');
+                searchInput?.focus();
+            } else {
+                searchWrapper.classList.add('hidden');
+                searchToggle.setAttribute('aria-expanded', 'false');
+                searchFilter = '';
                 renderMessages();
-            });
-            searchWrapper.appendChild(searchInput);
-            // Insere antes do chat-container
-            const chatContainer = document.getElementById('chat-container');
-            if (chatContainer) {
-                mainContent.insertBefore(searchWrapper, chatContainer);
             }
-        }
+        });
     }
     
     // Atualiza contador inicial
     updateCharCounter();
+}
+
+// =========================================
+// Auto-resize Textarea
+// =========================================
+function autoResizeTextarea(textarea) {
+    if (!textarea) return;
+    
+    // Reset height to auto para recalcular
+    textarea.style.height = 'auto';
+    
+    // Calcula a altura necessária (scrollHeight inclui padding)
+    const newHeight = Math.min(textarea.scrollHeight, 200); // Max 200px
+    
+    // Aplica a nova altura
+    textarea.style.height = `${newHeight}px`;
+    
+    // Se atingiu o máximo, permite scroll
+    if (textarea.scrollHeight > 200) {
+        textarea.style.overflowY = 'auto';
+    } else {
+        textarea.style.overflowY = 'hidden';
+    }
 }
 
 // =========================================
@@ -185,7 +285,11 @@ function updateCharCounter() {
     const remaining = MAX_QUESTION_LENGTH - length;
     const percentage = (length / MAX_QUESTION_LENGTH) * 100;
     
-    charCounter.textContent = `${length}/${MAX_QUESTION_LENGTH}`;
+    // Formata com separador de milhar se necessário
+    const formattedLength = length.toLocaleString('pt-BR');
+    const formattedMax = MAX_QUESTION_LENGTH.toLocaleString('pt-BR');
+    
+    charCounter.textContent = `${formattedLength}/${formattedMax}`;
     charCounter.setAttribute('aria-label', `${length} de ${MAX_QUESTION_LENGTH} caracteres`);
     
     // Muda cor baseado na quantidade
@@ -201,13 +305,17 @@ function updateCharCounter() {
 // =========================================
 // Cancelamento de Requisição
 // =========================================
-function cancelRequest() {
+function cancelRequest(e) {
+    e?.preventDefault(); // Previne comportamento padrão se for evento
+    e?.stopPropagation(); // Para propagação do evento
+    
+    console.log('Cancelar clicado, currentAbortController:', currentAbortController);
+    
     if (currentAbortController) {
         currentAbortController.abort();
         currentAbortController = null;
         
         hideTypingIndicator();
-        hideSkeletonLoading();
         isLoading = false;
         updateUIState();
         
@@ -216,6 +324,8 @@ function cancelRequest() {
             erro: '❌ Requisição cancelada pelo usuário.',
             errorType: 'cancelled'
         });
+    } else {
+        console.warn('Tentativa de cancelar, mas não há requisição ativa');
     }
 }
 
@@ -321,7 +431,31 @@ function removeLastErrorMessage() {
 function renderMessages() {
     if (!chatContainer) return;
     
-    chatContainer.innerHTML = '';
+    // Remove mensagem de digitação da contagem para lógica de sugestões
+    const realMessages = messages.filter(msg => msg.content !== TYPING_MESSAGE_ID);
+    const hasMessages = realMessages.length > 0;
+    
+    // Gerencia visibilidade do card de introdução e sugestões
+    const introCard = document.getElementById('intro-card');
+    if (introCard) {
+        if (hasMessages || searchFilter) {
+            introCard.classList.add('hidden');
+        } else {
+            introCard.classList.remove('hidden');
+        }
+    }
+    
+    if (suggestionChipsEmpty) {
+        if (hasMessages || searchFilter) {
+            suggestionChipsEmpty.classList.add('hidden');
+        } else {
+            suggestionChipsEmpty.classList.remove('hidden');
+        }
+    }
+    
+    // Remove apenas mensagens existentes, mantém intro-card se existir
+    const existingMessages = chatContainer.querySelectorAll('.message');
+    existingMessages.forEach(msg => msg.remove());
     
     // Filtra mensagens se houver busca
     let filteredMessages = messages;
@@ -367,7 +501,20 @@ function createMessageElement(message, index) {
     avatar.className = 'message-avatar';
     avatar.setAttribute('data-testid', `avatar-${message.role}`);
     avatar.setAttribute('aria-hidden', 'true');
-    avatar.textContent = message.role === 'user' ? '👤' : '💜';
+    
+    if (message.role === 'user') {
+        avatar.textContent = '👤';
+    } else {
+        // Usa avatar da Ada ao invés de coração
+        const avatarImg = document.createElement('img');
+        avatarImg.src = '/assets/avatar.webp';
+        avatarImg.alt = 'Ada';
+        avatarImg.style.width = '100%';
+        avatarImg.style.height = '100%';
+        avatarImg.style.objectFit = 'cover';
+        avatarImg.style.borderRadius = '50%';
+        avatar.appendChild(avatarImg);
+    }
     
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
@@ -743,8 +890,7 @@ async function sendMessage(pergunta) {
     
     // Adiciona indicador de digitação (typing indicator)
     showTypingIndicator();
-    // Mostra skeleton loading também
-    showSkeletonLoading();
+    // Skeleton loading removido - usando apenas typing indicator
     
     // AbortController para timeout e cancelamento
     currentAbortController = new AbortController();
@@ -800,9 +946,16 @@ async function sendMessage(pergunta) {
     } catch (error) {
         clearTimeout(timeoutId);
         
-        // Remove indicador de digitação e skeleton
+        // Se foi cancelado manualmente pelo usuário, não mostra erro
+        // (o cancelRequest já tratou isso)
+        if (error.name === 'AbortError' && controller.signal.aborted && !currentAbortController) {
+            // Foi cancelado manualmente - já foi tratado em cancelRequest()
+            console.log('Requisição cancelada manualmente pelo usuário');
+            return; // Não faz nada, o cancelRequest já tratou
+        }
+        
+        // Remove indicador de digitação
         hideTypingIndicator();
-        hideSkeletonLoading();
         
         // Mensagens de erro específicas
         let errorMessage = '';
@@ -838,7 +991,6 @@ async function sendMessage(pergunta) {
         
         // Garante que o indicador seja removido quando terminar (sucesso ou erro)
         hideTypingIndicator();
-        hideSkeletonLoading();
         isLoading = false;
         updateUIState();
     }
@@ -855,13 +1007,13 @@ function updateUIState() {
         sendButton.style.opacity = '0.6';
         sendButton.setAttribute('aria-label', 'Enviando mensagem...');
         if (cancelButton) {
-            cancelButton.style.display = 'inline-block';
+            cancelButton.classList.remove('hidden');
         }
     } else {
         sendButton.style.opacity = '1';
         sendButton.setAttribute('aria-label', 'Enviar mensagem');
         if (cancelButton) {
-            cancelButton.style.display = 'none';
+            cancelButton.classList.add('hidden');
         }
         // Auto-resize textarea ao desabilitar
         if (userInput.tagName === 'TEXTAREA') {

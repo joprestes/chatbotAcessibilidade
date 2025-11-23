@@ -17,43 +17,33 @@
     <a href="#user-input" class="skip-link">Pular para o chat</a>
     
     <div class="app-wrapper">
-        <!-- Sidebar com Ada fixa -->
-        <aside class="sidebar" role="complementary" aria-label="Informações da Ada" data-testid="sidebar-ada">
-            <div class="sidebar-content">
-                <div class="ada-card" data-testid="ada-card">
-                    <div class="avatar-container" data-testid="avatar-container">
-                        <img src="/assets/avatar.webp" alt="Ilustração da Ada" class="avatar breathing" data-testid="avatar-ada">
-                    </div>
-                    <div class="ada-info" data-testid="ada-info">
-                        <h2>Ada</h2>
-                        <p class="ada-subtitle">Assistente de Acessibilidade</p>
-                        <p class="ada-description">
-                            Especialista em <strong>Acessibilidade Digital</strong>, WCAG e ARIA.
-                        </p>
-                    </div>
-                    <div class="suggestion-chips" data-testid="suggestion-chips">
-                        <button class="chip" onclick="fillInput('Como testar contraste de cores?')" aria-label="Perguntar sobre contraste de cores" data-testid="chip-contraste">
-                            <span aria-hidden="true">🎨</span> Contraste
-                        </button>
-                        <button class="chip" onclick="fillInput('O que é navegação por teclado?')" aria-label="Perguntar sobre navegação por teclado" data-testid="chip-teclado">
-                            <span aria-hidden="true">⌨️</span> Teclado
-                        </button>
-                        <button class="chip" onclick="fillInput('Gere um checklist WCAG AA')" aria-label="Gerar checklist WCAG AA" data-testid="chip-checklist">
-                            <span aria-hidden="true">✅</span> Checklist
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
         <!-- Conteúdo Principal -->
         <div class="main-content-wrapper">
             <header role="banner" class="glass-header">
                 <div class="header-content">
                     <div class="header-branding">
-                        <h1>Chat de Acessibilidade</h1>
+                        <div class="ada-header-profile" data-testid="ada-header-profile">
+                            <img src="/assets/avatar.webp" alt="Ada" class="ada-header-avatar" data-testid="avatar-ada">
+                            <div class="ada-header-info">
+                                <h1>Ada</h1>
+                                <span class="ada-header-status">Assistente de Acessibilidade</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="header-controls">
+                        <button 
+                            id="search-toggle" 
+                            class="icon-button" 
+                            data-testid="btn-buscar"
+                            aria-label="Buscar no histórico"
+                            aria-expanded="false"
+                            title="Buscar mensagens"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
                         <button 
                             id="clear-chat-button" 
                             class="icon-button" 
@@ -61,7 +51,11 @@
                             aria-label="Limpar histórico do chat"
                             title="Limpar conversa"
                         >
-                            <span aria-hidden="true">🗑️</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                            </svg>
                         </button>
                         <button 
                             id="theme-toggle" 
@@ -70,21 +64,70 @@
                             aria-label="Alternar para modo escuro"
                             title="Mudar tema"
                         >
-                            <span aria-hidden="true" id="theme-icon">🌙</span>
+                            <svg id="theme-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path class="theme-icon-moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                <!-- Ícone do sol (será adicionado dinamicamente via JS) -->
+                            </svg>
                         </button>
                     </div>
+                </div>
+                <!-- Campo de busca (oculto por padrão) -->
+                <div id="search-wrapper" class="search-wrapper hidden" data-testid="search-wrapper">
+                    <input 
+                        type="text" 
+                        id="search-input"
+                        class="search-input" 
+                        placeholder="Buscar no histórico..." 
+                        data-testid="search-input"
+                        aria-label="Buscar mensagens no histórico"
+                    >
                 </div>
             </header>
 
             <main role="main" id="main-content">
                 <div id="chat-container" class="chat-container glass-chat" role="log" aria-live="polite" aria-label="Histórico de mensagens">
+                    <!-- Card de Introdução (aparece quando chat vazio) -->
+                    <div id="intro-card" class="intro-card" data-testid="intro-card">
+                        <div class="intro-card-content">
+                            <img src="/assets/avatar.webp" alt="Ada" class="intro-card-avatar" data-testid="intro-avatar">
+                            <div class="intro-card-text">
+                                <h2>Olá! Eu sou a Ada 👋</h2>
+                                <p>Seu assistente de acessibilidade digital. Estou aqui para ajudar você a entender WCAG, ARIA, testes de acessibilidade e muito mais!</p>
+                                <p><strong>Comece fazendo uma pergunta ou escolha uma sugestão abaixo:</strong></p>
+                            </div>
+                        </div>
+                        <!-- Sugestões dentro do card de introdução -->
+                        <div id="suggestion-chips-empty" class="suggestion-chips-empty" data-testid="suggestion-chips-empty">
+                            <button class="chip" onclick="fillInput('Como testar contraste de cores?')" aria-label="Perguntar sobre contraste de cores" data-testid="chip-contraste">
+                                <span aria-hidden="true">🎨</span> Como testar contraste?
+                            </button>
+                            <button class="chip" onclick="fillInput('O que é navegação por teclado?')" aria-label="Perguntar sobre navegação por teclado" data-testid="chip-teclado">
+                                <span aria-hidden="true">⌨️</span> O que é navegação por teclado?
+                            </button>
+                            <button class="chip" onclick="fillInput('Gere um checklist WCAG AA')" aria-label="Gerar checklist WCAG AA" data-testid="chip-checklist">
+                                <span aria-hidden="true">✅</span> Gerar Checklist WCAG
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </main>
 
             <footer class="input-area-wrapper">
                 <form id="chat-form" class="chat-form" data-testid="form-chat">
-                    <div class="input-container glass-input">
+                    <div class="input-container floating-pill">
                         <label for="user-input" class="sr-only">Digite sua pergunta</label>
+                        <button 
+                            type="button"
+                            id="cancel-button"
+                            class="cancel-button hidden"
+                            data-testid="btn-cancelar"
+                            aria-label="Cancelar requisição"
+                            title="Cancelar"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="6" y="6" width="12" height="12"></rect>
+                            </svg>
+                        </button>
                         <textarea 
                             id="user-input" 
                             name="pergunta"

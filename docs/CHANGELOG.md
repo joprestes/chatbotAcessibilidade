@@ -2,6 +2,60 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.7.0] - 2025-11-23
+
+### Adicionado
+- **Card de Introdução:**
+  - Novo card de boas-vindas com avatar da Ada e texto introdutório
+  - Botões de sugestão movidos para dentro do card de introdução
+  - Card desaparece automaticamente quando a conversa começa
+  - Textos dos botões atualizados para serem mais específicos ("Como testar contraste?", "O que é navegação por teclado?", "Gerar Checklist WCAG")
+
+- **Animações e Transições:**
+  - Animação fade-in suave nas mensagens (0.4s)
+  - Efeito hover com elevação nos balões (translateY -2px)
+  - Transições suaves em todos os elementos interativos (0.2s)
+
+### Modificado
+- **Layout das Mensagens:**
+  - Mensagens do assistente agora ocupam largura total (max-width: 95%)
+  - Estilo "card" profissional em vez de balão de chat
+  - Border-radius reduzido (12px) para aparência mais documental
+  - Borda sutil (1px) substituindo borda roxa grossa anterior
+  - Mensagens do usuário alinhadas à direita com melhor espaçamento
+
+- **Tipografia e Contraste:**
+  - Título "Ada": 1.75rem (~28px) mobile, 2rem (~32px) desktop
+  - Subtítulo: 0.9375rem (~15px) mobile, 1rem (~16px) desktop, font-weight 500
+  - Texto dos balões: 1.125rem (18px) para reduzir esforço cognitivo
+  - Ícones do header: cor roxo profundo (#3B0764) para contraste WCAG 3:1+
+  - Todas as fontes usam unidades `rem` (respeitam zoom do navegador)
+
+- **Avatares:**
+  - Avatar da Ada no header: 56px mobile, 64px desktop (era 40px/48px)
+  - Avatar da Ada nas mensagens: 56px mobile, 64px desktop (era 48px/56px)
+  - Bordas mais visíveis (3px mobile, 4px desktop)
+  - Sombras roxas sutis para destacar
+
+- **Espaçamento e Hierarquia Visual:**
+  - Margin entre mensagens: 24px mobile, 28px desktop (era 16px)
+  - Padding dos balões: 14px mobile, 16px desktop (era 12px/14px)
+  - Padding do container: 32px vertical mobile, 40px desktop (era 24px)
+  - Gap entre elementos: 24px mobile, 28px desktop (era 20px)
+  - Gap entre avatar e mensagem: 16px mobile, 20px desktop (era 14px/16px)
+
+- **Visual e Profundidade:**
+  - Gradientes sutis nos balões (mais profundidade visual)
+  - Sombras duplas para mais realismo
+  - Bordas mais visíveis (melhor definição)
+  - Timestamp com font-weight 500 e letter-spacing 0.3px
+
+### Melhorado
+- Hierarquia visual mais clara entre mensagens do usuário e assistente
+- Layout mais profissional e respirável
+- Contraste melhorado para baixa visão e uso ao sol
+- Experiência visual mais polida e moderna
+
 ## [3.6.0] - 2025-01-22
 
 ### Adicionado
