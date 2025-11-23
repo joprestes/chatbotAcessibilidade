@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 
 from src.backend.api import app
+from chatbot_acessibilidade.config import settings
 
 
 @pytest.fixture
