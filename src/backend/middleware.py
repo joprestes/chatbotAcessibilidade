@@ -1,7 +1,9 @@
 """
-Middleware de segurança para adicionar headers HTTP de segurança
+Middleware de segurança e compressão para adicionar headers HTTP de segurança
+e comprimir respostas
 """
 
+import gzip
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response

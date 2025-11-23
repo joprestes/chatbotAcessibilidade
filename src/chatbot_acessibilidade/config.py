@@ -81,6 +81,11 @@ class Settings(BaseSettings):
         description="Política CSP customizada (vazio usa padrão). Exemplo: default-src 'self'",
     )
 
+    # Performance
+    compression_enabled: bool = Field(
+        default=True, description="Habilitar compressão gzip de respostas"
+    )
+
     # type: ignore necessário porque Pydantic aceita essas chaves mas MyPy não reconhece
     model_config = ConfigDict(  # type: ignore
         env_file=".env",

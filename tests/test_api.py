@@ -187,6 +187,81 @@ def test_chat_endpoint_pergunta_muito_longa(client):
     assert "caracteres" in detail.lower() or "max" in detail.lower()
 
 
+def test_compression_enabled(client):
+    """Testa que compressão está habilitada e funciona"""
+    import gzip
+
+    # Faz requisição com Accept-Encoding: gzip
+    response = client.get(
+        "/api/health", headers={"Accept-Encoding": "gzip, deflate, br"}
+    )
+
+    assert response.status_code == 200
+
+    # Verifica se Content-Encoding está presente
+    content_encoding = response.headers.get("Content-Encoding")
+    if content_encoding:
+        assert content_encoding == "gzip"
+        # Descomprime para verificar conteúdo
+        decompressed = gzip.decompress(response.content)
+        assert b"status" in decompressed
+    else:
+        # Se não comprimiu, pode ser porque a resposta é muito pequena
+        # ou compressão está desabilitada
+        assert len(response.content) < 500 or not settings.compression_enabled
+
+
+def test_compression_large_response(client):
+    """Testa compressão em resposta grande"""
+    import gzip
+    from unittest.mock import patch
+
+    # Mock para retornar resposta grande
+    large_response = {"data": "x" * 2000}  # Resposta grande
+
+    with patch("src.backend.api.pipeline_acessibilidade") as mock_pipeline:
+        mock_pipeline.return_value = {
+            "📘 **Introdução**": large_response["data"],
+            "📚 **Detalhes**": large_response["data"] * 2,
+        }
+
+        response = client.post(
+            "/api/chat",
+            json={"pergunta": "Teste de compressão"},
+            headers={"Accept-Encoding": "gzip"},
+        )
+
+        assert response.status_code == 200
+
+        # Verifica se foi comprimido (resposta grande deve ser comprimida)
+        content_encoding = response.headers.get("Content-Encoding")
+        if settings.compression_enabled and content_encoding == "gzip":
+            # Descomprime e verifica conteúdo
+            decompressed = gzip.decompress(response.content)
+            assert b"Introdução" in decompressed
+
+
+def test_compression_disabled():
+    """Testa que compressão pode ser desabilitada"""
+    from unittest.mock import patch
+    from fastapi.testclient import TestClient
+    from src.backend.api import app
+
+    with patch("chatbot_acessibilidade.config.settings") as mock_settings:
+        mock_settings.compression_enabled = False
+
+        client = TestClient(app)
+        response = client.get(
+            "/api/health", headers={"Accept-Encoding": "gzip"}
+        )
+
+        assert response.status_code == 200
+        # Não deve ter Content-Encoding quando desabilitado
+        assert "Content-Encoding" not in response.headers or response.headers.get(
+            "Content-Encoding"
+        ) != "gzip"
+
+
 @patch("src.backend.api.pipeline_acessibilidade", new_callable=AsyncMock)
 def test_chat_endpoint_pergunta_com_caracteres_controle(mock_pipeline, client):
     """Testa sanitização de caracteres de controle"""

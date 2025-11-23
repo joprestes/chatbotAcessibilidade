@@ -30,7 +30,10 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv()
 
 from chatbot_acessibilidade.config import settings  # noqa: E402
-from backend.middleware import SecurityHeadersMiddleware  # noqa: E402
+from backend.middleware import (  # noqa: E402
+    SecurityHeadersMiddleware,
+    CompressionMiddleware,
+)
 
 # Garante que GOOGLE_API_KEY está disponível como variável de ambiente
 # O Google ADK precisa disso para criar o cliente internamente
@@ -69,6 +72,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # ty
 
 # Middleware de segurança (deve ser adicionado primeiro)
 app.add_middleware(SecurityHeadersMiddleware)
+
+# Middleware de compressão (após segurança, antes de CORS)
+app.add_middleware(CompressionMiddleware)
 
 # Configura CORS com origens permitidas
 app.add_middleware(
