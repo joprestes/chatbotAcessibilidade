@@ -52,4 +52,5 @@ pytest-html>=4.1.0,<5.0.0
 # Playwright (E2E Testing)
 pytest-playwright>=0.4.0,<1.0.0
 playwright>=1.40.0,<2.0.0
-axe-playwright>=1.0.0,<2.0.0  # Testes de acessibilidade
+# Nota: axe-playwright não está disponível no PyPI
+# Os testes de acessibilidade usam axe-core via JavaScript diretamente
