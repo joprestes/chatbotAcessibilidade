@@ -196,10 +196,9 @@ chatbotAcessibilidade/
    - Incompatibilidades entre MyPy e `slowapi`
    - Tipos dinâmicos do Google ADK
 
-2. **Python 3.9:** Projeto usa Python 3.9, mas:
-   - README recomenda 3.10+
-   - Alguns warnings sobre EOL do Python 3.9
-   - **Recomendação:** Atualizar para Python 3.10+ quando possível
+2. **Python 3.12:** ✅ Projeto atualizado para Python 3.12 (versão estável mais recente)
+   - Todas as configurações atualizadas
+   - Compatibilidade verificada
 
 **Avaliação:** ⭐⭐⭐⭐ (4/5)
 
