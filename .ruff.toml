@@ -1,0 +1,6 @@
+# Configuração adicional do Ruff (opcional, já está em pyproject.toml)
+# Este arquivo pode ser usado para configurações específicas do Ruff
+
+line-length = 100
+target-version = "py310"
+

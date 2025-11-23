@@ -4,6 +4,7 @@ google-adk
 python-dotenv
 pytest
 pytest-html
+pytest-cov
 fastapi
 uvicorn[standard]
 python-multipart
@@ -11,3 +12,7 @@ pydantic-settings
 slowapi
 tenacity
 cachetools
+black
+ruff
+mypy
+pre-commit

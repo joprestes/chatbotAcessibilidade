@@ -1,10 +1,22 @@
 
 .env
 /venv/
+.venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
 .vscode/
 relatorio_testes.html
 .DS_Store
 Thumbs.db
+*.log

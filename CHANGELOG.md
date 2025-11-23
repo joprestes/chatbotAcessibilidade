@@ -5,6 +5,23 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [2.1.1] - 2025-11-22
+
+### Adicionado
+- **Linters e Formatação**:
+  - Configuração do Black para formatação automática
+  - Configuração do Ruff para linting rápido e moderno
+  - Configuração do MyPy para verificação de tipos
+  - Pre-commit hooks para verificação automática antes de commits
+  - Makefile com comandos úteis (format, lint, type-check, test, etc)
+  - EditorConfig para consistência entre editores
+  - Documentação completa em `LINTERS.md`
+
+### Modificado
+- `requirements.txt`: Adicionadas dependências de desenvolvimento (black, ruff, mypy, pre-commit, pytest-cov)
+- `.gitignore`: Adicionados arquivos gerados por linters e formatters
+- `README.md`: Adicionada seção sobre linters
+
 ## [2.1.0] - 2025-11-22
 
 ### Adicionado

@@ -1,24 +1,49 @@
+<div align="center">
 
-# ♿ Chatbot de Acessibilidade Digital | Digital Accessibility Chatbot
+# ♿ Chatbot de Acessibilidade Digital
 
-<p align="center">
-  <a href="#-versão-em-português">Português 🇧🇷</a> | 
-  <a href="#-english-version">English 🇺🇸</a>
-</p>
+**Um assistente inteligente para tornar a web mais acessível** 💡
 
-<p align="center">
-  <img
-    src="assets/banner.webp"
-    alt="Banner com fundo escuro e ícone azul de acessibilidade representando uma pessoa estilizada com braços abertos em círculos conectados. À direita, o texto: 'Acessibilidade com Qualidade', seguido por 'Desenvolvido por: Joelma De O. Prestes Ferreira' e, abaixo, a frase: 'Assistente inteligente com arquitetura multiagente utilizando Gemini 2.0 Flash'."
-    width="100%">
-</p>
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000?style=for-the-badge)](https://github.com/psf/black)
 
-<p align="center">
-  <strong>Um assistente inteligente para tornar a web mais acessível. 💡</strong>
-</p>
+[Português 🇧🇷](#-versão-em-português) | [English 🇺🇸](#-english-version)
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+---
+
+<img
+  src="assets/banner.webp"
+  alt="Banner Acessibilidade com Qualidade"
+  width="100%"
+  style="border-radius: 10px; margin: 20px 0;">
+
+**Desenvolvido por:** [Joelma De O. Prestes Ferreira](https://www.linkedin.com/in/joprestes84/)
+
+</div>
+
+---
+
+## 📑 Índice
+
+<details>
+<summary>Clique para expandir</summary>
+
+- [🇧🇷 Versão em Português](#-versão-em-português)
+  - [✨ Visão Geral](#-visão-geral)
+  - [🎯 Funcionalidades](#-funcionalidades)
+  - [🏗️ Arquitetura](#️-arquitetura)
+  - [🚀 Quick Start](#-quick-start)
+  - [📖 Documentação](#-documentação)
+  - [🧪 Testes e Qualidade](#-testes-e-qualidade)
+  - [🔒 Segurança](#-segurança)
+  - [🌐 Deploy](#-deploy)
+  - [🛠️ Tecnologias](#️-tecnologias)
+  - [👤 Sobre a Autora](#-sobre-a-autora)
+- [🇺🇸 English Version](#-english-version)
+
+</details>
 
 ---
 
@@ -26,221 +51,522 @@
 
 ### ✨ Visão Geral
 
-Este projeto é um chatbot acessível e didático, voltado para profissionais, desenvolvedores e equipes de qualidade que desejam tirar dúvidas sobre acessibilidade digital. A solução utiliza a API Gemini da Google (via Google ADK) para gerar respostas completas, testáveis e com referências confiáveis.
+O **Chatbot de Acessibilidade Digital** é uma solução inteligente e educativa desenvolvida para profissionais, desenvolvedores e equipes de QA que buscam aprimorar seus conhecimentos sobre acessibilidade digital. 
 
-💬 **Exemplos de perguntas:**
-- Como testar contraste de cores?
-- O que é navegação por teclado?
-- Como tornar um site acessível a leitores de tela?
+Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK), o chatbot gera respostas completas, testáveis e com referências confiáveis, seguindo os padrões **WCAG** e **ARIA**.
 
-### 🔍 Funcionalidades
+#### 💬 Exemplos de Perguntas
 
-✅ Respostas claras com exemplos práticos  
-✅ Validação técnica com base em WCAG e ARIA  
-✅ Reescrita para linguagem acessível e inclusiva  
-✅ Sugestões de testes práticos com ferramentas como axe, NVDA, Lighthouse  
-✅ Recomendações de estudo com links úteis, cursos e livros  
+| Categoria | Exemplo |
+|-----------|---------|
+| **Testes** | Como testar contraste de cores? |
+| **Navegação** | O que é navegação por teclado? |
+| **Leitores de Tela** | Como tornar um site acessível a leitores de tela? |
+| **WCAG** | Quais são os critérios de sucesso do WCAG 2.1? |
+| **Ferramentas** | Quais ferramentas usar para testar acessibilidade? |
 
-### 🧠 Arquitetura
+---
+
+### 🎯 Funcionalidades
+
+<div align="center">
+
+| 🎨 **Interface** | 🔧 **Técnico** | 📚 **Educativo** |
+|:---:|:---:|:---:|
+| ✅ Interface acessível (WCAG AA) | ✅ Validação técnica WCAG/ARIA | ✅ Exemplos práticos |
+| ✅ Tema claro/escuro | ✅ Multiagente especializado | ✅ Sugestões de testes |
+| ✅ Responsivo | ✅ Rate limiting | ✅ Materiais de estudo |
+| ✅ Navegação por teclado | ✅ Logging estruturado | ✅ Links e referências |
+
+</div>
+
+#### 🧠 Arquitetura Multiagente
+
+O chatbot utiliza **5 agentes especializados** trabalhando em conjunto:
+
+1. **🤖 Assistente** - Gera a resposta inicial
+2. **✅ Validador** - Valida técnica (WCAG, ARIA)
+3. **✍️ Revisor** - Simplifica a linguagem
+4. **🧪 Testador** - Sugere testes práticos *(paralelo)*
+5. **📚 Aprofundador** - Recomenda materiais *(paralelo)*
+
+---
+
+### 🏗️ Arquitetura
 
 ```
 chatbot-acessibilidade/
-├── chatbot_acessibilidade/
-│   ├── agents/           # Define os agentes (assistente, revisor, etc.)
-│   ├── core/             # Funções utilitárias (formatadores, etc.)
-│   └── pipeline.py       # Orquestra os agentes para gerar a resposta
-├── backend/
-│   └── api.py            # API FastAPI (novo frontend)
-├── frontend/
-│   ├── index.html        # Interface HTML (novo frontend)
-│   ├── styles.css        # Estilos acessíveis
-│   └── app.js            # Lógica JavaScript
-├── tests/                # Testes unitários com pytest
-├── assets/               # Imagens e CSS
-├── app.py                # Interface com Streamlit (alternativa)
-├── requirements.txt      # Dependências do projeto
-├── setup.sh              # Script de instalação
-└── .env                  # Chave da API Google (não versionar)
+├── 🤖 chatbot_acessibilidade/    # Core do chatbot
+│   ├── agents/                   # Agentes especializados
+│   ├── core/                     # Utilitários e formatters
+│   └── pipeline.py               # Orquestração dos agentes
+│
+├── 🌐 backend/                   # API REST
+│   └── api.py                    # FastAPI endpoints
+│
+├── 💻 frontend/                  # Interface Web
+│   ├── index.html                # HTML acessível
+│   ├── styles.css                # Estilos responsivos
+│   └── app.js                    # Lógica JavaScript
+│
+├── 🧪 tests/                     # Testes automatizados
+│   ├── test_api.py               # Testes da API
+│   ├── test_dispatcher.py        # Testes dos agentes
+│   └── test_formatter.py         # Testes de formatação
+│
+├── 📦 assets/                    # Recursos estáticos
+├── 📄 app.py                     # Interface Streamlit (alternativa)
+└── ⚙️  requirements.txt          # Dependências
 ```
 
-### 🚀 Como Executar Localmente
+---
+
+### 🚀 Quick Start
+
+#### 📋 Pré-requisitos
+
+- Python 3.10 ou superior
+- Chave da API Google Gemini
+- Git
+
+#### 🔧 Instalação
 
 ```bash
-git clone https://github.com/seu-usuario/chatbot-acessibilidade.git
-cd chatbot-acessibilidade
+# 1. Clone o repositório
+git clone https://github.com/joprestes/chatbotAcessibilidade.git
+cd chatbotAcessibilidade
+
+# 2. Crie e ative o ambiente virtual
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # No Windows: .venv\Scripts\activate
+
+# 3. Instale as dependências
 pip install -r requirements.txt
 ```
 
-Crie um arquivo `.env` com sua chave:
+#### 🔑 Configuração
+
+Crie um arquivo `.env` na raiz do projeto:
+
 ```env
+# Chave da API Google Gemini (obrigatória)
 GOOGLE_API_KEY="sua_chave_aqui"
+
+# CORS (opcional - padrão: *)
+CORS_ORIGINS="*"
+
+# Rate Limiting (opcional)
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_PER_MINUTE=10
+
+# Logging (opcional)
+LOG_LEVEL=INFO
 ```
 
-**Opção 1: Frontend Web (Recomendado)**
+> 💡 **Dica:** Veja `.env.example` para todas as opções disponíveis.
+
+#### ▶️ Execução
+
+**Opção 1: Frontend Web (Recomendado)** ⭐
+
 ```bash
 uvicorn backend.api:app --reload --port 8000
 ```
-Acesse: http://localhost:8000
 
-**Opção 2: Interface Streamlit (Alternativa)**
+Acesse: **http://localhost:8000**
+
+**Opção 2: Interface Streamlit**
+
 ```bash
 streamlit run app.py
 ```
 
-### ✅ Testes Unitários
+Acesse: **http://localhost:8501**
+
+---
+
+### 📖 Documentação
+
+| Documento | Descrição |
+|:---------:|:----------|
+| [📘 INSTRUCOES_EXECUCAO.md](INSTRUCOES_EXECUCAO.md) | Guia detalhado de execução |
+| [🔍 LINTERS.md](LINTERS.md) | Guia de linters e formatação |
+| [📝 CHANGELOG.md](CHANGELOG.md) | Histórico de mudanças |
+| [✨ MELHORIAS_IMPLEMENTADAS.md](MELHORIAS_IMPLEMENTADAS.md) | Melhorias da Fase 1 |
+
+---
+
+### 🧪 Testes e Qualidade
+
+#### 🧪 Executar Testes
 
 ```bash
+# Testes básicos
 pytest -v
+
+# Com relatório HTML
 pytest --html=relatorio_testes.html --self-contained-html
+
+# Com cobertura
+pytest --cov=chatbot_acessibilidade --cov=backend --cov-report=html
 ```
 
-### 🧑‍🦽 Acessibilidade Otimizada
+#### 🔍 Linters e Formatação
 
-- Contraste reforçado e fontes legíveis  
-- Foco visível para teclado  
-- Labels e descrições para leitores de tela  
+```bash
+# Instalar ferramentas
+make install
 
-### ☁️ Deploy com Streamlit Cloud
+# Formatar código
+make format
 
-- Acesse: https://streamlit.io/cloud  
-- Conecte ao GitHub e selecione o repositório  
-- Configure o Secret `GOOGLE_API_KEY`  
-- Clique em “Deploy”  
+# Verificar lint
+make lint
 
-### 📚 Tecnologias Utilizadas
+# Verificar tipos
+make type-check
 
-- Python 3.10+  
-- Google Gemini API (via Google ADK)  
-- FastAPI (API REST)  
-- HTML/CSS/JavaScript (Frontend)  
-- Streamlit (Interface alternativa)  
-- Pytest  
+# Executar todas as verificações
+make check
+```
 
-### 🙋 Sobre a Autora
+> 📚 Veja [LINTERS.md](LINTERS.md) para mais detalhes.
 
-Desenvolvido por Joelma De Oliveira Prestes Ferreira.  
-* 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
-* 📧 joprestes@hotmail.com  
-* 🔗 [Medium](https://medium.com/@joprestes)
+---
 
+### 🔒 Segurança
+
+O projeto implementa várias camadas de segurança:
+
+| Recurso | Descrição |
+|:-------:|:----------|
+| 🔐 **CORS Configurável** | Controle de origens permitidas |
+| 🛡️ **Rate Limiting** | Proteção contra abuso (10 req/min) |
+| ✅ **Validação de Entrada** | Sanitização e limites (3-2000 chars) |
+| 📝 **Logging Estruturado** | Rastreamento de atividades |
+| 🔑 **Variáveis de Ambiente** | Segredos não versionados |
+
+---
+
+### 🌐 Deploy
+
+#### ☁️ Streamlit Cloud
+
+1. Acesse [streamlit.io/cloud](https://streamlit.io/cloud)
+2. Conecte seu GitHub
+3. Configure o Secret `GOOGLE_API_KEY`
+4. Clique em **Deploy**
+
+#### 🐳 Docker (Em breve)
+
+```bash
+# Em desenvolvimento
+docker-compose up
+```
+
+---
+
+### 🛠️ Tecnologias
+
+<div align="center">
+
+| Categoria | Tecnologias |
+|:---------:|:-----------|
+| **🐍 Backend** | Python 3.10+, FastAPI, Uvicorn |
+| **🤖 IA** | Google Gemini 2.0 Flash, Google ADK |
+| **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla) |
+| **🧪 Testes** | Pytest, Pytest-cov |
+| **🔍 Qualidade** | Black, Ruff, MyPy, Pre-commit |
+| **📦 Outros** | Streamlit (alternativa) |
+
+</div>
+
+---
+
+### 👤 Sobre a Autora
+
+<div align="center">
+
+**Joelma De Oliveira Prestes Ferreira**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/joprestes84/)
+[![Medium](https://img.shields.io/badge/Medium-12100E?style=flat-square&logo=medium&logoColor=white)](https://medium.com/@joprestes)
+[![Email](https://img.shields.io/badge/Email-D14836?style=flat-square&logo=gmail&logoColor=white)](mailto:joprestes@hotmail.com)
+
+</div>
+
+---
 
 ### 📄 Licença
 
-Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está licenciado sob a **Licença MIT**. Veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-*(Uma tradução não-oficial para o português está disponível [aqui](LICENSE.pt-BR.md).)*
+> 📖 Uma tradução não-oficial para o português está disponível [aqui](LICENSE.pt-BR.md).
+
 ---
 
 ## 🇺🇸 English Version
 
 ### ✨ Overview
 
-This project is an accessible and educational chatbot aimed at professionals, developers, and QA teams who want to learn more about digital accessibility. It uses Google’s Gemini API (via Google ADK) to generate comprehensive, verifiable responses with trusted references.
+The **Digital Accessibility Chatbot** is an intelligent and educational solution developed for professionals, developers, and QA teams seeking to enhance their knowledge about digital accessibility.
 
-💬 **Example questions:**
-- How do I test color contrast?
-- What is keyboard navigation?
-- How to make a website accessible to screen readers?
+Using Google's **Gemini 2.0 Flash API** (via Google ADK), the chatbot generates comprehensive, testable responses with trusted references, following **WCAG** and **ARIA** standards.
 
-### 🔍 Features
+#### 💬 Example Questions
 
-✅ Clear answers with practical examples  
-✅ Technical validation based on WCAG and ARIA  
-✅ Rewritten for accessible and inclusive language  
-✅ Practical testing suggestions with tools like axe, NVDA, and Lighthouse  
-✅ Study recommendations with useful links, courses, and books  
+| Category | Example |
+|----------|---------|
+| **Testing** | How do I test color contrast? |
+| **Navigation** | What is keyboard navigation? |
+| **Screen Readers** | How to make a website accessible to screen readers? |
+| **WCAG** | What are the WCAG 2.1 success criteria? |
+| **Tools** | Which tools should I use to test accessibility? |
 
-### 🧠 Project Structure
+---
+
+### 🎯 Features
+
+<div align="center">
+
+| 🎨 **Interface** | 🔧 **Technical** | 📚 **Educational** |
+|:---:|:---:|:---:|
+| ✅ Accessible interface (WCAG AA) | ✅ WCAG/ARIA technical validation | ✅ Practical examples |
+| ✅ Light/dark theme | ✅ Specialized multi-agent | ✅ Testing suggestions |
+| ✅ Responsive | ✅ Rate limiting | ✅ Study materials |
+| ✅ Keyboard navigation | ✅ Structured logging | ✅ Links and references |
+
+</div>
+
+#### 🧠 Multi-Agent Architecture
+
+The chatbot uses **5 specialized agents** working together:
+
+1. **🤖 Assistant** - Generates initial response
+2. **✅ Validator** - Technical validation (WCAG, ARIA)
+3. **✍️ Reviewer** - Simplifies language
+4. **🧪 Tester** - Suggests practical tests *(parallel)*
+5. **📚 Deepener** - Recommends materials *(parallel)*
+
+---
+
+### 🏗️ Project Structure
 
 ```
 chatbot-acessibilidade/
-├── chatbot_acessibilidade/
-│   ├── agents/           # Defines agents (assistant, reviewer, etc.)
-│   ├── core/             # Utility functions (formatters, etc.)
-│   └── pipeline.py       # Orchestrates agents to generate the response
-├── backend/
-│   └── api.py            # FastAPI (new frontend)
-├── frontend/
-│   ├── index.html        # HTML interface (new frontend)
-│   ├── styles.css        # Accessible styles
-│   └── app.js            # JavaScript logic
-├── tests/                # Unit tests with pytest
-├── assets/               # Images and CSS
-├── app.py                # Streamlit interface (alternative)
-├── requirements.txt      # Project dependencies
-├── setup.sh              # Installation script
-└── .env                  # Google API key (do not version)
+├── 🤖 chatbot_acessibilidade/    # Chatbot core
+│   ├── agents/                   # Specialized agents
+│   ├── core/                     # Utilities and formatters
+│   └── pipeline.py               # Agent orchestration
+│
+├── 🌐 backend/                   # REST API
+│   └── api.py                    # FastAPI endpoints
+│
+├── 💻 frontend/                  # Web Interface
+│   ├── index.html                # Accessible HTML
+│   ├── styles.css                # Responsive styles
+│   └── app.js                    # JavaScript logic
+│
+├── 🧪 tests/                     # Automated tests
+│   ├── test_api.py               # API tests
+│   ├── test_dispatcher.py        # Agent tests
+│   └── test_formatter.py         # Formatting tests
+│
+├── 📦 assets/                    # Static resources
+├── 📄 app.py                     # Streamlit interface (alternative)
+└── ⚙️  requirements.txt          # Dependencies
 ```
 
-### 🚀 Running Locally
+---
+
+### 🚀 Quick Start
+
+#### 📋 Prerequisites
+
+- Python 3.10 or higher
+- Google Gemini API key
+- Git
+
+#### 🔧 Installation
 
 ```bash
-git clone https://github.com/your-user/chatbot-acessibilidade.git
-cd chatbot-acessibilidade
+# 1. Clone the repository
+git clone https://github.com/joprestes/chatbotAcessibilidade.git
+cd chatbotAcessibilidade
+
+# 2. Create and activate virtual environment
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 ```
 
-Set your API key in a `.env` file:
+#### 🔑 Configuration
+
+Create a `.env` file in the project root:
+
 ```env
+# Google Gemini API key (required)
 GOOGLE_API_KEY="your_api_key_here"
+
+# CORS (optional - default: *)
+CORS_ORIGINS="*"
+
+# Rate Limiting (optional)
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_PER_MINUTE=10
+
+# Logging (optional)
+LOG_LEVEL=INFO
 ```
 
-**Option 1: Web Frontend (Recommended)**
+> 💡 **Tip:** See `.env.example` for all available options.
+
+#### ▶️ Running
+
+**Option 1: Web Frontend (Recommended)** ⭐
+
 ```bash
 uvicorn backend.api:app --reload --port 8000
 ```
-Access: http://localhost:8000
 
-**Option 2: Streamlit Interface (Alternative)**
+Access: **http://localhost:8000**
+
+**Option 2: Streamlit Interface**
+
 ```bash
 streamlit run app.py
 ```
 
-### ✅ Unit Tests
+Access: **http://localhost:8501**
+
+---
+
+### 📖 Documentation
+
+| Document | Description |
+|:--------:|:------------|
+| [📘 INSTRUCOES_EXECUCAO.md](INSTRUCOES_EXECUCAO.md) | Detailed execution guide |
+| [🔍 LINTERS.md](LINTERS.md) | Linters and formatting guide |
+| [📝 CHANGELOG.md](CHANGELOG.md) | Change history |
+| [✨ MELHORIAS_IMPLEMENTADAS.md](MELHORIAS_IMPLEMENTADAS.md) | Phase 1 improvements |
+
+---
+
+### 🧪 Testing and Quality
+
+#### 🧪 Run Tests
 
 ```bash
+# Basic tests
 pytest -v
+
+# With HTML report
 pytest --html=test_report.html --self-contained-html
+
+# With coverage
+pytest --cov=chatbot_acessibilidade --cov=backend --cov-report=html
 ```
 
-### 🧑‍🦽 Optimized Accessibility
+#### 🔍 Linters and Formatting
 
-- Enhanced contrast and legible fonts  
-- Visible focus for keyboard users  
-- Labels and image descriptions for screen readers  
+```bash
+# Install tools
+make install
 
-### ☁️ Deploy to Streamlit Cloud
+# Format code
+make format
 
-- Go to: https://streamlit.io/cloud  
-- Connect your GitHub account and select the repository  
-- Add your API key as a "Secret": `GOOGLE_API_KEY`  
-- Click “Deploy”  
+# Check lint
+make lint
 
-### 📚 Tech Stack
+# Check types
+make type-check
 
-- Python 3.10+  
-- Google Gemini API (via Google ADK)  
-- FastAPI (REST API)  
-- HTML/CSS/JavaScript (Frontend)  
-- Streamlit (Alternative interface)  
-- Pytest  
+# Run all checks
+make check
+```
 
-### 🙋 About the Author
+> 📚 See [LINTERS.md](LINTERS.md) for more details.
 
-Developed by Joelma De Oliveira Prestes Ferreira.  
-* 🔗 [LinkedIn](https://www.linkedin.com/in/joprestes84/)  
-* 📧 joprestes@hotmail.com  
-* 🔗 [Medium](https://medium.com/@joprestes)
+---
 
+### 🔒 Security
+
+The project implements multiple security layers:
+
+| Feature | Description |
+|:-------:|:------------|
+| 🔐 **Configurable CORS** | Control of allowed origins |
+| 🛡️ **Rate Limiting** | Protection against abuse (10 req/min) |
+| ✅ **Input Validation** | Sanitization and limits (3-2000 chars) |
+| 📝 **Structured Logging** | Activity tracking |
+| 🔑 **Environment Variables** | Non-versioned secrets |
+
+---
+
+### 🌐 Deploy
+
+#### ☁️ Streamlit Cloud
+
+1. Go to [streamlit.io/cloud](https://streamlit.io/cloud)
+2. Connect your GitHub
+3. Configure the Secret `GOOGLE_API_KEY`
+4. Click **Deploy**
+
+#### 🐳 Docker (Coming soon)
+
+```bash
+# In development
+docker-compose up
+```
+
+---
+
+### 🛠️ Tech Stack
+
+<div align="center">
+
+| Category | Technologies |
+|:--------:|:------------|
+| **🐍 Backend** | Python 3.10+, FastAPI, Uvicorn |
+| **🤖 AI** | Google Gemini 2.0 Flash, Google ADK |
+| **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla) |
+| **🧪 Testing** | Pytest, Pytest-cov |
+| **🔍 Quality** | Black, Ruff, MyPy, Pre-commit |
+| **📦 Others** | Streamlit (alternative) |
+
+</div>
+
+---
+
+### 👤 About the Author
+
+<div align="center">
+
+**Joelma De Oliveira Prestes Ferreira**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/joprestes84/)
+[![Medium](https://img.shields.io/badge/Medium-12100E?style=flat-square&logo=medium&logoColor=white)](https://medium.com/@joprestes)
+[![Email](https://img.shields.io/badge/Email-D14836?style=flat-square&logo=gmail&logoColor=white)](mailto:joprestes@hotmail.com)
+
+</div>
 
 ---
 
 ### 📄 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
-*(An unofficial Portuguese translation is available [here](LICENSE.pt-BR.md).)*
+> 📖 An unofficial Portuguese translation is available [here](LICENSE.pt-BR.md).
+
+---
+
+<div align="center">
+
+**⭐ Se este projeto foi útil, considere dar uma estrela! ⭐**
+
+Made with ❤️ by [Joelma De O. Prestes Ferreira](https://www.linkedin.com/in/joprestes84/)
+
+</div>
