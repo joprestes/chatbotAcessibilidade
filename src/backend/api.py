@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -224,12 +224,12 @@ class ChatResponse(BaseModel):
 class HealthResponse(BaseModel):
     """
     Modelo de resposta do endpoint de health check.
-    
+
     Attributes:
         status: Status da API ("ok" ou "error")
         message: Mensagem descritiva do status
         cache: Estatísticas do cache (opcional)
-    
+
     Example:
         ```json
         {
@@ -243,12 +243,17 @@ class HealthResponse(BaseModel):
         }
         ```
     """
+
     status: str = Field(..., description="Status da API", examples=["ok"])
-    message: str = Field(..., description="Mensagem descritiva", examples=["API funcionando corretamente"])
-    cache: Optional[dict] = Field(None, description="Estatísticas do cache", examples=[{"hits": 10, "misses": 5}])
-    
-    class Config:
-        json_schema_extra = {
+    message: str = Field(
+        ..., description="Mensagem descritiva", examples=["API funcionando corretamente"]
+    )
+    cache: Optional[dict] = Field(
+        None, description="Estatísticas do cache", examples=[{"hits": 10, "misses": 5}]
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "status": "ok",
                 "message": "API funcionando corretamente",
@@ -256,9 +261,10 @@ class HealthResponse(BaseModel):
                     "hits": 10,
                     "misses": 5,
                     "size": 15,
-                }
+                },
             }
         }
+    )
 
 
 # Endpoint de saúde
@@ -279,7 +285,7 @@ class HealthResponse(BaseModel):
 async def get_config():
     """
     Retorna configurações do frontend.
-    
+
     Returns:
         dict: Dicionário com configurações:
             - request_timeout_ms: Timeout para requisições (padrão: 120000ms)
@@ -312,7 +318,7 @@ async def get_config():
 async def get_metrics_endpoint():
     """
     Retorna métricas de performance da API.
-    
+
     Returns:
         dict: Métricas incluindo:
             - total_requests: Total de requisições processadas
@@ -343,13 +349,13 @@ async def get_metrics_endpoint():
 async def health_check():
     """
     Verifica se a API está funcionando.
-    
+
     Returns:
         HealthResponse: Status da API com informações do cache:
             - status: "ok" se tudo estiver funcionando
             - message: Mensagem descritiva
             - cache: Estatísticas do cache (hits, misses, size)
-    
+
     Example:
         ```json
         {
@@ -445,31 +451,19 @@ rate_limit_str = (
             "description": "Erro de validação (pergunta muito curta/longa ou inválida)",
             "content": {
                 "application/json": {
-                    "example": {
-                        "detail": "Pergunta deve ter entre 3 e 2000 caracteres"
-                    }
+                    "example": {"detail": "Pergunta deve ter entre 3 e 2000 caracteres"}
                 }
             },
         },
         429: {
             "description": "Rate limit excedido (muitas requisições)",
             "content": {
-                "application/json": {
-                    "example": {
-                        "detail": "Rate limit exceeded: 10 per 1 minute"
-                    }
-                }
+                "application/json": {"example": {"detail": "Rate limit exceeded: 10 per 1 minute"}}
             },
         },
         500: {
             "description": "Erro interno do servidor",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "detail": "Erro ao processar pergunta"
-                    }
-                }
-            },
+            "content": {"application/json": {"example": {"detail": "Erro ao processar pergunta"}}},
         },
     },
 )
@@ -477,27 +471,27 @@ rate_limit_str = (
 async def chat(request: Request, chat_request: ChatRequest):
     """
     Processa uma pergunta sobre acessibilidade digital.
-    
+
     Args:
         request: Objeto Request do FastAPI (usado para rate limiting)
         chat_request: Dados da requisição contendo a pergunta
-    
+
     Returns:
         ChatResponse: Resposta formatada em seções organizadas
-    
+
     Raises:
-        HTTPException: 
+        HTTPException:
             - 400: Erro de validação
             - 429: Rate limit excedido
             - 500: Erro interno
-    
+
     Example Request:
         ```json
         {
             "pergunta": "Como testar contraste de cores em um site?"
         }
         ```
-    
+
     Example Response:
         ```json
         {

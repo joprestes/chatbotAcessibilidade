@@ -8,7 +8,7 @@ from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
 pytestmark = pytest.mark.unit
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_sucesso_retorna_dicionario(mock_get_agent_response):
     """
     Testa o caminho feliz do pipeline, garantindo que ele chame todos os agentes
@@ -73,7 +73,7 @@ def test_pipeline_entrada_vazia():
     assert "pergunta" in str(exc_info.value).lower()
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_falha_no_primeiro_agente(mock_get_agent_response):
     """
     Testa o que acontece se o primeiro agente (assistente) falhar,
@@ -97,7 +97,7 @@ def test_pipeline_falha_no_primeiro_agente(mock_get_agent_response):
     mock_get_agent_response.assert_called_once()
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_pergunta_muito_curta(mock_get_agent_response):
     """Testa pipeline com pergunta muito curta"""
     from chatbot_acessibilidade.core.exceptions import ValidationError
@@ -108,7 +108,7 @@ def test_pipeline_pergunta_muito_curta(mock_get_agent_response):
     assert "caracteres" in str(exc_info.value).lower()
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_pergunta_muito_longa(mock_get_agent_response):
     """Testa pipeline com pergunta muito longa"""
     from chatbot_acessibilidade.core.exceptions import ValidationError
@@ -120,7 +120,7 @@ def test_pipeline_pergunta_muito_longa(mock_get_agent_response):
     assert "caracteres" in str(exc_info.value).lower()
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_validador_falha_usando_resposta_inicial(mock_get_agent_response):
     """Testa quando validador falha, usa resposta inicial"""
     from chatbot_acessibilidade.core.exceptions import APIError
@@ -145,7 +145,7 @@ def test_pipeline_validador_falha_usando_resposta_inicial(mock_get_agent_respons
     assert "erro" not in resultado
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_revisor_falha_usando_resposta_tecnica(mock_get_agent_response):
     """Testa quando revisor falha, usa resposta técnica"""
     from chatbot_acessibilidade.core.exceptions import APIError
@@ -171,7 +171,7 @@ def test_pipeline_revisor_falha_usando_resposta_tecnica(mock_get_agent_response)
     assert resultado["🔍 **Conceitos Essenciais**"] == resposta_validada
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_agentes_paralelos_falham(mock_get_agent_response):
     """Testa quando agentes paralelos (testador e aprofundador) falham"""
     from chatbot_acessibilidade.core.exceptions import APIError
@@ -199,7 +199,7 @@ def test_pipeline_agentes_paralelos_falham(mock_get_agent_response):
     )
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_introducao_igual_corpo(mock_get_agent_response):
     """Testa quando introdução é igual ao corpo completo"""
     resposta_revisada = "Resposta única sem parágrafos adicionais."
@@ -221,7 +221,7 @@ def test_pipeline_introducao_igual_corpo(mock_get_agent_response):
     assert "erro" not in resultado
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_validador_retorna_erro_string(mock_get_agent_response):
     """Testa quando validador retorna string de erro (não exceção)"""
     resposta_assistente = "Resposta inicial."
@@ -244,7 +244,7 @@ def test_pipeline_validador_retorna_erro_string(mock_get_agent_response):
     assert "erro" not in resultado
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_revisor_retorna_erro_string(mock_get_agent_response):
     """Testa quando revisor retorna string de erro (não exceção)"""
     resposta_assistente = "Resposta inicial."
@@ -268,7 +268,7 @@ def test_pipeline_revisor_retorna_erro_string(mock_get_agent_response):
     assert resultado["🔍 **Conceitos Essenciais**"] == resposta_validada
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_agentes_paralelos_excecao_geral(mock_get_agent_response):
     """Testa quando agentes paralelos levantam exceção geral (linha 148-151)"""
     resposta_assistente = "Resposta inicial."
@@ -305,7 +305,7 @@ def test_pipeline_agentes_paralelos_excecao_geral(mock_get_agent_response):
     assert "Não foi possível gerar" in resultado[chave_aprofundar]
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_assistente_excecao_agent_error(mock_get_agent_response):
     """Testa quando assistente levanta AgentError"""
     from chatbot_acessibilidade.core.exceptions import AgentError
@@ -320,27 +320,27 @@ def test_pipeline_assistente_excecao_agent_error(mock_get_agent_response):
 
 
 def test_pipeline_tratar_resultado_paralelo_com_excecao():
-    """Testa _tratar_resultado_paralelo quando resultado é Exception (linha 28-34)"""
-    from chatbot_acessibilidade.pipeline import _tratar_resultado_paralelo
+    """Testa _tratar_resultado_paralelo quando resultado é Exception"""
+    from chatbot_acessibilidade.pipeline.orquestrador import _tratar_resultado_paralelo
     from chatbot_acessibilidade.core.exceptions import APIError
 
-    # Testa quando resultado é Exception (linha 28-30)
+    # Testa quando resultado é Exception
     resultado_excecao = APIError("Erro de teste")
     resultado = _tratar_resultado_paralelo(resultado_excecao, "teste", "Fallback")
     assert resultado == "Fallback"
 
-    # Testa quando resultado é string de erro (linha 32-34)
+    # Testa quando resultado é string de erro
     resultado_erro = "Erro: Falha na API"
     resultado = _tratar_resultado_paralelo(resultado_erro, "teste", "Fallback")
     assert resultado == "Fallback"
 
-    # Testa quando resultado é válido (linha 36)
+    # Testa quando resultado é válido
     resultado_valido = "Resposta válida"
     resultado = _tratar_resultado_paralelo(resultado_valido, "teste", "Fallback")
     assert resultado == "Resposta válida"
 
 
-@patch("chatbot_acessibilidade.pipeline.get_agent_response", new_callable=AsyncMock)
+@patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
 def test_pipeline_agentes_paralelos_excecao_geral_no_gather(mock_get_agent_response):
     """Testa pipeline quando asyncio.gather levanta exceção geral (linha 148-151)"""
     resposta_assistente = "Resposta inicial."
@@ -365,7 +365,7 @@ def test_pipeline_agentes_paralelos_excecao_geral_no_gather(mock_get_agent_respo
     mock_get_agent_response.side_effect = async_side_effect
 
     # Mock asyncio.gather para levantar exceção
-    with patch("chatbot_acessibilidade.pipeline.asyncio.gather") as mock_gather:
+    with patch("chatbot_acessibilidade.pipeline.orquestrador.asyncio.gather") as mock_gather:
         mock_gather.side_effect = Exception("Erro geral no gather")
 
         resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))

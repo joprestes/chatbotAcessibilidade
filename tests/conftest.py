@@ -20,8 +20,8 @@ except ImportError:
 warnings.filterwarnings("ignore", category=FutureWarning, module="google.api_core")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="google.genai")
 
-# Configura pytest-asyncio
-pytest_plugins = ("pytest_asyncio",)
+# Configura plugins do pytest
+pytest_plugins = ("pytest_asyncio", "pytest_playwright")
 
 # Adiciona src ao path para imports
 src_path = Path(__file__).parent.parent / "src"

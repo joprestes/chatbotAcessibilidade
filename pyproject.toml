@@ -95,6 +95,11 @@ addopts = [
     "-v",
     "--strict-markers",
     "--tb=short",
+    "-W", "ignore::urllib3.exceptions.NotOpenSSLWarning",
+    "-W", "ignore::pytest.PytestUnraisableExceptionWarning",
+    "-W", "ignore::RuntimeWarning",
+    "-W", "ignore::ResourceWarning",
+    "--disable-warnings",
 ]
 # Relatórios HTML são gerados apenas quando explicitamente solicitados via comando
 # Para gerar relatório HTML: pytest --html=tests/reports/html/report.html --self-contained-html
