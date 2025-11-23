@@ -56,7 +56,8 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 ### Removido
 - `scripts/streamlit/app.py` - App Streamlit antigo não utilizado
-- `docs/ANALISE_PROJETO.md` - Análise obsoleta (substituída por REVISAO_PROJETO_2025-11-22.md)
+- `docs/ANALISE_PROJETO.md` - Análise obsoleta (removida)
+- `docs/REVISAO_PROJETO_2025-11-22.md` - Revisão pontual (removida, melhorias no CHANGELOG)
 - `docs/REORGANIZACAO.md` - Documentação histórica de reorganização já concluída
 - `docs/PLANO_MELHORIAS.md` - Redundante com MELHORIAS_IMPLEMENTADAS.md
 - Pastas vazias: `docs/api/`, `docs/development/`, `docs/guides/`
