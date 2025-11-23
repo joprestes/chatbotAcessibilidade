@@ -106,9 +106,9 @@ class GoogleGeminiClient(LLMClient):
         self._get_genai_client()
 
         session_service = InMemorySessionService()
-        # Usa o nome do agente como app_name, mas pode precisar ser ajustado
-        # O app_name deve corresponder ao caminho de onde o agente foi carregado
-        app_name = getattr(self.agent, 'name', 'chatbot_acessibilidade')
+        # O app_name deve ser "agents" quando o agente é carregado do pacote google.adk.agents
+        # Isso evita o erro "App name mismatch detected"
+        app_name = "agents"
         runner = Runner(agent=self.agent, app_name=app_name, session_service=session_service)
         import os
 
@@ -116,7 +116,7 @@ class GoogleGeminiClient(LLMClient):
 
         try:
             await session_service.create_session(
-                user_id="user", session_id=session_id, app_name=self.agent.name
+                user_id="user", session_id=session_id, app_name=app_name
             )
             content = types.Content(role="user", parts=[types.Part(text=prompt)])
 
