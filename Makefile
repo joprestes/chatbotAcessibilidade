@@ -25,6 +25,24 @@ test: ## Executa testes
 test-cov: ## Executa testes com cobertura
 	pytest --cov=src.chatbot_acessibilidade --cov=src.backend --cov-report=html --cov-report=term
 
+test-playwright: ## Executa testes Playwright (requer servidor rodando)
+	pytest tests/e2e/playwright/ -v -m "playwright"
+
+test-playwright-ui: ## Executa testes Playwright com UI (headed mode)
+	pytest tests/e2e/playwright/ -v --headed
+
+test-playwright-api: ## Executa apenas testes de API com Playwright
+	pytest tests/e2e/playwright/test_api_playwright.py -v
+
+test-playwright-frontend: ## Executa apenas testes de frontend com Playwright
+	pytest tests/e2e/playwright/test_frontend_playwright.py -v
+
+test-playwright-accessibility: ## Executa apenas testes de acessibilidade
+	pytest tests/e2e/playwright/test_accessibility.py -v
+
+playwright-install: ## Instala navegadores do Playwright
+	playwright install chromium firefox webkit
+
 check: lint type-check test ## Executa todas as verificações
 
 clean: ## Limpa arquivos temporários

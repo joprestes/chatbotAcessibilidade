@@ -96,6 +96,14 @@ addopts = [
     "--strict-markers",
     "--tb=short",
 ]
+markers = [
+    "playwright: marca testes que usam Playwright",
+    "api: marca testes de API",
+    "frontend: marca testes de frontend",
+    "accessibility: marca testes de acessibilidade",
+    "e2e: marca testes end-to-end",
+    "slow: marca testes lentos",
+]
 filterwarnings = [
     # Suprimir warnings de dependências externas e ambiente
     "ignore::urllib3.exceptions.NotOpenSSLWarning",  # LibreSSL vs OpenSSL (ambiente)

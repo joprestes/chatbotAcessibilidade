@@ -64,11 +64,69 @@ from chatbot_acessibilidade.core.validators import (  # noqa: E402
 logging.basicConfig(level=getattr(logging, settings.log_level), format=settings.log_format)
 logger = logging.getLogger(__name__)
 
-# Inicializa FastAPI
+# Inicializa FastAPI com documentação completa
 app = FastAPI(
     title="Chatbot de Acessibilidade Digital API",
-    description="API para o chatbot de acessibilidade digital usando Gemini 2.0 Flash",
-    version="1.0.0",
+    description="""
+    ## 🎯 API para Chatbot de Acessibilidade Digital
+    
+    API REST desenvolvida com FastAPI que fornece respostas inteligentes sobre acessibilidade digital,
+    utilizando Google Gemini 2.0 Flash com fallback automático para múltiplos LLMs via OpenRouter.
+    
+    ### ✨ Funcionalidades
+    
+    - 💬 **Chat Inteligente**: Respostas completas sobre WCAG, ARIA e acessibilidade
+    - 🔄 **Fallback Automático**: Múltiplos LLMs para garantir disponibilidade
+    - ⚡ **Cache Inteligente**: Respostas em cache com invalidação semântica
+    - 📊 **Métricas**: Coleta de performance e uso
+    - 🛡️ **Segurança**: Rate limiting, CORS, validação de entrada
+    - ♿ **Acessibilidade**: Interface 100% acessível (WCAG 2.1 AA)
+    
+    ### 📚 Documentação Interativa
+    
+    - **Swagger UI**: `/docs` - Interface interativa para testar a API
+    - **ReDoc**: `/redoc` - Documentação alternativa em formato ReDoc
+    - **OpenAPI JSON**: `/openapi.json` - Especificação OpenAPI 3.0
+    
+    ### 🔐 Autenticação
+    
+    Atualmente a API não requer autenticação, mas implementa:
+    - Rate limiting por IP (10 requisições/minuto padrão)
+    - Validação rigorosa de entrada
+    - Sanitização de dados
+    
+    ### 📖 Exemplos de Uso
+    
+    Veja a seção de exemplos em cada endpoint para requisições e respostas de exemplo.
+    """,
+    version="3.7.0",
+    contact={
+        "name": "Joelma De O. Prestes Ferreira",
+        "url": "https://www.linkedin.com/in/joprestes84/",
+        "email": "joprestes@hotmail.com",
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    tags_metadata=[
+        {
+            "name": "Chat",
+            "description": "Endpoints relacionados ao chat e processamento de perguntas.",
+        },
+        {
+            "name": "Health",
+            "description": "Endpoints de verificação de saúde e status da API.",
+        },
+        {
+            "name": "Config",
+            "description": "Endpoints de configuração e métricas.",
+        },
+        {
+            "name": "Frontend",
+            "description": "Endpoints para servir arquivos estáticos do frontend.",
+        },
+    ],
 )
 
 # Configura Rate Limiting (sempre inicializa, mas pode estar desabilitado)
@@ -163,15 +221,69 @@ class ChatResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    status: str
-    message: str
-    cache: Optional[dict] = None
+    """
+    Modelo de resposta do endpoint de health check.
+    
+    Attributes:
+        status: Status da API ("ok" ou "error")
+        message: Mensagem descritiva do status
+        cache: Estatísticas do cache (opcional)
+    
+    Example:
+        ```json
+        {
+            "status": "ok",
+            "message": "API funcionando corretamente",
+            "cache": {
+                "hits": 10,
+                "misses": 5,
+                "size": 15
+            }
+        }
+        ```
+    """
+    status: str = Field(..., description="Status da API", examples=["ok"])
+    message: str = Field(..., description="Mensagem descritiva", examples=["API funcionando corretamente"])
+    cache: Optional[dict] = Field(None, description="Estatísticas do cache", examples=[{"hits": 10, "misses": 5}])
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "status": "ok",
+                "message": "API funcionando corretamente",
+                "cache": {
+                    "hits": 10,
+                    "misses": 5,
+                    "size": 15,
+                }
+            }
+        }
 
 
 # Endpoint de saúde
-@app.get("/api/config")
+@app.get(
+    "/api/config",
+    tags=["Config"],
+    summary="Configurações do Frontend",
+    description="""
+    Retorna configurações necessárias para o frontend, como timeouts e durações.
+    
+    Essas configurações são usadas pelo frontend para:
+    - Configurar timeout de requisições
+    - Definir duração de anúncios de erro
+    - Sincronizar comportamento entre backend e frontend
+    """,
+    response_description="Configurações do frontend em milissegundos",
+)
 async def get_config():
-    """Retorna configurações do frontend"""
+    """
+    Retorna configurações do frontend.
+    
+    Returns:
+        dict: Dicionário com configurações:
+            - request_timeout_ms: Timeout para requisições (padrão: 120000ms)
+            - error_announcement_duration_ms: Duração de anúncios de erro (padrão: 5000ms)
+    """
     from chatbot_acessibilidade.core.constants import FrontendConstants  # noqa: E402
 
     return {
@@ -180,15 +292,76 @@ async def get_config():
     }
 
 
-@app.get("/api/metrics")
+@app.get(
+    "/api/metrics",
+    tags=["Config"],
+    summary="Métricas de Performance",
+    description="""
+    Retorna métricas de performance e uso da API.
+    
+    Inclui:
+    - Total de requisições
+    - Tempo médio de resposta
+    - Taxa de cache hit/miss
+    - Taxa de fallback para LLMs alternativos
+    - Tempo médio por agente
+    """,
+    response_description="Dicionário com todas as métricas coletadas",
+)
 async def get_metrics_endpoint():
-    """Retorna métricas de performance da API"""
+    """
+    Retorna métricas de performance da API.
+    
+    Returns:
+        dict: Métricas incluindo:
+            - total_requests: Total de requisições processadas
+            - avg_response_time: Tempo médio de resposta (ms)
+            - cache_hit_rate: Taxa de acerto do cache (%)
+            - fallback_rate: Taxa de uso de fallback (%)
+            - agent_times: Tempo médio por agente (ms)
+    """
     return get_metrics()
 
 
-@app.get("/api/health", response_model=HealthResponse)
+@app.get(
+    "/api/health",
+    response_model=HealthResponse,
+    tags=["Health"],
+    summary="Health Check",
+    description="""
+    Verifica se a API está funcionando corretamente.
+    
+    Este endpoint é útil para:
+    - Monitoramento de saúde da API
+    - Verificação de disponibilidade
+    - Health checks em load balancers
+    - Integração com sistemas de monitoramento
+    """,
+    response_description="Status da API e estatísticas do cache",
+)
 async def health_check():
-    """Verifica se a API está funcionando"""
+    """
+    Verifica se a API está funcionando.
+    
+    Returns:
+        HealthResponse: Status da API com informações do cache:
+            - status: "ok" se tudo estiver funcionando
+            - message: Mensagem descritiva
+            - cache: Estatísticas do cache (hits, misses, size)
+    
+    Example:
+        ```json
+        {
+            "status": "ok",
+            "message": "API funcionando corretamente",
+            "cache": {
+                "hits": 10,
+                "misses": 5,
+                "size": 15
+            }
+        }
+        ```
+    """
     cache_stats = get_cache_stats()
 
     return {
@@ -210,15 +383,130 @@ rate_limit_str = (
 )
 
 
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post(
+    "/api/chat",
+    response_model=ChatResponse,
+    tags=["Chat"],
+    summary="Processar Pergunta",
+    description="""
+    Processa uma pergunta sobre acessibilidade digital e retorna uma resposta completa e formatada.
+    
+    ### 🔄 Fluxo de Processamento
+    
+    1. **Validação**: Valida e sanitiza a entrada
+    2. **Cache**: Verifica se a resposta está em cache
+    3. **Pipeline**: Processa através de 5 agentes especializados:
+       - 🤖 Assistente: Gera resposta inicial
+       - ✅ Validador: Valida técnica (WCAG, ARIA)
+       - ✍️ Revisor: Simplifica linguagem
+       - 🧪 Testador: Sugere testes práticos (paralelo)
+       - 📚 Aprofundador: Recomenda materiais (paralelo)
+    4. **Cache**: Salva resposta no cache
+    5. **Resposta**: Retorna resposta formatada em seções
+    
+    ### ⚡ Performance
+    
+    - Respostas em cache: < 50ms
+    - Respostas novas: 5-30s (dependendo do LLM)
+    - Fallback automático se LLM principal falhar
+    
+    ### 🛡️ Segurança
+    
+    - Rate limiting: 10 requisições/minuto por IP (configurável)
+    - Validação rigorosa de entrada
+    - Sanitização de caracteres de controle
+    - Detecção de padrões de injeção
+    
+    ### 📝 Formato da Resposta
+    
+    A resposta é um dicionário com seções organizadas:
+    - 📘 **Introdução**: Visão geral do tema
+    - 🔍 **Conceitos Essenciais**: Conceitos importantes
+    - 🧪 **Como Testar na Prática**: Sugestões de testes
+    - 📚 **Quer se Aprofundar?**: Materiais de estudo
+    """,
+    response_description="Resposta formatada em seções organizadas",
+    responses={
+        200: {
+            "description": "Resposta gerada com sucesso",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "resposta": {
+                            "📘 **Introdução**": "Olá! Vamos entender juntos...",
+                            "🔍 **Conceitos Essenciais**": "WCAG é um conjunto de diretrizes...",
+                        }
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "Erro de validação (pergunta muito curta/longa ou inválida)",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Pergunta deve ter entre 3 e 2000 caracteres"
+                    }
+                }
+            },
+        },
+        429: {
+            "description": "Rate limit excedido (muitas requisições)",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Rate limit exceeded: 10 per 1 minute"
+                    }
+                }
+            },
+        },
+        500: {
+            "description": "Erro interno do servidor",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Erro ao processar pergunta"
+                    }
+                }
+            },
+        },
+    },
+)
 @limiter.limit(rate_limit_str)
 async def chat(request: Request, chat_request: ChatRequest):
     """
-    Processa uma pergunta sobre acessibilidade digital e retorna a resposta formatada.
-
-    - **pergunta**: Pergunta sobre acessibilidade digital (3-2000 caracteres)
-
-    Retorna um dicionário com as seções formatadas da resposta.
+    Processa uma pergunta sobre acessibilidade digital.
+    
+    Args:
+        request: Objeto Request do FastAPI (usado para rate limiting)
+        chat_request: Dados da requisição contendo a pergunta
+    
+    Returns:
+        ChatResponse: Resposta formatada em seções organizadas
+    
+    Raises:
+        HTTPException: 
+            - 400: Erro de validação
+            - 429: Rate limit excedido
+            - 500: Erro interno
+    
+    Example Request:
+        ```json
+        {
+            "pergunta": "Como testar contraste de cores em um site?"
+        }
+        ```
+    
+    Example Response:
+        ```json
+        {
+            "resposta": {
+                "📘 **Introdução**": "Testar contraste é essencial...",
+                "🔍 **Conceitos Essenciais**": "WCAG 2.1 define...",
+                "🧪 **Como Testar na Prática**": "1. Use ferramentas como WAVE...",
+            }
+        }
+        ```
     """
     record_request()
     logger.info(f"Processando pergunta: {chat_request.pergunta[:50]}...")
