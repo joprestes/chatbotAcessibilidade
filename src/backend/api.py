@@ -103,12 +103,27 @@ class ChatRequest(BaseModel):
     @classmethod
     def validate_pergunta(cls, v: str) -> str:
         """Valida e sanitiza a pergunta"""
-        v = v.strip()
+        # Sanitiza entrada
+        v = sanitize_input(v, max_length=settings.max_question_length)
 
+        # Valida tamanho mínimo
         if len(v) < settings.min_question_length:
             raise ValueError(
                 f"A pergunta deve ter pelo menos {settings.min_question_length} caracteres."
             )
+
+        # Valida conteúdo (modo não-strict: detecta mas não rejeita)
+        is_valid, reason = validate_content(v, strict=False)
+        if not is_valid and reason:
+            # Loga mas não rejeita em modo não-strict
+            logger.warning(f"Padrão suspeito detectado na pergunta: {reason}")
+
+        # Detecta padrões de injection para logging
+        detected = detect_injection_patterns(v)
+        if detected:
+            logger.warning(f"Padrões suspeitos detectados: {', '.join(detected)}")
+
+        return v
 
         if len(v) > settings.max_question_length:
             raise ValueError(
