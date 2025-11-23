@@ -23,18 +23,25 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+        env:
+          PYTHONUNBUFFERED: "1"
       
       - name: Lint with ruff
-        run: ruff check src/ tests/
+        run: ruff check src/ tests/ || (echo "❌ Linting falhou" && exit 1)
       
       - name: Type check with mypy
-        run: mypy src/ || true
+        run: mypy src/ || echo "⚠️ Type checking com avisos (não crítico)"
       
       - name: Run unit tests
-        run: pytest tests/unit/ -v -m "unit"
+        run: pytest tests/unit/ -v -m "unit" --tb=short
+        env:
+          PYTHONUNBUFFERED: "1"
       
       - name: Run integration tests
-        run: pytest tests/integration/ -v -m "integration"
+        run: pytest tests/integration/ -v -m "integration" --tb=short
+        env:
+          PYTHONUNBUFFERED: "1"
+          FALLBACK_ENABLED: "false"
   
   test-e2e:
     runs-on: ubuntu-latest
@@ -62,17 +69,42 @@ jobs:
       
       - name: Start FastAPI server
         run: |
-          uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 &
-          sleep 10
-          curl -f http://localhost:8000/api/health || exit 1
+          echo "🚀 Iniciando servidor FastAPI..."
+          uvicorn src.backend.api:app --host 0.0.0.0 --port 8000 > /tmp/uvicorn.log 2>&1 &
+          SERVER_PID=$!
+          echo "📝 PID do servidor: $SERVER_PID"
+          
+          # Aguarda servidor iniciar com retry
+          echo "⏳ Aguardando servidor iniciar..."
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/api/health > /dev/null 2>&1; then
+              echo "✅ Servidor está respondendo!"
+              curl -f http://localhost:8000/api/health
+              exit 0
+            fi
+            echo "Tentativa $i/30: Servidor ainda não está pronto..."
+            sleep 2
+          done
+          
+          echo "❌ Servidor não iniciou após 60 segundos"
+          echo "📋 Logs do servidor:"
+          cat /tmp/uvicorn.log
+          exit 1
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           FALLBACK_ENABLED: "false"
           LOG_LEVEL: "INFO"
+          PYTHONUNBUFFERED: "1"
+      
+      - name: Verify server is running
+        run: |
+          echo "🔍 Verificando se servidor está rodando..."
+          curl -f http://localhost:8000/api/health || (echo "❌ Servidor não está respondendo" && exit 1)
+          echo "✅ Servidor está funcionando corretamente"
       
       - name: Run E2E tests
-        run: pytest tests/e2e/ -v -m "e2e"
+        run: pytest tests/e2e/ -v -m "e2e" --tb=short
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:8000
           PLAYWRIGHT_HEADLESS: "true"
@@ -83,6 +115,14 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           FALLBACK_ENABLED: "false"
           LOG_LEVEL: "INFO"
+          PYTHONUNBUFFERED: "1"
+      
+      - name: Stop FastAPI server
+        if: always()
+        run: |
+          echo "🛑 Parando servidor..."
+          pkill -f "uvicorn src.backend.api:app" || true
+          sleep 2
       
       - name: Upload test reports
         if: always()
