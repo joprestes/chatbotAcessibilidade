@@ -82,6 +82,15 @@ function setupEventListeners() {
     // Toggle de tema
     themeToggle.addEventListener('click', toggleTheme);
     
+    // Botão limpar chat
+    if (clearChatButton) {
+        clearChatButton.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja limpar todo o histórico do chat?')) {
+                clearMessages();
+            }
+        });
+    }
+    
     // Foco automático no input
     userInput.focus();
 }
@@ -228,41 +237,70 @@ function createExpanderSection(title, content, isExpanded = false) {
 function formatMarkdown(text) {
     if (!text) return '';
     
-    // Converte markdown simples para HTML
-    return text
-        // Parágrafos (quebras de linha duplas)
-        .split('\n\n')
-        .map(paragraph => {
-            if (!paragraph.trim()) return '';
-            
-            // Listas não ordenadas
-            if (paragraph.trim().startsWith('-') || paragraph.trim().startsWith('*')) {
-                const items = paragraph
-                    .split('\n')
-                    .filter(line => line.trim().startsWith('-') || line.trim().startsWith('*'))
-                    .map(item => `<li>${item.replace(/^[-*]\s+/, '').trim()}</li>`)
-                    .join('');
-                return `<ul>${items}</ul>`;
+    let html = text;
+    
+    // Headers (##, ###, ####)
+    html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+    
+    // Código em bloco (```)
+    html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+        return `<pre><code>${code.trim()}</code></pre>`;
+    });
+    
+    // Listas ordenadas (1. item)
+    html = html.replace(/^(\d+\.\s+.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>\d+\.\s+)(.+)(<\/li>)/g, '<li>$2</li>');
+    // Agrupa listas ordenadas consecutivas
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => {
+        if (match.includes('<li>')) {
+            return `<ol>${match}</ol>`;
+        }
+        return match;
+    });
+    
+    // Listas não ordenadas (- ou *)
+    html = html.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>');
+    // Agrupa listas não ordenadas consecutivas
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => {
+        if (match.includes('<li>') && !match.includes('<ol>')) {
+            return `<ul>${match}</ul>`;
+        }
+        return match;
+    });
+    
+    // Links
+    html = html.replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
+    
+    // Negrito
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // Itálico (apenas se não for negrito)
+    html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+    
+    // Código inline (apenas se não for bloco)
+    html = html.replace(/(?<!`)`([^`]+)`(?!`)/g, '<code>$1</code>');
+    
+    // Parágrafos (quebras de linha duplas)
+    const paragraphs = html.split('\n\n');
+    html = paragraphs
+        .map(para => {
+            para = para.trim();
+            if (!para) return '';
+            // Se já é um elemento HTML (h1-h4, ul, ol, pre), não envolve em <p>
+            if (/^<(h[1-4]|ul|ol|pre|li)/.test(para)) {
+                return para;
             }
-            
-            // Links
-            paragraph = paragraph.replace(
-                /\[([^\]]+)\]\(([^)]+)\)/g,
-                '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
-            );
-            
-            // Negrito
-            paragraph = paragraph.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            
-            // Itálico
-            paragraph = paragraph.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            
-            // Código inline
-            paragraph = paragraph.replace(/`([^`]+)`/g, '<code>$1</code>');
-            
-            return `<p>${paragraph}</p>`;
+            return `<p>${para}</p>`;
         })
-        .join('');
+        .join('\n');
+    
+    return html;
 }
 
 function scrollToBottom() {
@@ -302,21 +340,42 @@ async function sendMessage(pergunta) {
     messages.push(loadingMessage);
     renderMessages();
     
+    // AbortController para timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 segundos
+    
     try {
+        // Verifica se está offline
+        if (!navigator.onLine) {
+            throw new Error('OFFLINE');
+        }
+        
         const response = await fetch(API_CHAT_ENDPOINT, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ pergunta }),
+            signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
         
         // Remove mensagem de loading
         messages.pop();
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: 'Erro desconhecido' }));
-            throw new Error(errorData.detail || `Erro ${response.status}`);
+            const errorMessage = errorData.detail || `Erro ${response.status}`;
+            
+            // Mensagens específicas por status
+            if (response.status === 429) {
+                throw new Error('RATE_LIMIT');
+            } else if (response.status >= 500) {
+                throw new Error('SERVER_ERROR');
+            } else {
+                throw new Error(errorMessage);
+            }
         }
         
         const data = await response.json();
@@ -325,12 +384,30 @@ async function sendMessage(pergunta) {
         addMessage('assistant', data.resposta);
         
     } catch (error) {
+        clearTimeout(timeoutId);
+        
         // Remove mensagem de loading
         messages.pop();
         
+        // Mensagens de erro específicas
+        let errorMessage = '';
+        if (error.name === 'AbortError' || error.message === 'AbortError') {
+            errorMessage = '⏱️ A requisição demorou muito para responder (timeout). Por favor, tente novamente.';
+        } else if (error.message === 'OFFLINE') {
+            errorMessage = '📡 Você está offline. Verifique sua conexão com a internet e tente novamente.';
+        } else if (error.message === 'RATE_LIMIT') {
+            errorMessage = '🚦 Muitas requisições no momento. Por favor, aguarde um minuto e tente novamente.';
+        } else if (error.message === 'SERVER_ERROR') {
+            errorMessage = '🔧 Erro no servidor. Nossa equipe foi notificada. Por favor, tente novamente em alguns instantes.';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMessage = '🌐 Erro de conexão. Verifique sua internet e tente novamente.';
+        } else {
+            errorMessage = `❌ Erro ao processar sua pergunta: ${error.message}. Por favor, tente novamente.`;
+        }
+        
         // Adiciona mensagem de erro
         addMessage('assistant', {
-            erro: `❌ Erro ao processar sua pergunta: ${error.message}. Por favor, tente novamente.`
+            erro: errorMessage
         });
         
         console.error('Erro ao enviar mensagem:', error);

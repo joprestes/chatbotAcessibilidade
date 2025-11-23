@@ -27,3 +27,13 @@ class RateLimitExceeded(ChatbotException):
     """Rate limit excedido"""
     pass
 
+
+class QuotaExhaustedError(ChatbotException):
+    """Quota de um modelo foi esgotada"""
+    pass
+
+
+class ModelUnavailableError(ChatbotException):
+    """Modelo não está disponível no momento"""
+    pass
+

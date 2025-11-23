@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 
-from backend.api import app
+from src.backend.api import app
 from chatbot_acessibilidade.core.exceptions import ValidationError, APIError
 
 

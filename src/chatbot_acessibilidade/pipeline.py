@@ -12,6 +12,30 @@ from chatbot_acessibilidade.config import settings
 
 logger = logging.getLogger(__name__)
 
+
+def _tratar_resultado_paralelo(resultado: any, nome_agente: str, fallback: str) -> str:
+    """
+    Trata o resultado de um agente executado em paralelo.
+    
+    Args:
+        resultado: Resultado do agente (pode ser Exception ou string)
+        nome_agente: Nome do agente para logging
+        fallback: Mensagem de fallback em caso de erro
+        
+    Returns:
+        String com o resultado ou mensagem de fallback
+    """
+    if isinstance(resultado, Exception):
+        logger.warning(f"Erro ao gerar sugestões de {nome_agente}: {resultado}")
+        return fallback
+    
+    if eh_erro(resultado):
+        logger.warning(f"Erro detectado na resposta do {nome_agente}")
+        return fallback
+    
+    return resultado
+
+
 async def pipeline_acessibilidade(pergunta: str) -> dict:
     """
     Executa o pipeline completo de geração de resposta para uma pergunta sobre acessibilidade digital.
@@ -104,18 +128,17 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
         resultados_paralelos = await asyncio.gather(task_testes, task_aprofundar, return_exceptions=True)
         testes, aprofundar = resultados_paralelos
         
-        # Tratamento de erro para os resultados paralelos
-        if isinstance(testes, Exception) or eh_erro(testes if not isinstance(testes, Exception) else ""):
-            logger.warning("Erro ao gerar sugestões de testes")
-            testes = "Não foi possível gerar sugestões de testes desta vez."
-        elif isinstance(testes, Exception):
-            testes = "Não foi possível gerar sugestões de testes desta vez."
-            
-        if isinstance(aprofundar, Exception) or eh_erro(aprofundar if not isinstance(aprofundar, Exception) else ""):
-            logger.warning("Erro ao gerar sugestões de aprofundamento")
-            aprofundar = "Não foi possível gerar sugestões de aprofundamento desta vez."
-        elif isinstance(aprofundar, Exception):
-            aprofundar = "Não foi possível gerar sugestões de aprofundamento desta vez."
+        # Tratamento de erro para os resultados paralelos usando função auxiliar
+        testes = _tratar_resultado_paralelo(
+            testes, 
+            "testes", 
+            "Não foi possível gerar sugestões de testes desta vez."
+        )
+        aprofundar = _tratar_resultado_paralelo(
+            aprofundar, 
+            "aprofundamento", 
+            "Não foi possível gerar sugestões de aprofundamento desta vez."
+        )
     except Exception as e:
         logger.error(f"Erro ao executar agentes paralelos: {e}")
         testes = "Não foi possível gerar sugestões de testes desta vez."

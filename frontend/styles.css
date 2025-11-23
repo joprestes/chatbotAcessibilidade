@@ -76,6 +76,44 @@ header {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    position: relative;
+}
+
+.header-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+.clear-chat-button {
+    background-color: var(--error-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.clear-chat-button:hover {
+    background-color: var(--error-color);
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.clear-chat-button:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.clear-chat-button:active {
+    transform: translateY(0);
 }
 
 .banner {

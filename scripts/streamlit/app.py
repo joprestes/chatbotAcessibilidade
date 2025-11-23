@@ -1,8 +1,16 @@
 import streamlit as st
 import os
+import sys
 import asyncio
 import base64
+from pathlib import Path
 from dotenv import load_dotenv
+
+# Adiciona src ao path para imports
+src_path = Path(__file__).parent.parent.parent / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
 
 # ========================
@@ -63,7 +71,7 @@ div[data-testid="chat-message-container"] * {
 # BANNER E INTRODUÇÃO
 # ========================
 # Carregando imagens como Base64 para garantir que sempre apareçam.
-img_base64_banner = get_image_as_base64("assets/banner.webp")
+img_base64_banner = get_image_as_base64("static/images/banner.webp")
 if img_base64_banner:
     st.markdown(
         f"""
@@ -92,7 +100,7 @@ Se você é de QA e quer deixar seus testes mais inclusivos, tá no lugar certo!
     """, unsafe_allow_html=True)
 
 with col2:
-    img_base64_avatar = get_image_as_base64("assets/avatar.webp")
+    img_base64_avatar = get_image_as_base64("static/images/avatar.webp")
     if img_base64_avatar:
         st.markdown(
            f'''

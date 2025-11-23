@@ -3,7 +3,8 @@
 ## Pré-requisitos
 
 - Python 3.10 ou superior
-- Arquivo `.env` com a chave `GOOGLE_API_KEY`
+- Arquivo `.env` com a chave `GOOGLE_API_KEY` (obrigatória)
+- Chave `OPENROUTER_API_KEY` (opcional, necessária apenas se quiser usar fallback automático)
 
 ## Instalação
 
@@ -18,7 +19,7 @@ pip install -r requirements.txt
 
 Execute o servidor FastAPI:
 ```bash
-uvicorn backend.api:app --reload --port 8000
+uvicorn src.backend.api:app --reload --port 8000
 ```
 
 Acesse no navegador:
@@ -30,7 +31,7 @@ http://localhost:8000
 
 Execute o Streamlit:
 ```bash
-streamlit run app.py
+streamlit run scripts/streamlit/app.py
 ```
 
 Acesse no navegador:
@@ -40,11 +41,11 @@ http://localhost:8501
 
 ## Estrutura de Arquivos
 
-- `backend/api.py` - API FastAPI que processa as perguntas
+- `src/backend/api.py` - API FastAPI que processa as perguntas
 - `frontend/index.html` - Interface HTML principal
 - `frontend/styles.css` - Estilos acessíveis
 - `frontend/app.js` - Lógica JavaScript do chat
-- `assets/` - Imagens (banner, avatar)
+- `static/images/` - Imagens (banner, avatar)
 
 ## Funcionalidades
 
@@ -55,11 +56,35 @@ http://localhost:8501
 - Navegação por teclado
 - Contraste adequado
 
+## Configuração do Fallback Automático (Opcional)
+
+O chatbot suporta fallback automático para múltiplos LLMs quando o Google Gemini esgota suas utilizações:
+
+1. **Obtenha uma chave API do OpenRouter:**
+   - Acesse [https://openrouter.ai/](https://openrouter.ai/)
+   - Crie uma conta e gere uma chave API
+
+2. **Configure no `.env`:**
+   ```env
+   OPENROUTER_API_KEY="sua_chave_openrouter"
+   FALLBACK_ENABLED=true
+   OPENROUTER_MODELS=meta-llama/llama-3.3-70b-instruct:free,google/gemini-flash-1.5:free
+   ```
+
+3. **Como funciona:**
+   - O sistema tenta usar Google Gemini primeiro
+   - Se falhar ou esgotar quota, tenta automaticamente modelos OpenRouter
+   - Itera pelos modelos configurados até encontrar um disponível
+
 ## Troubleshooting
 
 ### Erro: "GOOGLE_API_KEY não encontrada"
 - Verifique se o arquivo `.env` existe na raiz do projeto
 - Certifique-se de que contém: `GOOGLE_API_KEY="sua_chave_aqui"`
+
+### Erro: "fallback_enabled=True requer openrouter_api_key configurada"
+- Se você habilitou o fallback, configure `OPENROUTER_API_KEY` no `.env`
+- Ou desabilite o fallback: `FALLBACK_ENABLED=false`
 
 ### Erro: "Frontend não encontrado"
 - Verifique se a pasta `frontend/` existe com os arquivos `index.html`, `styles.css` e `app.js`

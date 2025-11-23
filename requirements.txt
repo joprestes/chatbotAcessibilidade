@@ -16,3 +16,5 @@ black
 ruff
 mypy
 pre-commit
+httpx
+openai
