@@ -162,18 +162,16 @@ pythonPlatform = "All"
 typeCheckingMode = "basic"
 reportMissingImports = "warning"
 reportMissingTypeStubs = false
-executionEnvironments = [
-    {
-        "root": "src",
-        "pythonVersion": "3.12",
-        "pythonPlatform": "All",
-        "extraPaths": ["src"],
-    },
-    {
-        "root": "tests",
-        "pythonVersion": "3.12",
-        "pythonPlatform": "All",
-        "extraPaths": ["src"],
-    },
-]
+
+[[tool.pyright.executionEnvironments]]
+root = "src"
+pythonVersion = "3.12"
+pythonPlatform = "All"
+extraPaths = ["src"]
+
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+pythonVersion = "3.12"
+pythonPlatform = "All"
+extraPaths = ["src"]
 
