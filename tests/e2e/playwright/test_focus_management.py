@@ -176,22 +176,25 @@ def test_skip_link_focus(page: Page, base_url: str):
     page.wait_for_load_state("networkidle")
 
     # Procura por skip link
-    skip_link = page.locator('a[href="#user-input"], .skip-link')
+    skip_link = page.locator('a[href="#user-input"], .skip-link').first
 
     if skip_link.count() > 0:
-        # Pressiona Tab para focar no skip link
-        page.keyboard.press("Tab")
+        # Faz scroll para o topo para garantir que skip link esteja visível
+        page.evaluate("window.scrollTo(0, 0)")
+        page.wait_for_timeout(200)
 
-        # Skip link pode não ser o primeiro elemento, mas deve ser focável
-        assert skip_link.first.is_visible() or skip_link.first.evaluate(
-            "el => el.offsetParent !== null"
-        ), "Skip link deve ser visível ao focar"
+        # Aguarda skip link estar visível e faz scroll se necessário
+        expect(skip_link).to_be_visible(timeout=2000)
+        skip_link.scroll_into_view_if_needed()
+        page.wait_for_timeout(200)
 
-        # Testa navegação do skip link
-        skip_link.first.click()
+        # Clica diretamente no skip link (mais confiável que Tab + Enter)
+        skip_link.click(timeout=10000)
         page.wait_for_timeout(500)
 
         # Verifica que foco mudou para o elemento alvo
         focused_after = page.evaluate("() => document.activeElement.id")
         expected_targets = ["user-input", "main-content"]
-        assert focused_after in expected_targets, "Foco deve ir para elemento alvo do skip link"
+        assert (
+            focused_after in expected_targets
+        ), f"Foco deve ir para elemento alvo do skip link, mas foi para: {focused_after}"

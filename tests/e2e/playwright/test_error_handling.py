@@ -152,6 +152,7 @@ def test_manual_cancellation(page: Page, base_url: str):
     Testa cancelamento manual de requisição.
     """
     page.goto(base_url)
+    page.wait_for_load_state("networkidle")
 
     # Preenche input
     input_field = page.get_by_test_id("input-pergunta")
@@ -161,8 +162,18 @@ def test_manual_cancellation(page: Page, base_url: str):
     send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
-    # Aguarda botão cancelar aparecer
+    # Aguarda botão cancelar aparecer (aguarda que isLoading seja true)
+    # O botão só aparece quando isLoading é true, então aguardamos
+    # que a classe 'hidden' seja removida
     cancel_button = page.get_by_test_id("btn-cancelar")
+
+    # Aguarda que o botão não tenha mais a classe 'hidden'
+    page.wait_for_function(
+        "() => { const btn = document.querySelector('[data-testid=\"btn-cancelar\"]'); return btn && !btn.classList.contains('hidden'); }",
+        timeout=5000,
+    )
+
+    # Verifica que está visível
     expect(cancel_button).to_be_visible(timeout=2000)
 
     # Clica no botão cancelar
