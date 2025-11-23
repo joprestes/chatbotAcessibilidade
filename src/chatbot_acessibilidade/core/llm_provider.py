@@ -228,11 +228,15 @@ class OpenRouterClient(LLMClient):
         if self._client is None:
             self._client = httpx.AsyncClient(
                 timeout=httpx.Timeout(self.timeout, connect=10.0),
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "HTTP-Referer": "https://github.com/chatbotAcessibilidade",
-                    "X-Title": "Chatbot Acessibilidade",
-                } if self.api_key else {},
+                headers=(
+                    {
+                        "Authorization": f"Bearer {self.api_key}",
+                        "HTTP-Referer": "https://github.com/chatbotAcessibilidade",
+                        "X-Title": "Chatbot Acessibilidade",
+                    }
+                    if self.api_key
+                    else {}
+                ),
             )
         return self._client
 
