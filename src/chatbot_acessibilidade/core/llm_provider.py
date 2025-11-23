@@ -106,7 +106,10 @@ class GoogleGeminiClient(LLMClient):
         self._get_genai_client()
 
         session_service = InMemorySessionService()
-        runner = Runner(agent=self.agent, app_name=self.agent.name, session_service=session_service)
+        # Usa o nome do agente como app_name, mas pode precisar ser ajustado
+        # O app_name deve corresponder ao caminho de onde o agente foi carregado
+        app_name = getattr(self.agent, 'name', 'chatbot_acessibilidade')
+        runner = Runner(agent=self.agent, app_name=app_name, session_service=session_service)
         import os
 
         session_id = f"gemini_{os.urandom(4).hex()}"
