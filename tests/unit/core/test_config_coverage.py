@@ -3,6 +3,10 @@ Testes adicionais para aumentar cobertura de config.py
 Focando nas linhas não cobertas: 127, 150-153
 """
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
 import os
 from unittest.mock import patch
 import sys

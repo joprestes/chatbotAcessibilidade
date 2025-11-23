@@ -2,6 +2,10 @@
 Testes para o módulo de constantes
 """
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
 from chatbot_acessibilidade.core.constants import (
     # Timeouts
     DEFAULT_API_TIMEOUT_SECONDS,

@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.unit
+
 from chatbot_acessibilidade.core.formatter import (
     eh_erro,
     extrair_primeiro_paragrafo,

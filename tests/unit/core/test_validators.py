@@ -2,6 +2,10 @@
 Testes para o módulo validators.py
 """
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
 import sys
 from pathlib import Path
 

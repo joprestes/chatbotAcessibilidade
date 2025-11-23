@@ -2,6 +2,10 @@
 Testes para o módulo factory.py
 """
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
 from google.adk.agents import Agent
 
 from chatbot_acessibilidade.agents.factory import criar_agentes, NOME_MODELO_ADK
