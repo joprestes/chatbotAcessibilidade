@@ -3,6 +3,7 @@ API FastAPI para o Chatbot de Acessibilidade Digital
 """
 
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Optional
