@@ -114,10 +114,10 @@ def test_css_compatibility(page: Page, base_url: str):
         ], f"Layout deve usar display válido, encontrado: {display}"
 
     # Verifica que elementos estão posicionados corretamente
-    chat_container = page.locator('[data-testid="chat-container"]')
+    chat_container = page.get_by_test_id("chat-container")
     if chat_container.is_visible():
         expect(chat_container).to_be_visible()
 
     # Verifica que input está visível (testa que layout funciona)
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     expect(input_field).to_be_visible()

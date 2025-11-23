@@ -17,10 +17,10 @@ def test_expander_interaction(page: Page, base_url: str):
     page.goto(base_url)
 
     # Envia uma mensagem para ter resposta com expanders
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("O que é acessibilidade?")
 
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Aguarda resposta
@@ -61,10 +61,10 @@ def test_toast_notifications(page: Page, base_url: str):
 
     # Tenta disparar um toast (pode ser via erro ou sucesso)
     # Por exemplo, enviando mensagem muito curta
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("ab")  # Muito curta
 
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Aguarda toast aparecer (se houver)
@@ -92,7 +92,7 @@ def test_textarea_auto_resize(page: Page, base_url: str):
     """
     page.goto(base_url)
 
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
 
     # Obtém altura inicial
     initial_height = input_field.evaluate("el => el.offsetHeight")
@@ -124,7 +124,7 @@ def test_theme_persistence(page: Page, base_url: str):
     initial_theme = page.evaluate("() => document.documentElement.getAttribute('data-theme')")
 
     # Muda tema
-    theme_toggle = page.locator('[data-testid="btn-toggle-tema"]')
+    theme_toggle = page.get_by_test_id("btn-toggle-tema")
     theme_toggle.click()
     page.wait_for_timeout(500)
 
@@ -147,8 +147,8 @@ def test_message_history_persistence(page: Page, base_url: str):
     page.goto(base_url)
 
     # Envia algumas mensagens
-    input_field = page.locator('[data-testid="input-pergunta"]')
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    input_field = page.get_by_test_id("input-pergunta")
+    send_button = page.get_by_test_id("btn-enviar")
 
     messages_to_send = ["Primeira mensagem", "Segunda mensagem"]
 
@@ -158,7 +158,7 @@ def test_message_history_persistence(page: Page, base_url: str):
         page.wait_for_timeout(2000)
 
     # Verifica que mensagens foram adicionadas
-    user_messages = page.locator('[data-testid="chat-mensagem-user"]')
+    user_messages = page.get_by_test_id("chat-mensagem-user")
     expect(user_messages).to_have_count(len(messages_to_send), timeout=10000)
 
     # Recarrega página
@@ -166,21 +166,21 @@ def test_message_history_persistence(page: Page, base_url: str):
     page.wait_for_load_state("networkidle")
 
     # Verifica que mensagens foram restauradas
-    restored_messages = page.locator('[data-testid="chat-mensagem-user"]')
+    restored_messages = page.get_by_test_id("chat-mensagem-user")
     # Pode ter menos se localStorage não funcionar, mas deve ter pelo menos algumas
     assert restored_messages.count() > 0, "Mensagens devem ser restauradas do localStorage"
 
     # Testa limpeza de histórico
-    clear_button = page.locator('[data-testid="btn-limpar-chat"]')
+    clear_button = page.get_by_test_id("btn-limpar-chat")
     if clear_button.is_visible():
         # Obtém contagem antes de limpar
-        messages_before = page.locator('[data-testid="chat-mensagem-user"]').count()
+        messages_before = page.get_by_test_id("chat-mensagem-user").count()
 
         clear_button.click()
         page.wait_for_timeout(1000)  # Aguarda mais tempo para limpeza
 
         # Verifica que mensagens foram removidas (ou pelo menos reduzidas)
-        cleared_messages = page.locator('[data-testid="chat-mensagem-user"]')
+        cleared_messages = page.get_by_test_id("chat-mensagem-user")
         messages_after = cleared_messages.count()
 
         # Pode não limpar completamente se houver confirmação ou se localStorage não for limpo

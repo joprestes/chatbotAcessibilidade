@@ -92,11 +92,11 @@ def test_complete_keyboard_navigation(page: Page, base_url: str):
     assert focused is not None
 
     # Testa Enter no botão enviar
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.focus()
     input_field.fill("Teste teclado")
 
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.focus()
     page.keyboard.press("Enter")
 
@@ -104,7 +104,7 @@ def test_complete_keyboard_navigation(page: Page, base_url: str):
     page.wait_for_timeout(1000)
 
     # Testa Space em botão
-    theme_toggle = page.locator('[data-testid="btn-toggle-tema"]')
+    theme_toggle = page.get_by_test_id("btn-toggle-tema")
     if theme_toggle.is_visible():
         theme_toggle.focus()
         page.keyboard.press("Space")
@@ -156,7 +156,7 @@ def test_screen_zoom_200_percent(page: Page, base_url: str):
     header = page.locator("header")
     expect(header).to_be_visible()
 
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     expect(input_field).to_be_visible()
 
     # Verifica que texto permanece legível

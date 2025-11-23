@@ -18,7 +18,7 @@ def test_xss_injection_prevention(page: Page, base_url: str):
     page.wait_for_load_state("networkidle")
 
     # Aguarda input estar habilitado
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.wait_for(state="visible", timeout=5000)
     # Aguarda estar habilitado
     page.wait_for_timeout(1000)
@@ -31,7 +31,7 @@ def test_xss_injection_prevention(page: Page, base_url: str):
 
     for xss_pattern in xss_patterns:
         # Limpa mensagens anteriores se houver
-        clear_button = page.locator('[data-testid="btn-limpar-chat"]')
+        clear_button = page.get_by_test_id("btn-limpar-chat")
         if clear_button.is_visible():
             try:
                 clear_button.click()
@@ -45,7 +45,7 @@ def test_xss_injection_prevention(page: Page, base_url: str):
         # Tenta enviar padrão XSS
         try:
             input_field.fill(xss_pattern)
-            send_button = page.locator('[data-testid="btn-enviar"]')
+            send_button = page.get_by_test_id("btn-enviar")
             send_button.click()
 
             # Aguarda resposta ou erro

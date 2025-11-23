@@ -60,10 +60,10 @@ def test_chat_interface_accessibility(page: Page, base_url: str, axe):
     page.wait_for_load_state("networkidle")
 
     # Envia uma mensagem para testar interface completa
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Teste de acessibilidade")
 
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Aguarda resposta
@@ -186,7 +186,7 @@ def test_focus_management(page: Page, base_url: str):
     page.wait_for_load_state("networkidle")
 
     # Foca no input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.focus()
 
     # Verifica se input recebeu foco
@@ -195,7 +195,7 @@ def test_focus_management(page: Page, base_url: str):
 
     # Envia mensagem
     input_field.fill("Teste")
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Aguarda processamento

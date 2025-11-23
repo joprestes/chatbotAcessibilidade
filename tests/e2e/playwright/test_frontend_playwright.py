@@ -30,7 +30,7 @@ def test_homepage_loads(page: Page, base_url: str, server_running: bool):
     expect(header).to_be_visible()
 
     # Verifica se o card de introdução aparece (quando não há mensagens)
-    intro_card = page.locator('[data-testid="intro-card"]')
+    intro_card = page.get_by_test_id("intro-card")
     # Pode estar visível ou oculto dependendo do estado
     assert intro_card.count() > 0
 
@@ -46,16 +46,16 @@ def test_chat_interface_visible(page: Page, base_url: str, server_running: bool)
     page.wait_for_load_state("networkidle")
 
     # Verifica input de pergunta
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     expect(input_field).to_be_visible(timeout=5000)
 
     # Verifica botão de enviar
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     expect(send_button).to_be_visible(timeout=5000)
 
     # Verifica container de chat (pode ter nome diferente ou estar em outro lugar)
     # Tenta vários seletores possíveis
-    chat_container = page.locator('[data-testid="chat-container"]')
+    chat_container = page.get_by_test_id("chat-container")
     if chat_container.count() == 0:
         # Tenta seletores alternativos
         chat_container = page.locator("main, .chat-container, #chat, [role='main']")
@@ -76,15 +76,15 @@ def test_send_message_flow(page: Page, base_url: str):
     page.goto(base_url)
 
     # Preenche input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("O que é acessibilidade?")
 
     # Clica em enviar
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Aguarda mensagem do usuário aparecer
-    user_message = page.locator('[data-testid="chat-mensagem-user"]').first
+    user_message = page.get_by_test_id("chat-mensagem-user").first
     expect(user_message).to_be_visible(timeout=5000)
 
     # Verifica conteúdo da mensagem
@@ -98,10 +98,10 @@ def test_typing_indicator_shows(page: Page, base_url: str):
     page.goto(base_url)
 
     # Envia mensagem
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Teste de indicador")
 
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Verifica se indicador aparece (pode ser rápido)
@@ -121,7 +121,7 @@ def test_theme_toggle(page: Page, base_url: str):
     page.goto(base_url)
 
     # Encontra botão de tema
-    theme_toggle = page.locator('[data-testid="btn-toggle-tema"]')
+    theme_toggle = page.get_by_test_id("btn-toggle-tema")
     expect(theme_toggle).to_be_visible()
 
     # Verifica tema inicial
@@ -145,16 +145,16 @@ def test_suggestion_chips_click(page: Page, base_url: str):
     page.goto(base_url)
 
     # Aguarda card de introdução aparecer
-    page.locator('[data-testid="intro-card"]')
+    page.get_by_test_id("intro-card")
 
     # Verifica se há chips de sugestão
-    suggestion_chip = page.locator('[data-testid="chip-contraste"]').first
+    suggestion_chip = page.get_by_test_id("chip-contraste").first
     if suggestion_chip.is_visible():
         # Clica no chip
         suggestion_chip.click()
 
         # Verifica se o input foi preenchido
-        input_field = page.locator('[data-testid="input-pergunta"]')
+        input_field = page.get_by_test_id("input-pergunta")
         input_value = input_field.input_value()
         assert len(input_value) > 0
 
@@ -166,17 +166,17 @@ def test_clear_chat_button(page: Page, base_url: str):
     page.goto(base_url)
 
     # Envia uma mensagem primeiro
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.fill("Mensagem de teste")
 
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
     # Aguarda mensagem aparecer
     page.wait_for_timeout(1000)
 
     # Clica no botão de limpar
-    clear_button = page.locator('[data-testid="btn-limpar-chat"]')
+    clear_button = page.get_by_test_id("btn-limpar-chat")
     if clear_button.is_visible():
         clear_button.click()
 
@@ -187,7 +187,7 @@ def test_clear_chat_button(page: Page, base_url: str):
         page.wait_for_timeout(500)
 
         # Verifica se card de introdução voltou
-        page.locator('[data-testid="intro-card"]')
+        page.get_by_test_id("intro-card")
         # Pode estar visível novamente
 
 
@@ -198,8 +198,8 @@ def test_search_functionality(page: Page, base_url: str):
     page.goto(base_url)
 
     # Envia algumas mensagens
-    input_field = page.locator('[data-testid="input-pergunta"]')
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    input_field = page.get_by_test_id("input-pergunta")
+    send_button = page.get_by_test_id("btn-enviar")
 
     input_field.fill("Primeira mensagem")
     send_button.click()
@@ -210,12 +210,12 @@ def test_search_functionality(page: Page, base_url: str):
     page.wait_for_timeout(1000)
 
     # Clica no botão de busca
-    search_toggle = page.locator('[data-testid="btn-buscar"]')
+    search_toggle = page.get_by_test_id("btn-buscar")
     if search_toggle.is_visible():
         search_toggle.click()
 
         # Verifica se campo de busca aparece
-        search_input = page.locator('[data-testid="search-input"]')
+        search_input = page.get_by_test_id("search-input")
         expect(search_input).to_be_visible(timeout=2000)
 
         # Digita no campo de busca
@@ -240,7 +240,7 @@ def test_keyboard_navigation(page: Page, base_url: str):
     assert focused_element is not None
 
     # Testa Enter no input
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     input_field.focus()
     input_field.fill("Teste teclado")
 
@@ -262,7 +262,7 @@ def test_responsive_layout_mobile(page: Page, base_url: str):
     expect(header).to_be_visible()
 
     # Verifica se input está visível
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     expect(input_field).to_be_visible()
 
 

@@ -30,7 +30,7 @@ def test_mobile_breakpoints(page: Page, base_url: str, width: int, height: int):
     header = page.locator("header")
     expect(header).to_be_visible()
 
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     expect(input_field).to_be_visible()
 
     # Verifica que elementos não se sobrepõem
@@ -64,7 +64,7 @@ def test_tablet_breakpoints(page: Page, base_url: str, width: int, height: int):
     header = page.locator("header")
     expect(header).to_be_visible()
 
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     expect(input_field).to_be_visible()
 
 
@@ -87,7 +87,7 @@ def test_desktop_breakpoints(page: Page, base_url: str, width: int, height: int)
     header = page.locator("header")
     expect(header).to_be_visible()
 
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     expect(input_field).to_be_visible()
 
 
@@ -111,15 +111,15 @@ def test_orientation_change(page: Page, base_url: str):
     expect(header_landscape).to_be_visible()
 
     # Verifica que funcionalidade não quebrou
-    input_field = page.locator('[data-testid="input-pergunta"]')
+    input_field = page.get_by_test_id("input-pergunta")
     expect(input_field).to_be_visible()
 
     # Testa envio de mensagem
     input_field.fill("Teste orientação")
-    send_button = page.locator('[data-testid="btn-enviar"]')
+    send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
     page.wait_for_timeout(2000)
 
     # Verifica que mensagem foi enviada
-    user_message = page.locator('[data-testid="chat-mensagem-user"]').first
+    user_message = page.get_by_test_id("chat-mensagem-user").first
     expect(user_message).to_be_visible()
