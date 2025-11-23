@@ -30,6 +30,7 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv()
 
 from chatbot_acessibilidade.config import settings  # noqa: E402
+from backend.middleware import SecurityHeadersMiddleware  # noqa: E402
 
 # Garante que GOOGLE_API_KEY está disponível como variável de ambiente
 # O Google ADK precisa disso para criar o cliente internamente
@@ -41,6 +42,11 @@ from chatbot_acessibilidade.core.cache import (  # noqa: E402
     get_cached_response,
     set_cached_response,
     get_cache_stats,
+)
+from chatbot_acessibilidade.core.validators import (  # noqa: E402
+    sanitize_input,
+    validate_content,
+    detect_injection_patterns,
 )
 
 # Configuração de logging
@@ -60,6 +66,9 @@ app.state.limiter = limiter
 # Handler de rate limit - usa o handler padrão do slowapi
 # type: ignore necessário porque slowapi usa tipos específicos que MyPy não reconhece
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
+
+# Middleware de segurança (deve ser adicionado primeiro)
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Configura CORS com origens permitidas
 app.add_middleware(
@@ -99,12 +108,33 @@ class ChatRequest(BaseModel):
     @classmethod
     def validate_pergunta(cls, v: str) -> str:
         """Valida e sanitiza a pergunta"""
-        v = v.strip()
+        # Valida tamanho máximo ANTES de sanitizar (para dar erro correto)
+        if len(v) > settings.max_question_length:
+            raise ValueError(
+                f"A pergunta não pode ter mais de {settings.max_question_length} caracteres."
+            )
 
+        # Sanitiza entrada (sem truncar, pois já validamos o tamanho)
+        v = sanitize_input(v)
+
+        # Valida tamanho mínimo (após sanitização)
         if len(v) < settings.min_question_length:
             raise ValueError(
                 f"A pergunta deve ter pelo menos {settings.min_question_length} caracteres."
             )
+
+        # Valida conteúdo (modo não-strict: detecta mas não rejeita)
+        is_valid, reason = validate_content(v, strict=False)
+        if not is_valid and reason:
+            # Loga mas não rejeita em modo não-strict
+            logger.warning(f"Padrão suspeito detectado na pergunta: {reason}")
+
+        # Detecta padrões de injection para logging
+        detected = detect_injection_patterns(v)
+        if detected:
+            logger.warning(f"Padrões suspeitos detectados: {', '.join(detected)}")
+
+        return v
 
         if len(v) > settings.max_question_length:
             raise ValueError(
