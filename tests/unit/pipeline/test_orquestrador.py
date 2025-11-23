@@ -301,3 +301,26 @@ def test_executar_assistente_falha_levanta_excecao(mock_get_agent_response):
 
     with pytest.raises(AgentError):
         asyncio.run(orquestrador.executar("O que é WCAG?"))
+
+
+def test_pipeline_init_exception_generica():
+    """Testa pipeline_acessibilidade com Exception genérica (não ValidationError/APIError/AgentError)"""
+    from chatbot_acessibilidade.pipeline import pipeline_acessibilidade
+    from unittest.mock import patch, AsyncMock
+
+    # Simula Exception genérica (ex: AttributeError, KeyError, etc)
+    with patch("chatbot_acessibilidade.pipeline.PipelineOrquestrador") as mock_class:
+        mock_orquestrador = AsyncMock()
+        mock_orquestrador.executar = AsyncMock(side_effect=AttributeError("Atributo não encontrado"))
+        mock_class.return_value = mock_orquestrador
+
+        pergunta = "O que é WCAG?"
+
+        # Executa o pipeline
+        resultado = asyncio.run(pipeline_acessibilidade(pergunta))
+
+        # Verifica que retornou erro genérico
+        assert isinstance(resultado, dict)
+        assert "erro" in resultado
+        # A mensagem deve ser a genérica de ErrorMessages.API_ERROR_GENERIC
+        assert len(resultado["erro"]) > 0
