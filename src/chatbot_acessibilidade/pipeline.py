@@ -147,7 +147,7 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
         aprofundar_result: Union[str, Exception] = (
             aprofundar if isinstance(aprofundar, (str, Exception)) else str(aprofundar)
         )
-        
+
         testes = _tratar_resultado_paralelo(
             testes_result, "testes", "Não foi possível gerar sugestões de testes desta vez."
         )
