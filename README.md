@@ -241,8 +241,9 @@ Acesse: **http://localhost:8000**
 | [📘 INSTRUCOES_EXECUCAO.md](docs/INSTRUCOES_EXECUCAO.md) | Guia detalhado de execução |
 | [🔍 LINTERS.md](docs/LINTERS.md) | Guia de linters e formatação |
 | [📝 CHANGELOG.md](docs/CHANGELOG.md) | Histórico de mudanças |
-| [✨ MELHORIAS_IMPLEMENTADAS.md](docs/MELHORIAS_IMPLEMENTADAS.md) | Melhorias da Fase 1 |
 | [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Regras e padrões do projeto |
+| [🚀 DEPLOY.md](docs/DEPLOY.md) | Guia completo de deploy |
+| [🧪 TESTES.md](docs/TESTES.md) | Documentação de testes |
 
 ---
 
@@ -503,8 +504,9 @@ Access: **http://localhost:8000**
 | [📘 INSTRUCOES_EXECUCAO.md](docs/INSTRUCOES_EXECUCAO.md) | Detailed execution guide |
 | [🔍 LINTERS.md](docs/LINTERS.md) | Linters and formatting guide |
 | [📝 CHANGELOG.md](docs/CHANGELOG.md) | Change history |
-| [✨ MELHORIAS_IMPLEMENTADAS.md](docs/MELHORIAS_IMPLEMENTADAS.md) | Phase 1 improvements |
 | [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Project rules and standards |
+| [🚀 DEPLOY.md](docs/DEPLOY.md) | Complete deployment guide |
+| [🧪 TESTES.md](docs/TESTES.md) | Testing documentation |
 
 ---
 
