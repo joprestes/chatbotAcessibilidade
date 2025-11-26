@@ -67,7 +67,7 @@
 
 O **Chatbot de Acessibilidade Digital** é uma solução inteligente e educativa desenvolvida para profissionais, desenvolvedores e equipes de QA que buscam aprimorar seus conhecimentos sobre acessibilidade digital.
 
-Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback automático** para múltiplos LLMs via OpenRouter, o chatbot gera respostas completas, testáveis e com referências confiáveis, seguindo os padrões **WCAG 2.2 AA/AAA** e **ARIA 1.2**.
+Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback automático** para múltiplos LLMs via Hugging Face, o chatbot gera respostas completas, testáveis e com referências confiáveis, seguindo os padrões **WCAG 2.2 AA/AAA** e **ARIA 1.2**.
 
 #### 🎯 Por que usar este projeto?
 
@@ -119,7 +119,7 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 | ⚙️ Recurso | 🚀 Descrição |
 |:---:|:---|
 | **🤖 Multiagente Especializado** | 5 agentes trabalhando em conjunto |
-| **🔄 Fallback Automático** | Múltiplos LLMs via OpenRouter |
+| **🔄 Fallback Automático** | Múltiplos LLMs via Hugging Face |
 | **⚡ Cache Inteligente** | Respostas em cache com invalidação semântica |
 | **🛡️ Rate Limiting** | Proteção contra abuso (10 req/min) |
 | **📊 Métricas de Performance** | Coleta de tempo de resposta, uso de agentes, etc. |
@@ -233,10 +233,10 @@ Crie um arquivo `.env` na raiz do projeto:
 # Chave da API Google Gemini (obrigatória)
 GOOGLE_API_KEY="sua_chave_aqui"
 
-# OpenRouter (opcional - para fallback automático)
-OPENROUTER_API_KEY="sua_chave_openrouter"
+# Hugging Face (opcional - para fallback automático)
+HUGGINGFACE_API_KEY="sua_chave_huggingface"
 FALLBACK_ENABLED=true
-OPENROUTER_MODELS=meta-llama/llama-3.3-70b-instruct:free,google/gemini-flash-1.5:free,mistralai/mistral-7b-instruct:free
+HUGGINGFACE_MODELS=meta-llama/Llama-3.3-70B-Instruct,google/gemma-2-9b-it,mistralai/Mistral-7B-Instruct-v0.3
 
 # CORS (opcional - padrão: *)
 CORS_ORIGINS="*"
@@ -256,27 +256,28 @@ LOG_LEVEL=INFO
 O chatbot agora suporta **fallback automático** entre múltiplos LLMs:
 
 1. **Provedor Primário**: Google Gemini (padrão)
-2. **Provedor Secundário**: OpenRouter com modelos gratuitos
-3. **Comportamento**: Se o Gemini esgotar quota ou falhar, o sistema automaticamente tenta modelos OpenRouter em sequência
+2. **Provedor Secundário**: Hugging Face Inference API
+3. **Comportamento**: Se o Gemini esgotar quota ou falhar, o sistema automaticamente tenta modelos Hugging Face em sequência
 
-**Modelos OpenRouter Gratuitos Recomendados:**
-- `meta-llama/llama-3.3-70b-instruct:free`
-- `google/gemini-flash-1.5:free`
-- `mistralai/mistral-7b-instruct:free`
-- `qwen/qwen-2.5-7b-instruct:free`
-- `microsoft/phi-3-medium-4k-instruct:free`
+**Modelos Hugging Face Recomendados:**
+- `meta-llama/Llama-3.3-70B-Instruct`
+- `google/gemma-2-9b-it`
+- `mistralai/Mistral-7B-Instruct-v0.3`
+- `microsoft/Phi-3-mini-4k-instruct`
 
 **Para habilitar o fallback:**
-1. Obtenha uma chave API do [OpenRouter](https://openrouter.ai/)
-2. Configure `OPENROUTER_API_KEY` no `.env`
+1. Obtenha uma chave API do [Hugging Face](https://huggingface.co/settings/tokens)
+2. Configure `HUGGINGFACE_API_KEY` no `.env`
 3. Configure `FALLBACK_ENABLED=true`
-4. Opcionalmente, ajuste `OPENROUTER_MODELS` com seus modelos preferidos
+4. Opcionalmente, ajuste `HUGGINGFACE_MODELS` com seus modelos preferidos
 
 #### ▶️ Execução
 
 **Frontend Web Moderno** ⭐
 
 ```bash
+make run
+# ou
 uvicorn src.backend.api:app --reload --port 8000
 ```
 
@@ -288,8 +289,8 @@ Acesse: **http://localhost:8000**
 - Verifique se o arquivo `.env` existe na raiz do projeto
 - Certifique-se de que contém: `GOOGLE_API_KEY="sua_chave_aqui"`
 
-**Erro: "fallback_enabled=True requer openrouter_api_key configurada"**
-- Se você habilitou o fallback, configure `OPENROUTER_API_KEY` no `.env`
+**Erro: "fallback_enabled=True requer huggingface_api_key configurada"**
+- Se você habilitou o fallback, configure `HUGGINGFACE_API_KEY` no `.env`
 - Ou desabilite o fallback: `FALLBACK_ENABLED=false`
 
 **Erro: "Frontend não encontrado"**
@@ -444,7 +445,7 @@ docker-compose up
 | Categoria | Tecnologias |
 |:---------:|:-----------|
 | **🐍 Backend** | Python 3.12+, FastAPI, Uvicorn |
-| **🤖 IA** | Google Gemini 2.0 Flash, Google ADK, OpenRouter (fallback) |
+| **🤖 IA** | Google Gemini 2.0 Flash, Google ADK, Hugging Face (fallback) |
 | **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla), Glassmorphism |
 | **🧪 Testes** | Pytest, Pytest-cov, Testes E2E |
 | **🔍 Qualidade** | Black, Ruff, MyPy, Pre-commit |

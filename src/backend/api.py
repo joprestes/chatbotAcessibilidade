@@ -72,7 +72,7 @@ app = FastAPI(
 
     API REST desenvolvida com FastAPI que fornece respostas inteligentes sobre
     acessibilidade digital, utilizando Google Gemini 2.0 Flash com fallback
-    automático para múltiplos LLMs via OpenRouter.
+    automático para múltiplos LLMs via Hugging Face.
     
     ### ✨ Funcionalidades
     
