@@ -114,6 +114,8 @@ markers = [
     "security: marca testes de segurança",
     "performance: marca testes de performance",
     "slow: marca testes lentos",
+    "contract: marca testes de contrato de API",
+    "property: marca property-based tests",
 ]
 filterwarnings = [
     # Suprimir warnings de dependências externas e ambiente

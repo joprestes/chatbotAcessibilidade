@@ -80,40 +80,42 @@ async def test_get_agent_response_agente_inexistente():
     assert resultado.startswith("Erro")
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher._get_openrouter_client")
+@patch("chatbot_acessibilidade.agents.dispatcher._get_huggingface_client")
 @patch("chatbot_acessibilidade.agents.dispatcher.settings")
 @pytest.mark.asyncio
-async def test_get_agent_response_inicializa_openrouter_sucesso(mock_settings, mock_get_openrouter):
-    """Testa inicialização do OpenRouter quando fallback está habilitado (linha 42-49)"""
+async def test_get_agent_response_inicializa_huggingface_sucesso(
+    mock_settings, mock_get_huggingface
+):
+    """Testa inicialização do HuggingFace quando fallback está habilitado (linha 42-49)"""
     from chatbot_acessibilidade.agents.dispatcher import get_agent_response
-    from chatbot_acessibilidade.core.llm_provider import OpenRouterClient
+    from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
 
     mock_settings.fallback_enabled = True
-    mock_settings.openrouter_api_key = "test_key"
-    mock_openrouter_client = MagicMock(spec=OpenRouterClient)
-    mock_get_openrouter.return_value = mock_openrouter_client
+    mock_settings.huggingface_api_key = "test_key"
+    mock_huggingface_client = MagicMock(spec=HuggingFaceClient)
+    mock_get_huggingface.return_value = mock_huggingface_client
 
     with patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback") as mock_fallback:
-        mock_fallback.return_value = ("Resposta teste", "OpenRouter")
+        mock_fallback.return_value = ("Resposta teste", "HuggingFace")
 
         resultado = await get_agent_response("assistente", "Teste", "prefixo")
 
         assert resultado == "Resposta teste"
-        mock_get_openrouter.assert_called_once()
+        mock_get_huggingface.assert_called_once()
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher._get_openrouter_client")
+@patch("chatbot_acessibilidade.agents.dispatcher._get_huggingface_client")
 @patch("chatbot_acessibilidade.agents.dispatcher.settings")
 @pytest.mark.asyncio
-async def test_get_agent_response_openrouter_falha_inicializacao(
-    mock_settings, mock_get_openrouter
+async def test_get_agent_response_huggingface_falha_inicializacao(
+    mock_settings, mock_get_huggingface
 ):
-    """Testa quando OpenRouter falha na inicialização (linha 46-48)"""
+    """Testa quando HuggingFace falha na inicialização (linha 46-48)"""
     from chatbot_acessibilidade.agents.dispatcher import get_agent_response
 
     mock_settings.fallback_enabled = True
-    mock_settings.openrouter_api_key = "test_key"
-    mock_get_openrouter.return_value = None  # Falha na inicialização
+    mock_settings.huggingface_api_key = "test_key"
+    mock_get_huggingface.return_value = None  # Falha na inicialização
 
     with patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback") as mock_fallback:
         mock_fallback.return_value = ("Resposta teste", "Google Gemini")
@@ -122,7 +124,7 @@ async def test_get_agent_response_openrouter_falha_inicializacao(
 
         assert resultado == "Resposta teste"
         # Deve tentar inicializar, mas continuar sem fallback se falhar
-        mock_get_openrouter.assert_called_once()
+        mock_get_huggingface.assert_called_once()
 
 
 @patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
@@ -139,46 +141,48 @@ async def test_get_agent_response_erro_google_api_call_503(mock_fallback):
     assert "sobrecarregada" in str(exc_info.value).lower() or "erro" in str(exc_info.value).lower()
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.OpenRouterClient")
+@patch("chatbot_acessibilidade.agents.dispatcher.HuggingFaceClient")
 @patch("chatbot_acessibilidade.agents.dispatcher.settings")
 @pytest.mark.asyncio
-async def test_get_openrouter_client_excecao_na_inicializacao(mock_settings, mock_openrouter_class):
-    """Testa _get_openrouter_client quando OpenRouterClient levanta exceção (linha 46-48)"""
-    from chatbot_acessibilidade.agents.dispatcher import _get_openrouter_client
+async def test_get_huggingface_client_excecao_na_inicializacao(
+    mock_settings, mock_huggingface_class
+):
+    """Testa _get_huggingface_client quando HuggingFaceClient levanta exceção (linha 46-48)"""
+    from chatbot_acessibilidade.agents.dispatcher import _get_huggingface_client
 
     mock_settings.fallback_enabled = True
-    mock_settings.openrouter_api_key = "test_key"
-    mock_openrouter_class.side_effect = ValueError("Erro ao inicializar")
+    mock_settings.huggingface_api_key = "test_key"
+    mock_huggingface_class.side_effect = ValueError("Erro ao inicializar")
 
-    resultado = _get_openrouter_client()
+    resultado = _get_huggingface_client()
 
     assert resultado is None
-    mock_openrouter_class.assert_called_once()
+    mock_huggingface_class.assert_called_once()
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.OpenRouterClient")
+@patch("chatbot_acessibilidade.agents.dispatcher.HuggingFaceClient")
 @patch("chatbot_acessibilidade.agents.dispatcher.settings")
-def test_get_openrouter_client_ja_inicializado(mock_settings, mock_openrouter_class):
-    """Testa _get_openrouter_client quando já está inicializado (linha 49)"""
-    from chatbot_acessibilidade.agents.dispatcher import _get_openrouter_client
+def test_get_huggingface_client_ja_inicializado(mock_settings, mock_huggingface_class):
+    """Testa _get_huggingface_client quando já está inicializado (linha 49)"""
+    from chatbot_acessibilidade.agents.dispatcher import _get_huggingface_client
 
     mock_settings.fallback_enabled = True
-    mock_settings.openrouter_api_key = "test_key"
+    mock_settings.huggingface_api_key = "test_key"
 
     # Simula que já foi inicializado
     from chatbot_acessibilidade.agents import dispatcher
 
     mock_existing_client = MagicMock()
-    dispatcher._openrouter_client = mock_existing_client
+    dispatcher._huggingface_client = mock_existing_client
 
-    resultado = _get_openrouter_client()
+    resultado = _get_huggingface_client()
 
     assert resultado == mock_existing_client
-    # Não deve chamar OpenRouterClient novamente
-    mock_openrouter_class.assert_not_called()
+    # Não deve chamar HuggingFaceClient novamente
+    mock_huggingface_class.assert_not_called()
 
     # Limpa para não afetar outros testes
-    dispatcher._openrouter_client = None
+    dispatcher._huggingface_client = None
 
 
 def test_should_retry_resource_exhausted():
@@ -246,21 +250,21 @@ async def test_get_agent_response_erro_inesperado(mock_fallback):
         await get_agent_response("assistente", "Teste", "prefixo")
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher._get_openrouter_client")
+@patch("chatbot_acessibilidade.agents.dispatcher._get_huggingface_client")
 @patch("chatbot_acessibilidade.agents.dispatcher.settings")
 @pytest.mark.asyncio
-async def test_get_agent_response_com_openrouter_client(mock_settings, mock_get_openrouter):
-    """Testa get_agent_response quando OpenRouter está disponível"""
+async def test_get_agent_response_com_huggingface_client(mock_settings, mock_get_huggingface):
+    """Testa get_agent_response quando HuggingFace está disponível"""
     from chatbot_acessibilidade.agents.dispatcher import get_agent_response
-    from chatbot_acessibilidade.core.llm_provider import OpenRouterClient
+    from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
 
     mock_settings.fallback_enabled = True
-    mock_settings.openrouter_api_key = "test_key"
-    mock_openrouter_client = MagicMock(spec=OpenRouterClient)
-    mock_get_openrouter.return_value = mock_openrouter_client
+    mock_settings.huggingface_api_key = "test_key"
+    mock_huggingface_client = MagicMock(spec=HuggingFaceClient)
+    mock_get_huggingface.return_value = mock_huggingface_client
 
     with patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback") as mock_fallback:
-        mock_fallback.return_value = ("Resposta teste", "OpenRouter")
+        mock_fallback.return_value = ("Resposta teste", "HuggingFace")
 
         resultado = await get_agent_response("assistente", "Teste", "prefixo")
 

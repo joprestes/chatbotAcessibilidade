@@ -156,7 +156,7 @@ def test_server_error_500(page: Page, base_url: str):
 def test_manual_cancellation(page: Page, base_url: str):
     """
     Testa cancelamento manual de requisição.
-    
+
     Nota: Este teste é pulado no CI devido a problemas de timing.
     Execute localmente para validar a funcionalidade de cancelamento.
     """

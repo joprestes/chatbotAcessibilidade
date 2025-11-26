@@ -49,30 +49,32 @@ def test_api_config_endpoint_via_playwright(api_context: APIRequestContext, base
 
 
 def test_api_chat_endpoint_success_via_playwright(
-    api_context: APIRequestContext,
     base_url: str,
     server_running: bool,
 ):
     """
-    Testa endpoint de chat com pergunta válida usando Playwright.
+    Testa endpoint de chat com pergunta válida.
+    Usa httpx diretamente para evitar problemas com APIRequestContext e compressão.
     Requer servidor rodando.
     """
     if not server_running:
         pytest.skip("Servidor não está rodando. Execute: uvicorn src.backend.api:app --port 8000")
 
-    # Testa endpoint de chat (requer servidor real rodando)
-    # Nota: Este teste pode falhar se não houver API key configurada
-    # ou se o servidor não estiver rodando
-    response = api_context.post(
-        f"{base_url}/api/chat",
-        data={"pergunta": "O que é acessibilidade digital?"},
-    )
+    import httpx
+    
+    # Usa httpx diretamente para evitar problema de compressão do Playwright
+    # APIRequestContext tem bug com Content-Length duplicado quando há compressão gzip
+    with httpx.Client(timeout=10.0) as client:
+        response = client.post(
+            f"{base_url}/api/chat",
+            json={"pergunta": "O que é acessibilidade digital?"},
+        )
 
     # Aceita 200 (sucesso) ou 500 (erro de API key/configuração)
     # O importante é que o endpoint responde
-    assert response.status in [200, 500], f"Status inesperado: {response.status}"
+    assert response.status_code in [200, 500], f"Status inesperado: {response.status_code}"
 
-    if response.status == 200:
+    if response.status_code == 200:
         data = response.json()
         assert "resposta" in data
         assert isinstance(data["resposta"], dict)

@@ -344,73 +344,59 @@ Acesse: **http://localhost:8000**
 |:---:|:---:|
 | **Testes Unitários** | ✅ Completo |
 | **Testes de Integração** | ✅ Completo |
-| **Testes E2E** | ✅ Completo |
-| **Total** | **98.52%** |
+O projeto possui uma **suite de testes de classe mundial** com 8 ferramentas profissionais:
 
-</div>
+| Ferramenta | Propósito | Cobertura |
+|:---|:---|:---:|
+| **pytest** | Testes unitários/integração | 384 testes |
+| **pytest-cov** | Cobertura de código | 98.77% |
+| **Playwright** | Testes E2E | 171 testes |
+| **Locust** 🆕 | Testes de carga | 4 cenários |
+| **pytest-benchmark** 🆕 | Benchmarks de performance | 6 testes |
+| **Hypothesis** 🆕 | Property-based testing | 10 testes |
+| **mutmut** 🆕 | Mutation testing | Configurado |
+| **Allure** 🆕 | Relatórios visuais | Dashboards |
 
-#### 🧪 Executar Testes
+#### 🚀 Executar Testes
 
 ```bash
 # Testes básicos
-pytest -v
+make test                    # Todos os testes
+make test-cov                # Com cobertura
 
-# Com relatório HTML
-pytest --html=relatorio_testes.html --self-contained-html
+# Testes específicos
+make test-unit               # Apenas unitários
+make test-integration        # Apenas integração
+make test-playwright         # E2E com Playwright
 
-# Com cobertura
-pytest --cov=src --cov-report=html
+# Testes avançados 🆕
+make test-benchmark          # Benchmarks de performance
+make test-load-ui            # Testes de carga (Locust)
+make test-property           # Property-based tests
+make test-mutation           # Mutation testing
+make allure-serve            # Relatórios visuais
+
+# Qualidade de código
+make lint                    # Ruff
+make type-check              # MyPy
+make check                   # Todas as verificações
 ```
 
-#### 🔍 Linters e Formatação
+#### 📊 Métricas de Qualidade
 
-```bash
-# Instalar ferramentas
-make install
+- ✅ **384 testes** passando (100%)
+- ✅ **98.77% cobertura** de código
+- ✅ **0 erros** de lint (Ruff)
+- ✅ **0 erros** de type checking (MyPy)
+- ✅ **Cache**: 2.7μs (367x mais rápido que meta!)
 
-# Formatar código
-make format
+#### 📚 Documentação de Testes
 
-# Verificar lint
-make lint
-
-# Verificar tipos
-make type-check
-
-# Executar todas as verificações
-make check
-```
-
-> 📚 Veja [REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) para mais detalhes sobre linters e formatação.
-
-#### 🚀 CI/CD com GitHub Actions
-
-O projeto utiliza **GitHub Actions** para automação completa de testes e validações:
-
-**Workflows Disponíveis:**
-
-1. **CI (Continuous Integration)**
-   - Executa em cada push e pull request
-   - Valida código com `ruff` (lint) e `mypy` (type check)
-   - Executa testes unitários e de integração
-   - Executa testes E2E com Playwright
-   - Gera relatórios de testes automaticamente
-
-2. **Accessibility Tests**
-   - Executa testes de acessibilidade com axe-core
-   - Valida conformidade WCAG 2.2 AA/AAA
-   - Executa diariamente via schedule e em PRs
-
-**Status do CI:**
-- ✅ Todos os testes passam automaticamente
-- ✅ Relatórios disponíveis como artifacts
-- ✅ Badge de status no README
-
-**Configuração de Secrets (GitHub):**
-- `GOOGLE_API_KEY` - Obrigatório para testes que usam API real
-- `OPENROUTER_API_KEY` - Opcional, para testes de fallback
-
-> 📚 Veja [TESTES.md](docs/TESTES.md) para detalhes completos sobre os testes E2E.
+- [📋 INDICE_TESTES.md](docs/INDICE_TESTES.md) - Índice completo
+- [🧪 TESTES.md](docs/TESTES.md) - Estratégia geral
+- [🔥 TESTES_CARGA.md](docs/TESTES_CARGA.md) - Locust + Benchmarks
+- [🧬 MUTATION_TESTING.md](docs/MUTATION_TESTING.md) - mutmut
+- [📊 ALLURE_REPORTS.md](docs/ALLURE_REPORTS.md) - Relatórios visuais
 
 ---
 

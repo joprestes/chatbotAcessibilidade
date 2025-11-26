@@ -33,7 +33,7 @@ async def test_automatic_fallback_on_gemini_failure():
     """
     from chatbot_acessibilidade.core.llm_provider import (
         GoogleGeminiClient,
-        OpenRouterClient,
+        HuggingFaceClient,
         generate_with_fallback,
     )
     from chatbot_acessibilidade.core.exceptions import APIError
@@ -42,29 +42,29 @@ async def test_automatic_fallback_on_gemini_failure():
     mock_gemini = MagicMock(spec=GoogleGeminiClient)
     mock_gemini.generate = AsyncMock(side_effect=APIError("Google Gemini quota exceeded"))
 
-    # Mock de sucesso do OpenRouter
-    mock_openrouter = MagicMock(spec=OpenRouterClient)
-    mock_openrouter.generate = AsyncMock(return_value="Resposta do OpenRouter")
+    # Mock de sucesso do HuggingFace
+    mock_huggingface = MagicMock(spec=HuggingFaceClient)
+    mock_huggingface.generate = AsyncMock(return_value="Resposta do HuggingFace")
 
     # Mock de settings para habilitar fallback
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
         mock_settings.fallback_enabled = True
 
         # Configura mocks para retornar valores corretos
-        mock_openrouter.get_provider_name = MagicMock(return_value="OpenRouter")
+        mock_huggingface.get_provider_name = MagicMock(return_value="HuggingFace")
 
         # Testa fallback diretamente
         resposta, provedor = await generate_with_fallback(
             primary_client=mock_gemini,
             prompt="Teste de fallback",
-            fallback_clients=[mock_openrouter],
+            fallback_clients=[mock_huggingface],
         )
 
         # Verifica que fallback foi usado
-        assert "OpenRouter" in provedor or provedor == "OpenRouter"
-        assert resposta == "Resposta do OpenRouter"
+        assert "HuggingFace" in provedor or provedor == "HuggingFace"
+        assert resposta == "Resposta do HuggingFace"
         assert mock_gemini.generate.called
-        assert mock_openrouter.generate.called
+        assert mock_huggingface.generate.called
 
 
 @pytest.mark.asyncio

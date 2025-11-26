@@ -4,10 +4,10 @@ e comprimir respostas
 """
 
 import gzip
+from typing import Awaitable, Callable
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
-from typing import Callable
 
 from chatbot_acessibilidade.config import settings
 
@@ -15,7 +15,7 @@ from chatbot_acessibilidade.config import settings
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware que adiciona headers de segurança HTTP"""
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         """Adiciona headers de segurança à resposta"""
         response = await call_next(request)
 
@@ -95,7 +95,7 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
         self.STATIC_TTL = STATIC_CACHE_TTL_SECONDS
         self.ASSETS_TTL = ASSETS_CACHE_TTL_SECONDS
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         """Adiciona headers de cache para assets estáticos"""
         response = await call_next(request)
 
@@ -138,7 +138,7 @@ class CompressionMiddleware(BaseHTTPMiddleware):
 
         self.MIN_SIZE = COMPRESSION_MIN_SIZE_BYTES
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         """Comprime resposta se necessário"""
         response = await call_next(request)
 
@@ -162,10 +162,10 @@ class CompressionMiddleware(BaseHTTPMiddleware):
 
         # Verifica o tamanho do conteúdo
         body = b""
-        async for chunk in response.body_iterator:
+        async for chunk in response.body_iterator:  # type: ignore[attr-defined]
             body += chunk
 
-        if len(body) < self.MIN_SIZE:
+        if self.MIN_SIZE is not None and len(body) < self.MIN_SIZE:
             # Resposta muito pequena, não comprime
             return Response(
                 content=body,

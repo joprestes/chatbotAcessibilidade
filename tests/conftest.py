@@ -9,6 +9,8 @@ from pathlib import Path
 os.environ.setdefault("GOOGLE_API_KEY", "test_key_for_pytest")
 os.environ.setdefault("OPENROUTER_API_KEY", "")
 os.environ.setdefault("FALLBACK_ENABLED", "false")
+# Desabilita rate limiting durante testes para evitar falhas por 429
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 # Suprime warnings de dependências externas e ambiente
 try:

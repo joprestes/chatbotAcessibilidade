@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from chatbot_acessibilidade.core.exceptions import APIError, QuotaExhaustedError
 from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
-    OpenRouterClient,
+    HuggingFaceClient,
     generate_with_fallback,
 )
 
@@ -69,7 +69,7 @@ async def test_google_gemini_client_timeout_linha_191(
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_content_nao_string_linha_311(mock_client_class):
+async def test_huggingface_client_content_nao_string_linha_311(mock_client_class):
     """
     Testa linha 311: quando content não é string
     O erro é capturado e transformado em erro genérico, mas a linha 311 é executada
@@ -93,10 +93,10 @@ async def test_openrouter_client_content_nao_string_linha_311(mock_client_class)
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
         with pytest.raises(APIError):
             # A linha 311 é executada e levanta o erro, mas é capturado no except geral
             # O importante é que a linha 311 seja executada
@@ -112,7 +112,7 @@ async def test_generate_with_fallback_continue_linhas_435_439(
     mock_settings, mock_session_service, mock_runner_class, mock_client_class, mock_agent
 ):
     """
-    Testa linhas 435-439: quando should_fallback retorna True para outros clientes (não OpenRouter)
+    Testa linhas 435-439: quando should_fallback retorna True para outros clientes (não HuggingFace)
     e o código faz continue para tentar o próximo cliente
     """
     from chatbot_acessibilidade.core.llm_provider import GoogleGeminiClient

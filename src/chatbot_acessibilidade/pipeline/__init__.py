@@ -43,7 +43,7 @@ async def pipeline_acessibilidade(pergunta: str) -> dict:
     try:
         orquestrador = PipelineOrquestrador()
         resultado = await orquestrador.executar(pergunta)
-        return resultado
+        return dict(resultado)
     except ValidationError:
         # Re-raise ValidationError sem modificação
         raise

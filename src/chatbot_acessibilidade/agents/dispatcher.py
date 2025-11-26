@@ -19,7 +19,7 @@ from chatbot_acessibilidade.core.exceptions import APIError, AgentError
 from chatbot_acessibilidade.core.constants import ErrorMessages, MAX_RETRY_ATTEMPTS, LogMessages
 from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
-    OpenRouterClient,
+    HuggingFaceClient,
     generate_with_fallback,
 )
 
@@ -34,20 +34,20 @@ AGENTES = criar_agentes()
 # =======================
 # Inicialização de clientes LLM (lazy loading)
 # =======================
-_openrouter_client: Optional[OpenRouterClient] = None
+_huggingface_client: Optional[HuggingFaceClient] = None
 
 
-def _get_openrouter_client() -> Optional[OpenRouterClient]:
-    """Inicializa o cliente OpenRouter de forma lazy"""
-    global _openrouter_client
-    if _openrouter_client is None and settings.fallback_enabled and settings.openrouter_api_key:
+def _get_huggingface_client() -> Optional[HuggingFaceClient]:
+    """Inicializa o cliente Hugging Face de forma lazy"""
+    global _huggingface_client
+    if _huggingface_client is None and settings.fallback_enabled and settings.huggingface_api_key:
         try:
-            logger.info("Inicializando cliente OpenRouter")
-            _openrouter_client = OpenRouterClient()
+            logger.info("Inicializando cliente Hugging Face")
+            _huggingface_client = HuggingFaceClient()
         except Exception as e:
-            logger.warning(f"Não foi possível inicializar OpenRouter: {e}")
+            logger.warning(f"Não foi possível inicializar Hugging Face: {e}")
             return None
-    return _openrouter_client
+    return _huggingface_client
 
 
 # =======================
@@ -108,15 +108,15 @@ async def rodar_agente(agent: Agent, prompt: str, user_id="user", session_prefix
     # Cria cliente primário (Google Gemini)
     primary_client = GoogleGeminiClient(agent)
 
-    # Prepara clientes de fallback (OpenRouter)
+    # Prepara clientes de fallback (Hugging Face)
     fallback_clients = []
     fallback_models = []
 
     if settings.fallback_enabled:
-        openrouter_client = _get_openrouter_client()
-        if openrouter_client:
-            fallback_clients.append(openrouter_client)
-            fallback_models = settings.openrouter_models_list
+        huggingface_client = _get_huggingface_client()
+        if huggingface_client:
+            fallback_clients.append(huggingface_client)
+            fallback_models = settings.huggingface_models_list
 
     try:
         # Usa o sistema de fallback automático
@@ -160,4 +160,5 @@ async def rodar_agente(agent: Agent, prompt: str, user_id="user", session_prefix
 async def get_agent_response(tipo: str, prompt: str, prefixo: str) -> str:
     if tipo not in AGENTES:
         return f"Erro: agente '{tipo}' não encontrado."
-    return await rodar_agente(AGENTES[tipo], prompt, session_prefix=prefixo)
+    result = await rodar_agente(AGENTES[tipo], prompt, session_prefix=prefixo)
+    return str(result)

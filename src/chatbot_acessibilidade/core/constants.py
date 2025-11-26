@@ -9,7 +9,7 @@ facilitando manutenção e configuração.
 # Timeouts (em segundos)
 # =========================================
 DEFAULT_API_TIMEOUT_SECONDS = 60  # Timeout padrão para APIs (Google Gemini)
-OPENROUTER_TIMEOUT_SECONDS = 60  # Timeout para OpenRouter
+HUGGINGFACE_TIMEOUT_SECONDS = 60  # Timeout para Hugging Face
 FRONTEND_REQUEST_TIMEOUT_MS = 120000  # 120 segundos em milissegundos
 HTTPX_CONNECT_TIMEOUT_SECONDS = 10.0  # Timeout de conexão para httpx
 
@@ -40,7 +40,7 @@ COMPRESSION_MIN_SIZE_BYTES = 500  # Tamanho mínimo para comprimir resposta
 # =========================================
 # Limites de Tokens (LLM)
 # =========================================
-OPENROUTER_MAX_TOKENS = 2000  # Máximo de tokens para OpenRouter
+HUGGINGFACE_MAX_TOKENS = 2000  # Máximo de tokens para Hugging Face
 
 # =========================================
 # Retry
@@ -70,7 +70,9 @@ class ErrorMessages:
         "⏱️ A requisição demorou muito para responder (timeout). Por favor, tente novamente."
     )
     TIMEOUT_GEMINI = "Timeout: A requisição demorou mais de {timeout}s para responder."
-    TIMEOUT_OPENROUTER = "Timeout: A requisição ao OpenRouter demorou mais de {timeout} segundos."
+    TIMEOUT_HUGGINGFACE = (
+        "Timeout: A requisição ao Hugging Face demorou mais de {timeout} segundos."
+    )
 
     # Quota/Rate Limit
     QUOTA_EXHAUSTED = "Limite de uso atingido. Tente novamente mais tarde."
@@ -86,16 +88,16 @@ class ErrorMessages:
     )
     API_ERROR_SERVER_CONFIG = "Erro: Houve um problema com a configuração do servidor."
     API_ERROR_COMMUNICATION = "Erro: Ocorreu um problema de comunicação com a API."
-    API_ERROR_OPENROUTER_INVALID_KEY = "Erro: Chave API do OpenRouter inválida."
-    API_ERROR_OPENROUTER_COMMUNICATION = (
-        "Erro: Ocorreu um problema de comunicação com o OpenRouter (HTTP {status_code})."
+    API_ERROR_HUGGINGFACE_INVALID_KEY = "Erro: Chave API do Hugging Face inválida."
+    API_ERROR_HUGGINGFACE_COMMUNICATION = (
+        "Erro: Ocorreu um problema de comunicação com o Hugging Face (HTTP {status_code})."
     )
-    API_ERROR_OPENROUTER_CONNECTION = "Erro: Não foi possível conectar ao OpenRouter."
-    API_ERROR_OPENROUTER_GENERIC = "Erro: Ocorreu uma falha inesperada ao usar o OpenRouter."
+    API_ERROR_HUGGINGFACE_CONNECTION = "Erro: Não foi possível conectar ao Hugging Face."
+    API_ERROR_HUGGINGFACE_GENERIC = "Erro: Ocorreu uma falha inesperada ao usar o Hugging Face."
 
     # Model Unavailable
     MODEL_UNAVAILABLE_GEMINI = "API do Google sobrecarregada"
-    MODEL_UNAVAILABLE_OPENROUTER = "Modelo {model} indisponível"
+    MODEL_UNAVAILABLE_HUGGINGFACE = "Modelo {model} indisponível"
 
     # Fallback
     ALL_PROVIDERS_FAILED = (
@@ -132,18 +134,18 @@ class LogMessages:
 
     # Timeout
     TIMEOUT_GEMINI = "Timeout ao executar Gemini após {timeout}s"
-    TIMEOUT_OPENROUTER = "Timeout ao executar OpenRouter modelo '{model}' após {timeout}s"
+    TIMEOUT_HUGGINGFACE = "Timeout ao executar Hugging Face modelo '{model}' após {timeout}s"
 
     # API Errors
     API_ERROR_GEMINI_RATE_LIMIT = "Rate limit excedido no Gemini"
     API_ERROR_GEMINI_AUTH = "Erro de autenticação no Gemini"
     API_ERROR_GEMINI_COMMUNICATION = "Erro de API do Google: {error}"
     API_ERROR_GEMINI_GENERIC = "Erro inesperado no Gemini: {error}"
-    API_ERROR_OPENROUTER_RATE_LIMIT = "Rate limit excedido no OpenRouter modelo '{model}'"
-    API_ERROR_OPENROUTER_AUTH = "Erro de autenticação no OpenRouter"
-    API_ERROR_OPENROUTER_HTTP = "Erro HTTP {status_code} do OpenRouter: {error}"
-    API_ERROR_OPENROUTER_REQUEST = "Erro de requisição ao OpenRouter: {error}"
-    API_ERROR_OPENROUTER_GENERIC = "Erro inesperado no OpenRouter: {error}"
+    API_ERROR_HUGGINGFACE_RATE_LIMIT = "Rate limit excedido no Hugging Face modelo '{model}'"
+    API_ERROR_HUGGINGFACE_AUTH = "Erro de autenticação no Hugging Face"
+    API_ERROR_HUGGINGFACE_HTTP = "Erro HTTP {status_code} do Hugging Face: {error}"
+    API_ERROR_HUGGINGFACE_REQUEST = "Erro de requisição ao Hugging Face: {error}"
+    API_ERROR_HUGGINGFACE_GENERIC = "Erro inesperado no Hugging Face: {error}"
 
     # Validation
     VALIDATION_SUSPICIOUS_PATTERN = "Padrão suspeito detectado na pergunta: {reason}"
