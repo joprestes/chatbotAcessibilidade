@@ -24,3 +24,12 @@ tests/reports/traces/*.zip
 .DS_Store
 Thumbs.db
 *.log
+
+# Mutation Testing
+.mutmut-cache
+html/
+
+# Allure Reports
+allure-results/
+allure-report/
+.allure/
