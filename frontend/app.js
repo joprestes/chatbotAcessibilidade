@@ -70,12 +70,6 @@ function updateAvatar(state, animate = true) {
 
     // Atualiza avatar no header - REMOVIDO para manter logo estático
     // O header agora usa um logo fixo e não deve mudar com o estado do bot
-    /* 
-    const headerAvatar = document.querySelector('.ada-header-avatar');
-    if (headerAvatar) {
-        // ... lógica removida ...
-    }
-    */
 
     // Atualiza avatar no card de introdução
     const introAvatar = document.querySelector('.intro-card-avatar');
@@ -133,21 +127,6 @@ function resetSleepTimeout() {
  */
 function setupAvatarClickHandler() {
     // Click handler removido pois o header agora é um logo estático
-    /*
-    const headerAvatar = document.querySelector('.ada-header-avatar');
-    if (headerAvatar) {
-        headerAvatar.style.cursor = 'pointer';
-        headerAvatar.setAttribute('title', 'Clique para acordar a Ada');
-        headerAvatar.addEventListener('click', () => {
-            if (currentAvatarState === AVATAR_STATES.SLEEP) {
-                updateAvatar(AVATAR_STATES.GREETING, true);
-                resetSleepTimeout();
-                // Mostra mensagem de "acordou"
-                showToast('Acordei! Vamos lá! 💜', 'info');
-            }
-        });
-    }
-    */
 }
 
 // =========================================

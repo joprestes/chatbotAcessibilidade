@@ -3,7 +3,7 @@ Middleware de segurança e compressão para adicionar headers HTTP de segurança
 e comprimir respostas
 """
 
-import gzip
+
 from typing import Awaitable, Callable
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
