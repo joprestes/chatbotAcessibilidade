@@ -50,8 +50,21 @@ pytest-asyncio>=0.23.0,<1.0.0
 pytest-cov>=4.1.0,<5.0.0
 pytest-html>=4.1.0,<5.0.0
 
-# Playwright (E2E Testing)
-pytest-playwright>=0.4.0,<1.0.0
-playwright>=1.40.0,<2.0.0
-# Nota: axe-playwright não está disponível no PyPI
-# Os testes de acessibilidade usam axe-core via JavaScript diretamente
+# Testes E2E e Acessibilidade
+playwright==1.51.0
+pytest-playwright==0.7.1
+pytest-base-url==2.1.0
+axe-playwright-python==0.1.5
+
+# Testes de Carga e Performance
+locust==2.42.5
+pytest-benchmark==5.2.0
+
+# Property-Based Testing
+hypothesis==6.130.0
+
+# Mutation Testing
+mutmut==3.4.0
+
+# Relatórios Visuais
+allure-pytest==2.13.5
