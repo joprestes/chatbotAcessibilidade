@@ -33,3 +33,9 @@ html/
 allure-results/
 allure-report/
 .allure/
+
+# Generated Artifacts
+.hypothesis/
+coverage.json
+mutants/
+.gitignore_mutation
