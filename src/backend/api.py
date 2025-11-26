@@ -134,8 +134,7 @@ app = FastAPI(
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 # Handler de rate limit - usa o handler padrão do slowapi
-# type: ignore necessário porque slowapi usa tipos específicos que MyPy não reconhece
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
 # Middleware de segurança (deve ser adicionado primeiro)
 app.add_middleware(SecurityHeadersMiddleware)
