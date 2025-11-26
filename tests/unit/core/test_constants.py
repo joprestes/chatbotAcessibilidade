@@ -7,7 +7,7 @@ import pytest
 from chatbot_acessibilidade.core.constants import (
     # Timeouts
     DEFAULT_API_TIMEOUT_SECONDS,
-    OPENROUTER_TIMEOUT_SECONDS,
+    HUGGINGFACE_TIMEOUT_SECONDS,
     FRONTEND_REQUEST_TIMEOUT_MS,
     HTTPX_CONNECT_TIMEOUT_SECONDS,
     # Limites
@@ -22,7 +22,7 @@ from chatbot_acessibilidade.core.constants import (
     # Compressão
     COMPRESSION_MIN_SIZE_BYTES,
     # Tokens
-    OPENROUTER_MAX_TOKENS,
+    HUGGINGFACE_MAX_TOKENS,
     # Retry
     MAX_RETRY_ATTEMPTS,
     # Rate Limiting
@@ -47,10 +47,10 @@ class TestTimeouts:
         assert DEFAULT_API_TIMEOUT_SECONDS == 60
 
     def test_openrouter_timeout(self):
-        """Verifica que OPENROUTER_TIMEOUT_SECONDS é um valor válido"""
-        assert isinstance(OPENROUTER_TIMEOUT_SECONDS, int)
-        assert OPENROUTER_TIMEOUT_SECONDS > 0
-        assert OPENROUTER_TIMEOUT_SECONDS == 60
+        """Verifica que HUGGINGFACE_TIMEOUT_SECONDS é um valor válido"""
+        assert isinstance(HUGGINGFACE_TIMEOUT_SECONDS, int)
+        assert HUGGINGFACE_TIMEOUT_SECONDS > 0
+        assert HUGGINGFACE_TIMEOUT_SECONDS == 60
 
     def test_frontend_timeout(self):
         """Verifica que FRONTEND_REQUEST_TIMEOUT_MS é um valor válido"""
@@ -137,10 +137,10 @@ class TestTokens:
     """Testes para constantes de tokens"""
 
     def test_openrouter_max_tokens(self):
-        """Verifica que OPENROUTER_MAX_TOKENS é um valor válido"""
-        assert isinstance(OPENROUTER_MAX_TOKENS, int)
-        assert OPENROUTER_MAX_TOKENS > 0
-        assert OPENROUTER_MAX_TOKENS == 2000
+        """Verifica que HUGGINGFACE_MAX_TOKENS é um valor válido"""
+        assert isinstance(HUGGINGFACE_MAX_TOKENS, int)
+        assert HUGGINGFACE_MAX_TOKENS > 0
+        assert HUGGINGFACE_MAX_TOKENS == 2000
 
 
 class TestRetry:
@@ -202,8 +202,8 @@ class TestErrorMessages:
         assert "60" in msg
 
     def test_timeout_openrouter_format(self):
-        """Verifica que TIMEOUT_OPENROUTER aceita formatação"""
-        msg = ErrorMessages.TIMEOUT_OPENROUTER.format(timeout=60)
+        """Verifica que TIMEOUT_HUGGINGFACE aceita formatação"""
+        msg = ErrorMessages.TIMEOUT_HUGGINGFACE.format(timeout=60)
         assert "60" in msg
 
     def test_rate_limit_exceeded_format(self):
@@ -212,8 +212,8 @@ class TestErrorMessages:
         assert "Google Gemini" in msg
 
     def test_model_unavailable_openrouter_format(self):
-        """Verifica que MODEL_UNAVAILABLE_OPENROUTER aceita formatação"""
-        msg = ErrorMessages.MODEL_UNAVAILABLE_OPENROUTER.format(model="test-model")
+        """Verifica que MODEL_UNAVAILABLE_HUGGINGFACE aceita formatação"""
+        msg = ErrorMessages.MODEL_UNAVAILABLE_HUGGINGFACE.format(model="test-model")
         assert "test-model" in msg
 
     def test_fallback_disabled_format(self):
@@ -237,8 +237,8 @@ class TestErrorMessages:
         assert "test error" in msg
 
     def test_api_error_openrouter_communication_format(self):
-        """Verifica que API_ERROR_OPENROUTER_COMMUNICATION aceita formatação"""
-        msg = ErrorMessages.API_ERROR_OPENROUTER_COMMUNICATION.format(status_code=500)
+        """Verifica que API_ERROR_HUGGINGFACE_COMMUNICATION aceita formatação"""
+        msg = ErrorMessages.API_ERROR_HUGGINGFACE_COMMUNICATION.format(status_code=500)
         assert "500" in msg
 
 
@@ -277,8 +277,8 @@ class TestLogMessages:
         assert "60" in msg
 
     def test_timeout_openrouter_format(self):
-        """Verifica que TIMEOUT_OPENROUTER aceita formatação"""
-        msg = LogMessages.TIMEOUT_OPENROUTER.format(model="test", timeout=60)
+        """Verifica que TIMEOUT_HUGGINGFACE aceita formatação"""
+        msg = LogMessages.TIMEOUT_HUGGINGFACE.format(model="test", timeout=60)
         assert "test" in msg
         assert "60" in msg
 
@@ -309,19 +309,19 @@ class TestLogMessages:
         assert "test" in msg
 
     def test_api_error_openrouter_http_format(self):
-        """Verifica que API_ERROR_OPENROUTER_HTTP aceita formatação"""
-        msg = LogMessages.API_ERROR_OPENROUTER_HTTP.format(status_code=500, error="test")
+        """Verifica que API_ERROR_HUGGINGFACE_HTTP aceita formatação"""
+        msg = LogMessages.API_ERROR_HUGGINGFACE_HTTP.format(status_code=500, error="test")
         assert "500" in msg
         assert "test" in msg
 
     def test_api_error_openrouter_request_format(self):
-        """Verifica que API_ERROR_OPENROUTER_REQUEST aceita formatação"""
-        msg = LogMessages.API_ERROR_OPENROUTER_REQUEST.format(error="test")
+        """Verifica que API_ERROR_HUGGINGFACE_REQUEST aceita formatação"""
+        msg = LogMessages.API_ERROR_HUGGINGFACE_REQUEST.format(error="test")
         assert "test" in msg
 
     def test_api_error_openrouter_generic_format(self):
-        """Verifica que API_ERROR_OPENROUTER_GENERIC aceita formatação"""
-        msg = LogMessages.API_ERROR_OPENROUTER_GENERIC.format(error="test")
+        """Verifica que API_ERROR_HUGGINGFACE_GENERIC aceita formatação"""
+        msg = LogMessages.API_ERROR_HUGGINGFACE_GENERIC.format(error="test")
         assert "test" in msg
 
 

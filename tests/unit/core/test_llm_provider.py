@@ -17,7 +17,7 @@ from chatbot_acessibilidade.core.exceptions import (
 )
 from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
-    OpenRouterClient,
+    HuggingFaceClient,
     generate_with_fallback,
 )
 
@@ -100,12 +100,12 @@ async def test_google_gemini_client_quota_exhausted(
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_sucesso(mock_client_class):
-    """Testa OpenRouterClient com sucesso"""
+async def test_huggingface_client_sucesso(mock_client_class):
+    """Testa HuggingFaceClient com sucesso"""
     # Setup mock response
     mock_response = MagicMock()
     mock_response.json.return_value = {
-        "choices": [{"message": {"content": "Resposta do OpenRouter"}}]
+        "choices": [{"message": {"content": "Resposta do HuggingFace"}}]
     }
     mock_response.raise_for_status = MagicMock()
 
@@ -114,20 +114,20 @@ async def test_openrouter_client_sucesso(mock_client_class):
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
         resultado = await client.generate("Teste", model="test-model")
 
-        assert resultado == "Resposta do OpenRouter"
-        assert client.get_provider_name() == "OpenRouter"
+        assert resultado == "Resposta do HuggingFace"
+        assert client.get_provider_name() == "HuggingFace"
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_rate_limit(mock_client_class):
-    """Testa OpenRouterClient com rate limit"""
+async def test_huggingface_client_rate_limit(mock_client_class):
+    """Testa HuggingFaceClient com rate limit"""
     mock_response = MagicMock()
     mock_response.status_code = 429
     mock_error = httpx.HTTPStatusError("Rate limit", request=MagicMock(), response=mock_response)
@@ -137,10 +137,10 @@ async def test_openrouter_client_rate_limit(mock_client_class):
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
 
         with pytest.raises(QuotaExhaustedError):
             await client.generate("Teste", model="test-model")
@@ -182,10 +182,10 @@ async def test_generate_with_fallback_primary_success(
 @patch("chatbot_acessibilidade.core.llm_provider.InMemorySessionService")
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_generate_with_fallback_openrouter_success(
+async def test_generate_with_fallback_huggingface_success(
     mock_httpx_client, mock_session_service, mock_runner_class, mock_client_class, mock_agent
 ):
-    """Testa generate_with_fallback quando precisa usar OpenRouter"""
+    """Testa generate_with_fallback quando precisa usar HuggingFace"""
     # Mock Google Gemini falhando
     mock_session = AsyncMock()
     mock_session_service.return_value = mock_session
@@ -202,10 +202,10 @@ async def test_generate_with_fallback_openrouter_success(
     mock_runner.run_async = async_gen_error
     mock_runner_class.return_value = mock_runner
 
-    # Mock OpenRouter funcionando
+    # Mock HuggingFace funcionando
     mock_response = MagicMock()
     mock_response.json.return_value = {
-        "choices": [{"message": {"content": "Resposta do OpenRouter"}}]
+        "choices": [{"message": {"content": "Resposta do HuggingFace"}}]
     }
     mock_response.raise_for_status = MagicMock()
 
@@ -215,22 +215,22 @@ async def test_generate_with_fallback_openrouter_success(
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
         mock_settings.fallback_enabled = True
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
         mock_settings.api_timeout_seconds = 60  # Adiciona timeout para Gemini
 
         primary_client = GoogleGeminiClient(mock_agent)
-        openrouter_client = OpenRouterClient()
+        huggingface_client = HuggingFaceClient()
 
         resposta, provedor = await generate_with_fallback(
             primary_client=primary_client,
             prompt="Teste",
-            fallback_clients=[openrouter_client],
+            fallback_clients=[huggingface_client],
             fallback_models=["test-model"],
         )
 
-        assert resposta == "Resposta do OpenRouter"
-        assert "OpenRouter" in provedor
+        assert resposta == "Resposta do HuggingFace"
+        assert "HuggingFace" in provedor
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
@@ -325,13 +325,13 @@ async def test_google_gemini_client_should_fallback(
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_sem_modelo(mock_client_class):
-    """Testa OpenRouterClient sem especificar modelo"""
+async def test_huggingface_client_sem_modelo(mock_client_class):
+    """Testa HuggingFaceClient sem especificar modelo"""
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
 
         with pytest.raises(ValueError) as exc_info:
             await client.generate("Teste", model=None)
@@ -341,8 +341,8 @@ async def test_openrouter_client_sem_modelo(mock_client_class):
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_erro_401(mock_client_class):
-    """Testa OpenRouterClient com erro 401 (não autorizado)"""
+async def test_huggingface_client_erro_401(mock_client_class):
+    """Testa HuggingFaceClient com erro 401 (não autorizado)"""
     mock_response = MagicMock()
     mock_response.status_code = 401
     mock_error = httpx.HTTPStatusError("Unauthorized", request=MagicMock(), response=mock_response)
@@ -352,10 +352,10 @@ async def test_openrouter_client_erro_401(mock_client_class):
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
 
         with pytest.raises(APIError) as exc_info:
             await client.generate("Teste", model="test-model")
@@ -365,8 +365,8 @@ async def test_openrouter_client_erro_401(mock_client_class):
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_erro_503(mock_client_class):
-    """Testa OpenRouterClient com erro 503 (indisponível)"""
+async def test_huggingface_client_erro_503(mock_client_class):
+    """Testa HuggingFaceClient com erro 503 (indisponível)"""
     mock_response = MagicMock()
     mock_response.status_code = 503
     mock_error = httpx.HTTPStatusError(
@@ -378,10 +378,10 @@ async def test_openrouter_client_erro_503(mock_client_class):
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
 
         with pytest.raises(ModelUnavailableError):
             await client.generate("Teste", model="test-model")
@@ -389,8 +389,8 @@ async def test_openrouter_client_erro_503(mock_client_class):
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_resposta_sem_choices(mock_client_class):
-    """Testa OpenRouterClient com resposta inválida sem choices"""
+async def test_huggingface_client_resposta_sem_choices(mock_client_class):
+    """Testa HuggingFaceClient com resposta inválida sem choices"""
     mock_response = MagicMock()
     mock_response.json.return_value = {}  # Sem choices
     mock_response.raise_for_status = MagicMock()
@@ -400,10 +400,10 @@ async def test_openrouter_client_resposta_sem_choices(mock_client_class):
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
 
         with pytest.raises(APIError) as exc_info:
             await client.generate("Teste", model="test-model")
@@ -440,24 +440,24 @@ async def test_generate_with_fallback_todos_falham(
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
         mock_settings.fallback_enabled = True
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
         mock_settings.api_timeout_seconds = 60  # Adiciona timeout para Gemini
 
         primary_client = GoogleGeminiClient(mock_agent)
 
-        # Mock OpenRouter também falhando - cria uma instância real para passar no isinstance
-        from chatbot_acessibilidade.core.llm_provider import OpenRouterClient
+        # Mock HuggingFace também falhando - cria uma instância real para passar no isinstance
+        from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
 
-        openrouter_client = OpenRouterClient()
+        huggingface_client = HuggingFaceClient()
         # Mock o método generate para falhar
-        openrouter_client.generate = AsyncMock(side_effect=QuotaExhaustedError("test"))
+        huggingface_client.generate = AsyncMock(side_effect=QuotaExhaustedError("test"))
 
         with pytest.raises(APIError) as exc_info:
             await generate_with_fallback(
                 primary_client=primary_client,
                 prompt="Teste",
-                fallback_clients=[openrouter_client],
+                fallback_clients=[huggingface_client],
                 fallback_models=["test-model"],
             )
 
@@ -506,10 +506,10 @@ async def test_generate_with_fallback_desabilitado(
 @patch("chatbot_acessibilidade.core.llm_provider.Runner")
 @patch("chatbot_acessibilidade.core.llm_provider.InMemorySessionService")
 @pytest.mark.asyncio
-async def test_generate_with_fallback_openrouter_client_nao_openrouter(
+async def test_generate_with_fallback_huggingface_client_nao_huggingface(
     mock_session_service, mock_runner_class, mock_client_class, mock_agent
 ):
-    """Testa generate_with_fallback com cliente que não é OpenRouter"""
+    """Testa generate_with_fallback com cliente que não é HuggingFace"""
     from chatbot_acessibilidade.core.llm_provider import (
         GoogleGeminiClient,
         generate_with_fallback,
@@ -528,7 +528,7 @@ async def test_generate_with_fallback_openrouter_client_nao_openrouter(
     mock_runner.run_async = async_gen_error
     mock_runner_class.return_value = mock_runner
 
-    # Cria um cliente mock que não é OpenRouter
+    # Cria um cliente mock que não é HuggingFace
     mock_other_client = MagicMock()
     mock_other_client.get_provider_name.return_value = "OtherProvider"
     mock_other_client.generate = AsyncMock(return_value="Resposta do outro provedor")
@@ -556,7 +556,7 @@ async def test_generate_with_fallback_openrouter_client_nao_openrouter(
 @patch("chatbot_acessibilidade.core.llm_provider.InMemorySessionService")
 @patch("chatbot_acessibilidade.core.llm_provider.settings")
 @pytest.mark.asyncio
-async def test_generate_with_fallback_openrouter_should_fallback_false(
+async def test_generate_with_fallback_huggingface_should_fallback_false(
     mock_settings, mock_session_service, mock_runner_class, mock_client_class, mock_agent
 ):
     """Testa generate_with_fallback quando should_fallback retorna False no fallback (linha 403-404)"""
@@ -566,7 +566,7 @@ async def test_generate_with_fallback_openrouter_should_fallback_false(
     )
 
     mock_settings.fallback_enabled = True
-    mock_settings.openrouter_api_key = "test_key"
+    mock_settings.huggingface_api_key = "test_key"
     mock_settings.api_timeout_seconds = 60
 
     mock_session = AsyncMock()
@@ -582,7 +582,7 @@ async def test_generate_with_fallback_openrouter_should_fallback_false(
     mock_runner.run_async = async_gen_error
     mock_runner_class.return_value = mock_runner
 
-    # Cria um cliente mock que não é OpenRouter e should_fallback retorna False
+    # Cria um cliente mock que não é HuggingFace e should_fallback retorna False
     mock_other_client = MagicMock()
     mock_other_client.get_provider_name.return_value = "OtherProvider"
     mock_other_client.should_fallback = MagicMock(return_value=False)  # Não deve acionar fallback
@@ -611,18 +611,18 @@ async def test_generate_with_fallback_openrouter_should_fallback_false(
 @patch("chatbot_acessibilidade.core.llm_provider.InMemorySessionService")
 @patch("chatbot_acessibilidade.core.llm_provider.settings")
 @pytest.mark.asyncio
-async def test_generate_with_fallback_openrouter_continue_apos_erro(
+async def test_generate_with_fallback_huggingface_continue_apos_erro(
     mock_settings, mock_session_service, mock_runner_class, mock_client_class, mock_agent
 ):
-    """Testa generate_with_fallback quando OpenRouter continua após erro (linha 397-402)"""
+    """Testa generate_with_fallback quando HuggingFace continua após erro (linha 397-402)"""
     from chatbot_acessibilidade.core.llm_provider import (
         GoogleGeminiClient,
-        OpenRouterClient,
+        HuggingFaceClient,
         generate_with_fallback,
     )
 
     mock_settings.fallback_enabled = True
-    mock_settings.openrouter_api_key = "test_key"
+    mock_settings.huggingface_api_key = "test_key"
     mock_settings.api_timeout_seconds = 60
 
     mock_session = AsyncMock()
@@ -638,7 +638,7 @@ async def test_generate_with_fallback_openrouter_continue_apos_erro(
     mock_runner.run_async = async_gen_error
     mock_runner_class.return_value = mock_runner
 
-    openrouter_client = OpenRouterClient()
+    huggingface_client = HuggingFaceClient()
     # Primeiro modelo falha, segundo funciona
     call_count = [0]
 
@@ -648,8 +648,8 @@ async def test_generate_with_fallback_openrouter_continue_apos_erro(
             raise APIError("Erro temporário")  # Primeiro modelo falha
         return "Resposta do segundo modelo"  # Segundo modelo funciona
 
-    openrouter_client.generate = AsyncMock(side_effect=generate_side_effect)
-    openrouter_client.should_fallback = MagicMock(return_value=True)
+    huggingface_client.generate = AsyncMock(side_effect=generate_side_effect)
+    huggingface_client.should_fallback = MagicMock(return_value=True)
 
     primary_client = GoogleGeminiClient(mock_agent)
     primary_client.should_fallback = MagicMock(return_value=True)
@@ -657,19 +657,19 @@ async def test_generate_with_fallback_openrouter_continue_apos_erro(
     resposta, provedor = await generate_with_fallback(
         primary_client=primary_client,
         prompt="Teste",
-        fallback_clients=[openrouter_client],
+        fallback_clients=[huggingface_client],
         fallback_models=["model1", "model2"],
     )
 
     assert resposta == "Resposta do segundo modelo"
-    assert "model2" in provedor or "OpenRouter" in provedor
+    assert "model2" in provedor or "HuggingFace" in provedor
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_timeout(mock_client_class):
-    """Testa OpenRouterClient com timeout (linha 284-288)"""
-    from chatbot_acessibilidade.core.llm_provider import OpenRouterClient
+async def test_huggingface_client_timeout(mock_client_class):
+    """Testa HuggingFaceClient com timeout (linha 284-288)"""
+    from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
     import asyncio
 
     async def slow_post(*args, **kwargs):
@@ -681,10 +681,10 @@ async def test_openrouter_client_timeout(mock_client_class):
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 0.01  # Timeout muito curto
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 0.01  # Timeout muito curto
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
         with pytest.raises(APIError) as exc_info:
             await client.generate("Teste", model="test-model")
 
@@ -693,9 +693,9 @@ async def test_openrouter_client_timeout(mock_client_class):
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_http_error_outro_status(mock_client_class):
-    """Testa OpenRouterClient com erro HTTP diferente de 429/503/401/403 (linha 300-304)"""
-    from chatbot_acessibilidade.core.llm_provider import OpenRouterClient
+async def test_huggingface_client_http_error_outro_status(mock_client_class):
+    """Testa HuggingFaceClient com erro HTTP diferente de 429/503/401/403 (linha 300-304)"""
+    from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
     import httpx
 
     mock_response = MagicMock()
@@ -709,10 +709,10 @@ async def test_openrouter_client_http_error_outro_status(mock_client_class):
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
         with pytest.raises(APIError) as exc_info:
             await client.generate("Teste", model="test-model")
 
@@ -721,9 +721,9 @@ async def test_openrouter_client_http_error_outro_status(mock_client_class):
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_request_error(mock_client_class):
-    """Testa OpenRouterClient com RequestError (linha 305-307)"""
-    from chatbot_acessibilidade.core.llm_provider import OpenRouterClient
+async def test_huggingface_client_request_error(mock_client_class):
+    """Testa HuggingFaceClient com RequestError (linha 305-307)"""
+    from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
     import httpx
 
     mock_client = AsyncMock()
@@ -731,39 +731,40 @@ async def test_openrouter_client_request_error(mock_client_class):
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
         with pytest.raises(APIError) as exc_info:
             await client.generate("Teste", model="test-model")
 
         assert (
-            "conectar" in str(exc_info.value).lower() or "openrouter" in str(exc_info.value).lower()
+            "conectar" in str(exc_info.value).lower()
+            or "huggingface" in str(exc_info.value).lower()
         )
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_excecao_geral(mock_client_class):
-    """Testa OpenRouterClient com exceção geral (linha 308-310)"""
-    from chatbot_acessibilidade.core.llm_provider import OpenRouterClient
+async def test_huggingface_client_excecao_geral(mock_client_class):
+    """Testa HuggingFaceClient com exceção geral (linha 308-310)"""
+    from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
 
     mock_client = AsyncMock()
     mock_client.post = AsyncMock(side_effect=ValueError("Erro inesperado"))
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
         with pytest.raises(APIError) as exc_info:
             await client.generate("Teste", model="test-model")
 
         assert (
             "falha inesperada" in str(exc_info.value).lower()
-            or "openrouter" in str(exc_info.value).lower()
+            or "huggingface" in str(exc_info.value).lower()
         )
 
 
@@ -1046,21 +1047,21 @@ def test_google_gemini_client_should_fallback_google_api_call_error_nao_503():
     assert client.should_fallback(exception) is False
 
 
-def test_openrouter_client_init_sem_api_key():
-    """Testa OpenRouterClient.__init__ sem OPENROUTER_API_KEY (linha 221)"""
+def test_huggingface_client_init_sem_api_key():
+    """Testa HuggingFaceClient.__init__ sem HUGGINGFACE_API_KEY (linha 221)"""
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = None
+        mock_settings.huggingface_api_key = None
 
         with pytest.raises(ValueError) as exc_info:
-            OpenRouterClient()
+            HuggingFaceClient()
 
-        assert "OPENROUTER_API_KEY" in str(exc_info.value)
+        assert "HUGGINGFACE_API_KEY" in str(exc_info.value)
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @pytest.mark.asyncio
-async def test_openrouter_client_resposta_sem_message_content(mock_client_class):
-    """Testa OpenRouterClient quando resposta não tem message/content (linha 278)"""
+async def test_huggingface_client_resposta_sem_message_content(mock_client_class):
+    """Testa HuggingFaceClient quando resposta não tem message/content (linha 278)"""
     mock_response = MagicMock()
     mock_response.json.return_value = {
         "choices": [{"message": {"no_content": "invalid"}}]  # Sem "content"
@@ -1072,10 +1073,10 @@ async def test_openrouter_client_resposta_sem_message_content(mock_client_class)
     mock_client_class.return_value = mock_client
 
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
-        mock_settings.openrouter_timeout_seconds = 60
+        mock_settings.huggingface_api_key = "test_key"
+        mock_settings.huggingface_timeout_seconds = 60
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
         # Mock _get_client para retornar o mock_client
         client._get_client = MagicMock(return_value=mock_client)
 
@@ -1087,16 +1088,16 @@ async def test_openrouter_client_resposta_sem_message_content(mock_client_class)
         assert (
             "sem content" in error_msg
             or "falha inesperada" in error_msg
-            or "openrouter" in error_msg
+            or "huggingface" in error_msg
         )
 
 
-def test_openrouter_client_should_fallback():
-    """Testa OpenRouterClient.should_fallback (linha 316-318)"""
+def test_huggingface_client_should_fallback():
+    """Testa HuggingFaceClient.should_fallback (linha 316-318)"""
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.openrouter_api_key = "test_key"
+        mock_settings.huggingface_api_key = "test_key"
 
-        client = OpenRouterClient()
+        client = HuggingFaceClient()
 
         # Testa com QuotaExhaustedError
         assert client.should_fallback(QuotaExhaustedError("test")) is True
@@ -1155,12 +1156,12 @@ async def test_generate_with_fallback_should_fallback_false_primary(
 @patch("chatbot_acessibilidade.core.llm_provider.InMemorySessionService")
 @patch("chatbot_acessibilidade.core.llm_provider.settings")
 @pytest.mark.asyncio
-async def test_generate_with_fallback_openrouter_should_fallback_false_raise(
+async def test_generate_with_fallback_huggingface_should_fallback_false_raise(
     mock_settings, mock_session_service, mock_runner_class, mock_client_class, mock_agent
 ):
-    """Testa generate_with_fallback quando should_fallback retorna False no fallback OpenRouter (linha 388)"""
+    """Testa generate_with_fallback quando should_fallback retorna False no fallback HuggingFace (linha 388)"""
     mock_settings.fallback_enabled = True
-    mock_settings.openrouter_api_key = "test_key"
+    mock_settings.huggingface_api_key = "test_key"
     mock_settings.api_timeout_seconds = 60
 
     mock_session = AsyncMock()
@@ -1175,11 +1176,11 @@ async def test_generate_with_fallback_openrouter_should_fallback_false_raise(
     mock_runner.run_async = async_gen_error
     mock_runner_class.return_value = mock_runner
 
-    openrouter_client = OpenRouterClient()
-    openrouter_client.generate = AsyncMock(
+    huggingface_client = HuggingFaceClient()
+    huggingface_client.generate = AsyncMock(
         side_effect=ValueError("Erro que não deve acionar fallback")
     )
-    openrouter_client.should_fallback = MagicMock(return_value=False)
+    huggingface_client.should_fallback = MagicMock(return_value=False)
 
     primary_client = GoogleGeminiClient(mock_agent)
     primary_client.should_fallback = MagicMock(return_value=True)
@@ -1188,7 +1189,7 @@ async def test_generate_with_fallback_openrouter_should_fallback_false_raise(
         await generate_with_fallback(
             primary_client=primary_client,
             prompt="Teste",
-            fallback_clients=[openrouter_client],
+            fallback_clients=[huggingface_client],
             fallback_models=["test-model"],
         )
 
@@ -1219,7 +1220,7 @@ async def test_generate_with_fallback_outro_cliente_should_fallback_true(
     mock_runner.run_async = async_gen_error
     mock_runner_class.return_value = mock_runner
 
-    # Cria um cliente mock que não é OpenRouter
+    # Cria um cliente mock que não é HuggingFace
     mock_other_client = MagicMock()
     mock_other_client.get_provider_name.return_value = "OtherProvider"
     # Retorna sucesso diretamente (não falha)
@@ -1342,15 +1343,15 @@ def test_google_gemini_should_fallback_google_api_error_503():
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @patch("chatbot_acessibilidade.core.llm_provider.settings")
-def test_openrouter_client_get_client_erro(mock_settings, mock_async_client_class):
+def test_huggingface_client_get_client_erro(mock_settings, mock_async_client_class):
     """Testa _get_client com erro na inicialização (linha 246, 303)"""
-    mock_settings.openrouter_api_key = "test_key"
-    mock_settings.openrouter_timeout_seconds = 60
+    mock_settings.huggingface_api_key = "test_key"
+    mock_settings.huggingface_timeout_seconds = 60
 
     # Simula erro ao criar AsyncClient na primeira chamada
     mock_async_client_class.side_effect = [Exception("Erro ao criar cliente"), httpx.AsyncClient()]
 
-    client = OpenRouterClient()
+    client = HuggingFaceClient()
 
     # Primeira chamada deve levantar exceção (linha 246)
     with pytest.raises(Exception, match="Erro ao criar cliente"):
@@ -1364,15 +1365,15 @@ def test_openrouter_client_get_client_erro(mock_settings, mock_async_client_clas
 
 @patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
 @patch("chatbot_acessibilidade.core.llm_provider.settings")
-def test_openrouter_client_get_client_cache(mock_settings, mock_async_client_class):
+def test_huggingface_client_get_client_cache(mock_settings, mock_async_client_class):
     """Testa _get_client com cache (linha 245, 303)"""
-    mock_settings.openrouter_api_key = "test_key"
-    mock_settings.openrouter_timeout_seconds = 60
+    mock_settings.huggingface_api_key = "test_key"
+    mock_settings.huggingface_timeout_seconds = 60
 
     mock_client_instance = MagicMock()
     mock_async_client_class.return_value = mock_client_instance
 
-    client = OpenRouterClient()
+    client = HuggingFaceClient()
 
     # Primeira chamada cria o cliente (linha 246)
     client1 = client._get_client()
@@ -1391,22 +1392,22 @@ async def test_generate_with_fallback_todos_modelos_falham_detalhado(mock_settin
     """Testa generate_with_fallback quando todos os modelos falham (linha 421-425)"""
     mock_settings.fallback_enabled = True
     mock_settings.api_timeout_seconds = 60
-    mock_settings.openrouter_api_key = "test_key"
-    mock_settings.openrouter_models = "model1,model2"
+    mock_settings.huggingface_api_key = "test_key"
+    mock_settings.huggingface_models = "model1,model2"
 
     primary_client = GoogleGeminiClient(mock_agent)
     primary_client.generate = AsyncMock(side_effect=QuotaExhaustedError("Quota esgotada"))
     primary_client.should_fallback = MagicMock(return_value=True)
 
-    # Cria OpenRouterClient que falha em todos os modelos
-    openrouter_client = OpenRouterClient()
-    openrouter_client.generate = AsyncMock(side_effect=APIError("Erro no modelo"))
-    openrouter_client.should_fallback = MagicMock(return_value=True)
+    # Cria HuggingFaceClient que falha em todos os modelos
+    huggingface_client = HuggingFaceClient()
+    huggingface_client.generate = AsyncMock(side_effect=APIError("Erro no modelo"))
+    huggingface_client.should_fallback = MagicMock(return_value=True)
 
     with pytest.raises(APIError, match="Todos os provedores e modelos disponíveis falharam"):
         await generate_with_fallback(
             primary_client=primary_client,
             prompt="teste",
-            fallback_clients=[openrouter_client],
+            fallback_clients=[huggingface_client],
             fallback_models=["model1", "model2"],
         )

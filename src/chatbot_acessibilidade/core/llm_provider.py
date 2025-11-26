@@ -23,7 +23,7 @@ from chatbot_acessibilidade.core.exceptions import (
     ModelUnavailableError,
 )
 from chatbot_acessibilidade.core.constants import (
-    OPENROUTER_MAX_TOKENS,
+    HUGGINGFACE_MAX_TOKENS,
     ErrorMessages,
     LogMessages,
 )
@@ -36,7 +36,7 @@ class LLMProvider(Enum):
     """Enum para identificar o provedor de LLM"""
 
     GOOGLE_GEMINI = "google_gemini"
-    OPENROUTER = "openrouter"
+    HUGGINGFACE = "huggingface"
 
 
 class LLMClient(ABC):
@@ -49,7 +49,7 @@ class LLMClient(ABC):
 
         Args:
             prompt: Texto do prompt
-            model: Nome do modelo (opcional, usado principalmente para OpenRouter)
+            model: Nome do modelo (opcional, usado principalmente para Hugging Face)
 
         Returns:
             Resposta gerada como string
@@ -236,17 +236,17 @@ class GoogleGeminiClient(LLMClient):
         return "Google Gemini"
 
 
-class OpenRouterClient(LLMClient):
-    """Cliente para OpenRouter API"""
+class HuggingFaceClient(LLMClient):
+    """Cliente para Hugging Face Inference API"""
 
-    BASE_URL = "https://openrouter.ai/api/v1"
+    BASE_URL = "https://api-inference.huggingface.co/models"
 
     def __init__(self):
-        """Inicializa o cliente OpenRouter"""
-        if not settings.openrouter_api_key:
-            raise ValueError("OPENROUTER_API_KEY não configurada")
-        self.api_key = settings.openrouter_api_key
-        self.timeout = settings.openrouter_timeout_seconds
+        """Inicializa o cliente Hugging Face"""
+        if not settings.huggingface_api_key:
+            raise ValueError("HUGGINGFACE_API_KEY não configurada")
+        self.api_key = settings.huggingface_api_key
+        self.timeout = settings.huggingface_timeout_seconds
         self._client: Optional[httpx.AsyncClient] = None
 
     def _get_client(self) -> httpx.AsyncClient:
@@ -257,8 +257,6 @@ class OpenRouterClient(LLMClient):
                 headers=(
                     {
                         "Authorization": f"Bearer {self.api_key}",
-                        "HTTP-Referer": "https://github.com/chatbotAcessibilidade",
-                        "X-Title": "Chatbot Acessibilidade",
                     }
                     if self.api_key
                     else {}
@@ -268,19 +266,19 @@ class OpenRouterClient(LLMClient):
 
     async def generate(self, prompt: str, model: Optional[str] = None) -> str:
         """
-        Gera resposta usando OpenRouter.
+        Gera resposta usando Hugging Face.
 
         Args:
             prompt: Texto do prompt
-            model: Nome do modelo OpenRouter (obrigatório)
+            model: Nome do modelo Hugging Face (obrigatório)
 
         Returns:
             Resposta gerada como string
         """
         if not model:
-            raise ValueError("Modelo deve ser especificado para OpenRouter")
+            raise ValueError("Modelo deve ser especificado para Hugging Face")
 
-        logger.debug(f"Usando OpenRouter com modelo '{model}' para gerar resposta")
+        logger.debug(f"Usando Hugging Face com modelo '{model}' para gerar resposta")
 
         client = self._get_client()
 
@@ -288,12 +286,12 @@ class OpenRouterClient(LLMClient):
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.7,
-            "max_tokens": OPENROUTER_MAX_TOKENS,
+            "max_tokens": HUGGINGFACE_MAX_TOKENS,
         }
 
         try:
             response = await asyncio.wait_for(
-                client.post(f"{self.BASE_URL}/chat/completions", json=payload), timeout=self.timeout
+                client.post(f"{self.BASE_URL}/{model}", json=payload), timeout=self.timeout
             )
             response.raise_for_status()
 
@@ -301,51 +299,53 @@ class OpenRouterClient(LLMClient):
 
             # Extrai a resposta
             if "choices" not in data or not data["choices"]:
-                raise APIError("Resposta inválida do OpenRouter: sem choices")
+                raise APIError("Resposta inválida do Hugging Face: sem choices")
 
             choice = data["choices"][0]
             if "message" not in choice or "content" not in choice["message"]:
-                raise APIError("Resposta inválida do OpenRouter: sem content")
+                raise APIError("Resposta inválida do Hugging Face: sem content")
 
             content = choice["message"]["content"]
             if not isinstance(content, str):
-                raise APIError("Resposta inválida do OpenRouter: content não é string")
-            logger.debug(f"OpenRouter modelo '{model}' executado com sucesso")
+                raise APIError("Resposta inválida do Hugging Face: content não é string")
+            logger.debug(f"Hugging Face modelo '{model}' executado com sucesso")
             return str(content.strip())
 
         except asyncio.TimeoutError:
-            logger.error(f"Timeout ao executar OpenRouter modelo '{model}' após {self.timeout}s")
+            logger.error(f"Timeout ao executar Hugging Face modelo '{model}' após {self.timeout}s")
             raise APIError(
-                f"Timeout: A requisição ao OpenRouter demorou mais de {self.timeout} segundos."
+                f"Timeout: A requisição ao Hugging Face demorou mais de {self.timeout} segundos."
             )
         except httpx.HTTPStatusError as e:
             status_code = e.response.status_code
             if status_code == 429:
-                logger.error(LogMessages.API_ERROR_OPENROUTER_RATE_LIMIT.format(model=model))
+                logger.error(LogMessages.API_ERROR_HUGGINGFACE_RATE_LIMIT.format(model=model))
                 raise QuotaExhaustedError(
                     ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider=f"modelo {model}")
                 )
             elif status_code == 503:
-                logger.warning(f"Modelo '{model}' indisponível no OpenRouter")
+                logger.warning(f"Modelo '{model}' indisponível no Hugging Face")
                 raise ModelUnavailableError(
-                    ErrorMessages.MODEL_UNAVAILABLE_OPENROUTER.format(model=model)
+                    ErrorMessages.MODEL_UNAVAILABLE_HUGGINGFACE.format(model=model)
                 )
             elif status_code == 401 or status_code == 403:
-                logger.error(LogMessages.API_ERROR_OPENROUTER_AUTH)
-                raise APIError(ErrorMessages.API_ERROR_OPENROUTER_INVALID_KEY)
+                logger.error(LogMessages.API_ERROR_HUGGINGFACE_AUTH)
+                raise APIError(ErrorMessages.API_ERROR_HUGGINGFACE_INVALID_KEY)
             else:
                 logger.error(
-                    LogMessages.API_ERROR_OPENROUTER_HTTP.format(status_code=status_code, error=e)
+                    LogMessages.API_ERROR_HUGGINGFACE_HTTP.format(status_code=status_code, error=e)
                 )
                 raise APIError(
-                    ErrorMessages.API_ERROR_OPENROUTER_COMMUNICATION.format(status_code=status_code)
+                    ErrorMessages.API_ERROR_HUGGINGFACE_COMMUNICATION.format(
+                        status_code=status_code
+                    )
                 )
         except httpx.RequestError as e:
-            logger.error(LogMessages.API_ERROR_OPENROUTER_REQUEST.format(error=e))
-            raise APIError(ErrorMessages.API_ERROR_OPENROUTER_CONNECTION)
+            logger.error(LogMessages.API_ERROR_HUGGINGFACE_REQUEST.format(error=e))
+            raise APIError(ErrorMessages.API_ERROR_HUGGINGFACE_CONNECTION)
         except Exception as e:
-            logger.error(LogMessages.API_ERROR_OPENROUTER_GENERIC.format(error=e), exc_info=True)
-            raise APIError(ErrorMessages.API_ERROR_OPENROUTER_GENERIC)
+            logger.error(LogMessages.API_ERROR_HUGGINGFACE_GENERIC.format(error=e), exc_info=True)
+            raise APIError(ErrorMessages.API_ERROR_HUGGINGFACE_GENERIC)
 
     def should_fallback(self, exception: Exception) -> bool:
         """Determina se deve acionar fallback para outro modelo"""
@@ -356,7 +356,7 @@ class OpenRouterClient(LLMClient):
         return False
 
     def get_provider_name(self) -> str:
-        return "OpenRouter"
+        return "HuggingFace"
 
 
 async def generate_with_fallback(
@@ -371,7 +371,7 @@ async def generate_with_fallback(
     Args:
         primary_client: Cliente primário (Google Gemini)
         prompt: Texto do prompt
-        fallback_clients: Lista de clientes de fallback (OpenRouter)
+        fallback_clients: Lista de clientes de fallback (Hugging Face)
         fallback_models: Lista de modelos para usar com fallback clients
 
     Returns:
@@ -405,8 +405,8 @@ async def generate_with_fallback(
 
         # Tenta cada cliente de fallback com seus modelos
         for client in fallback_clients:
-            if isinstance(client, OpenRouterClient) and fallback_models:
-                # Para OpenRouter, tenta cada modelo
+            if isinstance(client, HuggingFaceClient) and fallback_models:
+                # Para Hugging Face, tenta cada modelo
                 for model in fallback_models:
                     try:
                         logger.info(
