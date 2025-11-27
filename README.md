@@ -43,7 +43,7 @@
   height="150"
   style="border-radius: 50%; border: 4px solid rgba(124, 58, 237, 0.3); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3); margin: 20px 0;">
 
-**Sua Assistente de Inclusão Digital** 💜
+**Sua Assistente de Acessibilidade e Inclusão Digital** 💜
 
 [![GitHub stars](https://img.shields.io/github/stars/joprestes/chatbotAcessibilidade?style=social)](https://github.com/joprestes/chatbotAcessibilidade)
 [![GitHub forks](https://img.shields.io/github/forks/joprestes/chatbotAcessibilidade?style=social)](https://github.com/joprestes/chatbotAcessibilidade)
