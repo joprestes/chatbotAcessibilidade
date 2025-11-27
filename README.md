@@ -1,5 +1,3 @@
-<div align="center">
-
 # ♿ Chatbot de Acessibilidade Digital
 
 **Um assistente inteligente para tornar a web mais acessível** 💡
@@ -16,27 +14,29 @@
 
 ---
 
-<div align="center">
+## 👤 Sobre a Autora
+
+**Joelma De Oliveira Prestes Ferreira**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/joprestes84/)
+[![Medium](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)](https://medium.com/@joprestes)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:joprestes@hotmail.com)
+
+---
 
 ### 👋 Olá! Eu sou a Ada
 
 <img
   src="https://raw.githubusercontent.com/joprestes/chatbotAcessibilidade/main/assets/ada-animated.gif"
   alt="Ada - Assistente de Acessibilidade Digital"
-  width="200"
-  height="200"
+  width="150"
+  height="150"
   style="border-radius: 50%; border: 4px solid rgba(124, 58, 237, 0.3); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3); margin: 20px 0;">
 
-**Sua Assistente de Inclusão Digital** 💜
-
-</div>
-
-**Desenvolvido por:** [Joelma De O. Prestes Ferreira](https://www.linkedin.com/in/joprestes84/)
+**Sua Assistente de Acessibilidade e Inclusão Digital** 💜
 
 [![GitHub stars](https://img.shields.io/github/stars/joprestes/chatbotAcessibilidade?style=social)](https://github.com/joprestes/chatbotAcessibilidade)
 [![GitHub forks](https://img.shields.io/github/forks/joprestes/chatbotAcessibilidade?style=social)](https://github.com/joprestes/chatbotAcessibilidade)
-
-</div>
 
 ---
 
@@ -55,7 +55,6 @@
   - [🔒 Segurança](#-segurança)
   - [🌐 Deploy](#-deploy)
   - [🛠️ Tecnologias](#️-tecnologias)
-  - [👤 Sobre a Autora](#-sobre-a-autora)
 
 </details>
 
@@ -67,44 +66,34 @@
 
 O **Chatbot de Acessibilidade Digital** é uma solução inteligente e educativa desenvolvida para profissionais, desenvolvedores e equipes de QA que buscam aprimorar seus conhecimentos sobre acessibilidade digital.
 
-Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback automático** para múltiplos LLMs via OpenRouter, o chatbot gera respostas completas, testáveis e com referências confiáveis, seguindo os padrões **WCAG 2.2 AA/AAA** e **ARIA 1.2**.
+Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback automático** para múltiplos LLMs via Hugging Face, o chatbot gera respostas completas, testáveis e com referências confiáveis, seguindo os padrões **WCAG 2.2 AA/AAA** e **ARIA 1.2**.
 
 #### 🎯 Por que usar este projeto?
 
-<div align="center">
-
 | 🎓 **Educativo** | ⚡ **Rápido** | 🔒 **Confiável** | ♿ **Acessível** |
-|:---:|:---:|:---:|:---:|
+|:---|:---|:---|:---|
 | Respostas completas com exemplos práticos | Interface moderna e responsiva | Validação técnica WCAG/ARIA | Interface 100% acessível (WCAG AA) |
 | Materiais de estudo recomendados | Cache inteligente | Rate limiting e segurança | Navegação por teclado completa |
 | Sugestões de testes práticos | Fallback automático entre LLMs | Logging estruturado | Suporte a leitores de tela |
 
-</div>
-
 #### 💬 Exemplos de Perguntas
 
-<div align="center">
-
 | 📝 Categoria | 💡 Exemplo |
-|:---:|:---|
+|:---|:---|
 | **🧪 Testes** | Como testar contraste de cores? |
 | **⌨️ Navegação** | O que é navegação por teclado? |
 | **🔊 Leitores de Tela** | Como tornar um site acessível a leitores de tela? |
 | **📋 WCAG** | Quais são os critérios de sucesso do WCAG 2.2? |
 | **🛠️ Ferramentas** | Quais ferramentas usar para testar acessibilidade? |
 
-</div>
-
 ---
 
 ### 🎯 Funcionalidades
 
-<div align="center">
-
 #### 🎨 Interface Moderna
 
 | ✨ Recurso | 📱 Descrição |
-|:---:|:---|
+|:---|:---|
 | **🎨 Design "Lavanda Inclusiva"** | Paleta de cores roxo/lilás com contraste WCAG AA/AAA |
 | **📐 Layout Profissional** | Card de introdução, mensagens estilo card, hierarquia visual clara |
 | **🌙 Tema Claro/Escuro** | Dark mode "Beringela" com transições suaves |
@@ -117,9 +106,9 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 #### 🔧 Recursos Técnicos
 
 | ⚙️ Recurso | 🚀 Descrição |
-|:---:|:---|
+|:---|:---|
 | **🤖 Multiagente Especializado** | 5 agentes trabalhando em conjunto |
-| **🔄 Fallback Automático** | Múltiplos LLMs via OpenRouter |
+| **🔄 Fallback Automático** | Múltiplos LLMs via Hugging Face |
 | **⚡ Cache Inteligente** | Respostas em cache com invalidação semântica |
 | **🛡️ Rate Limiting** | Proteção contra abuso (10 req/min) |
 | **📊 Métricas de Performance** | Coleta de tempo de resposta, uso de agentes, etc. |
@@ -129,30 +118,24 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 #### 📚 Conteúdo Educativo
 
 | 🎓 Recurso | 📖 Descrição |
-|:---:|:---|
+|:---|:---|
 | **✅ Validação Técnica** | Verificação automática WCAG/ARIA |
 | **📝 Exemplos Práticos** | Código e exemplos testáveis |
 | **🧪 Sugestões de Testes** | Testes práticos recomendados |
 | **📚 Materiais de Estudo** | Links e referências confiáveis |
 | **💡 Dicas Finais** | Resumos e lembretes importantes |
 
-</div>
-
 #### 🧠 Arquitetura Multiagente
 
 O chatbot utiliza **5 agentes especializados** trabalhando em conjunto:
 
-<div align="center">
-
 | 🤖 Agente | 📋 Responsabilidade | ⚡ Execução |
-|:---:|:---|:---:|
+|:---|:---|:---|
 | **Assistente** | Gera a resposta inicial completa | Sequencial |
 | **Validador** | Valida técnica (WCAG, ARIA) | Sequencial |
 | **Revisor** | Simplifica a linguagem | Sequencial |
 | **Testador** | Sugere testes práticos | Paralelo |
 | **Aprofundador** | Recomenda materiais de estudo | Paralelo |
-
-</div>
 
 ---
 
@@ -233,10 +216,10 @@ Crie um arquivo `.env` na raiz do projeto:
 # Chave da API Google Gemini (obrigatória)
 GOOGLE_API_KEY="sua_chave_aqui"
 
-# OpenRouter (opcional - para fallback automático)
-OPENROUTER_API_KEY="sua_chave_openrouter"
+# Hugging Face (opcional - para fallback automático)
+HUGGINGFACE_API_KEY="sua_chave_huggingface"
 FALLBACK_ENABLED=true
-OPENROUTER_MODELS=meta-llama/llama-3.3-70b-instruct:free,google/gemini-flash-1.5:free,mistralai/mistral-7b-instruct:free
+HUGGINGFACE_MODELS=meta-llama/Llama-3.3-70B-Instruct,google/gemma-2-9b-it,mistralai/Mistral-7B-Instruct-v0.3
 
 # CORS (opcional - padrão: *)
 CORS_ORIGINS="*"
@@ -256,27 +239,28 @@ LOG_LEVEL=INFO
 O chatbot agora suporta **fallback automático** entre múltiplos LLMs:
 
 1. **Provedor Primário**: Google Gemini (padrão)
-2. **Provedor Secundário**: OpenRouter com modelos gratuitos
-3. **Comportamento**: Se o Gemini esgotar quota ou falhar, o sistema automaticamente tenta modelos OpenRouter em sequência
+2. **Provedor Secundário**: Hugging Face Inference API
+3. **Comportamento**: Se o Gemini esgotar quota ou falhar, o sistema automaticamente tenta modelos Hugging Face em sequência
 
-**Modelos OpenRouter Gratuitos Recomendados:**
-- `meta-llama/llama-3.3-70b-instruct:free`
-- `google/gemini-flash-1.5:free`
-- `mistralai/mistral-7b-instruct:free`
-- `qwen/qwen-2.5-7b-instruct:free`
-- `microsoft/phi-3-medium-4k-instruct:free`
+**Modelos Hugging Face Recomendados:**
+- `meta-llama/Llama-3.3-70B-Instruct`
+- `google/gemma-2-9b-it`
+- `mistralai/Mistral-7B-Instruct-v0.3`
+- `microsoft/Phi-3-mini-4k-instruct`
 
 **Para habilitar o fallback:**
-1. Obtenha uma chave API do [OpenRouter](https://openrouter.ai/)
-2. Configure `OPENROUTER_API_KEY` no `.env`
+1. Obtenha uma chave API do [Hugging Face](https://huggingface.co/settings/tokens)
+2. Configure `HUGGINGFACE_API_KEY` no `.env`
 3. Configure `FALLBACK_ENABLED=true`
-4. Opcionalmente, ajuste `OPENROUTER_MODELS` com seus modelos preferidos
+4. Opcionalmente, ajuste `HUGGINGFACE_MODELS` com seus modelos preferidos
 
 #### ▶️ Execução
 
 **Frontend Web Moderno** ⭐
 
 ```bash
+make run
+# ou
 uvicorn src.backend.api:app --reload --port 8000
 ```
 
@@ -288,8 +272,8 @@ Acesse: **http://localhost:8000**
 - Verifique se o arquivo `.env` existe na raiz do projeto
 - Certifique-se de que contém: `GOOGLE_API_KEY="sua_chave_aqui"`
 
-**Erro: "fallback_enabled=True requer openrouter_api_key configurada"**
-- Se você habilitou o fallback, configure `OPENROUTER_API_KEY` no `.env`
+**Erro: "fallback_enabled=True requer huggingface_api_key configurada"**
+- Se você habilitou o fallback, configure `HUGGINGFACE_API_KEY` no `.env`
 - Ou desabilite o fallback: `FALLBACK_ENABLED=false`
 
 **Erro: "Frontend não encontrado"**
@@ -316,10 +300,8 @@ Acesse: **http://localhost:8000**
 
 ### 📖 Documentação
 
-<div align="center">
-
 | 📘 Documento | 📝 Descrição |
-|:---:|:---|
+|:---|:---|
 | [📝 CHANGELOG.md](docs/CHANGELOG.md) | Histórico de mudanças |
 | [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Regras e padrões do projeto (inclui linters) |
 | [♿ PADROES_ACESSIBILIDADE.md](docs/PADROES_ACESSIBILIDADE.md) | Padrões de acessibilidade e gerenciamento de foco |
@@ -328,26 +310,23 @@ Acesse: **http://localhost:8000**
 | [📚 API Interativa](http://localhost:8000/docs) | Swagger UI (quando servidor rodando) |
 | [📚 API ReDoc](http://localhost:8000/redoc) | ReDoc (quando servidor rodando) |
 
-</div>
-
 ---
 
 ### 🧪 Testes e Qualidade
 
 #### 📊 Cobertura de Testes
 
-<div align="center">
-
 **98.52% de cobertura** 🎯
 
 | Categoria | Cobertura |
-|:---:|:---:|
+|:---|:---|
 | **Testes Unitários** | ✅ Completo |
 | **Testes de Integração** | ✅ Completo |
+
 O projeto possui uma **suite de testes de classe mundial** com 8 ferramentas profissionais:
 
 | Ferramenta | Propósito | Cobertura |
-|:---|:---|:---:|
+|:---|:---|:---|
 | **pytest** | Testes unitários/integração | 384 testes |
 | **pytest-cov** | Cobertura de código | 98.77% |
 | **Playwright** | Testes E2E | 171 testes |
@@ -404,18 +383,14 @@ make check                   # Todas as verificações
 
 O projeto implementa várias camadas de segurança:
 
-<div align="center">
-
 | 🔐 Recurso | 🛡️ Descrição |
-|:---:|:---|
+|:---|:---|
 | **CORS Configurável** | Controle de origens permitidas |
 | **Rate Limiting** | Proteção contra abuso (10 req/min) |
 | **Validação de Entrada** | Sanitização e limites (3-2000 chars) |
 | **Logging Estruturado** | Rastreamento de atividades |
 | **Variáveis de Ambiente** | Segredos não versionados |
 | **Headers de Segurança** | HSTS, CSP, X-Frame-Options, etc. |
-
-</div>
 
 ---
 
@@ -439,32 +414,14 @@ docker-compose up
 
 ### 🛠️ Tecnologias
 
-<div align="center">
-
 | Categoria | Tecnologias |
-|:---------:|:-----------|
+|:---|:---|
 | **🐍 Backend** | Python 3.12+, FastAPI, Uvicorn |
-| **🤖 IA** | Google Gemini 2.0 Flash, Google ADK, OpenRouter (fallback) |
+| **🤖 IA** | Google Gemini 2.0 Flash, Google ADK, Hugging Face (fallback) |
 | **💻 Frontend** | HTML5, CSS3, JavaScript (Vanilla), Glassmorphism |
 | **🧪 Testes** | Pytest, Pytest-cov, Testes E2E |
 | **🔍 Qualidade** | Black, Ruff, MyPy, Pre-commit |
 | **📊 Métricas** | Coleta de performance e uso |
-
-</div>
-
----
-
-### 👤 Sobre a Autora
-
-<div align="center">
-
-**Joelma De Oliveira Prestes Ferreira**
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/joprestes84/)
-[![Medium](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)](https://medium.com/@joprestes)
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:joprestes@hotmail.com)
-
-</div>
 
 ---
 
@@ -476,10 +433,6 @@ Este projeto está licenciado sob a **Licença MIT**. Veja o arquivo [LICENSE](L
 
 ---
 
-<div align="center">
-
 **⭐ Se este projeto foi útil, considere dar uma estrela! ⭐**
 
 Made with ❤️ by [Joelma De O. Prestes Ferreira](https://www.linkedin.com/in/joprestes84/)
-
-</div>

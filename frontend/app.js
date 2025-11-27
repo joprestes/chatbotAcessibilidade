@@ -63,38 +63,14 @@ function getAvatarPath(state = null) {
  */
 function updateAvatar(state, animate = true) {
     if (state === currentAvatarState && !animate) return;
-    
+
     const avatarPath = getAvatarPath(state);
     const previousState = currentAvatarState;
     currentAvatarState = state;
-    
-    // Atualiza avatar no header
-    const headerAvatar = document.querySelector('.ada-header-avatar');
-    if (headerAvatar) {
-        if (animate) {
-            headerAvatar.classList.add('avatar-transitioning');
-            setTimeout(() => {
-                headerAvatar.src = avatarPath;
-                headerAvatar.addEventListener('load', () => {
-                    headerAvatar.classList.remove('avatar-transitioning');
-                    // Adiciona animação de respiração se for IDLE
-                    if (state === AVATAR_STATES.IDLE) {
-                        headerAvatar.classList.add('avatar-breathing');
-                    } else {
-                        headerAvatar.classList.remove('avatar-breathing');
-                    }
-                }, { once: true });
-            }, 150);
-        } else {
-            headerAvatar.src = avatarPath;
-            if (state === AVATAR_STATES.IDLE) {
-                headerAvatar.classList.add('avatar-breathing');
-            } else {
-                headerAvatar.classList.remove('avatar-breathing');
-            }
-        }
-    }
-    
+
+    // Atualiza avatar no header - REMOVIDO para manter logo estático
+    // O header agora usa um logo fixo e não deve mudar com o estado do bot
+
     // Atualiza avatar no card de introdução
     const introAvatar = document.querySelector('.intro-card-avatar');
     if (introAvatar) {
@@ -110,7 +86,7 @@ function updateAvatar(state, animate = true) {
             introAvatar.src = avatarPath;
         }
     }
-    
+
     // Atualiza avatares nas mensagens do assistente
     const messageAvatars = document.querySelectorAll('.message.assistant .message-avatar img');
     messageAvatars.forEach(avatar => {
@@ -133,11 +109,11 @@ function updateAvatar(state, animate = true) {
  */
 function resetSleepTimeout() {
     lastActivityTime = Date.now();
-    
+
     if (sleepTimeout) {
         clearTimeout(sleepTimeout);
     }
-    
+
     // Após 5 minutos de inatividade, muda para SLEEP
     sleepTimeout = setTimeout(() => {
         if (Date.now() - lastActivityTime >= 300000 && !isLoading) { // 5 minutos
@@ -150,19 +126,7 @@ function resetSleepTimeout() {
  * Inicializa sistema de clique no avatar para acordar
  */
 function setupAvatarClickHandler() {
-    const headerAvatar = document.querySelector('.ada-header-avatar');
-    if (headerAvatar) {
-        headerAvatar.style.cursor = 'pointer';
-        headerAvatar.setAttribute('title', 'Clique para acordar a Ada');
-        headerAvatar.addEventListener('click', () => {
-            if (currentAvatarState === AVATAR_STATES.SLEEP) {
-                updateAvatar(AVATAR_STATES.GREETING, true);
-                resetSleepTimeout();
-                // Mostra mensagem de "acordou"
-                showToast('Acordei! Vamos lá! 💜', 'info');
-            }
-        });
-    }
+    // Click handler removido pois o header agora é um logo estático
 }
 
 // =========================================
@@ -210,7 +174,7 @@ function setupReconnectionHandling() {
             // Ignora erros silenciosamente
         });
     });
-    
+
     // Listener para quando a conexão cai
     window.addEventListener('offline', () => {
         console.log('Conexão perdida');
@@ -229,7 +193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderMessages();
     setupEventListeners();
     checkAPIHealth();
-    
+
     // Inicializa sistema de avatar
     const realMessages = messages.filter(msg => msg.content !== TYPING_MESSAGE_ID);
     if (realMessages.length === 0) {
@@ -261,46 +225,46 @@ function toggleTheme() {
 function updateThemeToggle() {
     const theme = document.documentElement.getAttribute('data-theme');
     const themeIcon = document.getElementById('theme-icon');
-    
-    themeToggle.setAttribute('aria-label', 
-        theme === 'dark' 
-            ? 'Alternar para tema claro' 
+
+    themeToggle.setAttribute('aria-label',
+        theme === 'dark'
+            ? 'Alternar para tema claro'
             : 'Alternar para tema escuro'
     );
-    
+
     // Atualiza o ícone SVG (lua para sol e vice-versa)
     if (themeIcon) {
         const moonPath = themeIcon.querySelector('.theme-icon-moon');
         let sunGroup = themeIcon.querySelector('.theme-icon-sun');
-        
+
         if (theme === 'dark') {
             // Modo escuro ativo - mostra ícone de sol (para alternar para claro)
             if (moonPath) moonPath.style.display = 'none';
-            
+
             if (!sunGroup) {
                 // Cria o ícone do sol se não existir
                 sunGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                 sunGroup.setAttribute('class', 'theme-icon-sun');
-                
+
                 // Círculo do sol
                 const sun = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 sun.setAttribute('cx', '12');
                 sun.setAttribute('cy', '12');
                 sun.setAttribute('r', '5');
                 sunGroup.appendChild(sun);
-                
+
                 // Raios do sol
                 const rays = [
-                    {x1: '12', y1: '1', x2: '12', y2: '3'},
-                    {x1: '12', y1: '21', x2: '12', y2: '23'},
-                    {x1: '4.22', y1: '4.22', x2: '5.64', y2: '5.64'},
-                    {x1: '18.36', y1: '18.36', x2: '19.78', y2: '19.78'},
-                    {x1: '1', y1: '12', x2: '3', y2: '12'},
-                    {x1: '21', y1: '12', x2: '23', y2: '12'},
-                    {x1: '4.22', y1: '19.78', x2: '5.64', y2: '18.36'},
-                    {x1: '18.36', y1: '5.64', x2: '19.78', y2: '4.22'}
+                    { x1: '12', y1: '1', x2: '12', y2: '3' },
+                    { x1: '12', y1: '21', x2: '12', y2: '23' },
+                    { x1: '4.22', y1: '4.22', x2: '5.64', y2: '5.64' },
+                    { x1: '18.36', y1: '18.36', x2: '19.78', y2: '19.78' },
+                    { x1: '1', y1: '12', x2: '3', y2: '12' },
+                    { x1: '21', y1: '12', x2: '23', y2: '12' },
+                    { x1: '4.22', y1: '19.78', x2: '5.64', y2: '18.36' },
+                    { x1: '18.36', y1: '5.64', x2: '19.78', y2: '4.22' }
                 ];
-                
+
                 rays.forEach(ray => {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('x1', ray.x1);
@@ -309,7 +273,7 @@ function updateThemeToggle() {
                     line.setAttribute('y2', ray.y2);
                     sunGroup.appendChild(line);
                 });
-                
+
                 themeIcon.appendChild(sunGroup);
             } else {
                 sunGroup.style.display = '';
@@ -338,7 +302,7 @@ function createUXElements() {
             chatForm.parentElement.appendChild(charCounter);
         }
     }
-    
+
     // Busca botão cancelar (já existe no HTML)
     cancelButton = document.getElementById('cancel-button');
     if (cancelButton) {
@@ -346,32 +310,32 @@ function createUXElements() {
         const newCancelButton = cancelButton.cloneNode(true);
         cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
         cancelButton = newCancelButton;
-        
+
         // Adiciona novo event listener
         cancelButton.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             cancelRequest(e);
         });
-        
+
         // Também adiciona via onclick como fallback
         cancelButton.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
             cancelRequest(e);
         };
-        
+
         console.log('Botão cancelar configurado com múltiplos listeners');
     } else {
         console.warn('Botão cancelar não encontrado no DOM');
     }
-    
+
     // Busca elementos de busca e sugestões
     searchToggle = document.getElementById('search-toggle');
     searchWrapper = document.getElementById('search-wrapper');
     searchInput = document.getElementById('search-input');
     suggestionChipsEmpty = document.getElementById('suggestion-chips-empty');
-    
+
     // Configura busca
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -379,7 +343,7 @@ function createUXElements() {
             renderMessages();
         });
     }
-    
+
     if (searchToggle && searchWrapper) {
         searchToggle.addEventListener('click', () => {
             const isHidden = searchWrapper.classList.contains('hidden');
@@ -395,7 +359,7 @@ function createUXElements() {
             }
         });
     }
-    
+
     // Atualiza contador inicial
     updateCharCounter();
 }
@@ -405,16 +369,16 @@ function createUXElements() {
 // =========================================
 function autoResizeTextarea(textarea) {
     if (!textarea) return;
-    
+
     // Reset height to auto para recalcular
     textarea.style.height = 'auto';
-    
+
     // Calcula a altura necessária (scrollHeight inclui padding)
     const newHeight = Math.min(textarea.scrollHeight, 200); // Max 200px
-    
+
     // Aplica a nova altura
     textarea.style.height = `${newHeight}px`;
-    
+
     // Se atingiu o máximo, permite scroll
     if (textarea.scrollHeight > 200) {
         textarea.style.overflowY = 'auto';
@@ -428,18 +392,18 @@ function autoResizeTextarea(textarea) {
 // =========================================
 function updateCharCounter() {
     if (!charCounter) return;
-    
+
     const length = userInput.value.length;
     const remaining = MAX_QUESTION_LENGTH - length;
     const percentage = (length / MAX_QUESTION_LENGTH) * 100;
-    
+
     // Formata com separador de milhar se necessário
     const formattedLength = length.toLocaleString('pt-BR');
     const formattedMax = MAX_QUESTION_LENGTH.toLocaleString('pt-BR');
-    
+
     charCounter.textContent = `${formattedLength}/${formattedMax}`;
     charCounter.setAttribute('aria-label', `${length} de ${MAX_QUESTION_LENGTH} caracteres`);
-    
+
     // Muda cor baseado na quantidade
     if (percentage >= 90) {
         charCounter.className = 'char-counter char-counter-warning';
@@ -456,17 +420,17 @@ function updateCharCounter() {
 function cancelRequest(e) {
     e?.preventDefault(); // Previne comportamento padrão se for evento
     e?.stopPropagation(); // Para propagação do evento
-    
+
     console.log('Cancelar clicado, currentAbortController:', currentAbortController);
-    
+
     if (currentAbortController) {
         currentAbortController.abort();
         currentAbortController = null;
-        
+
         hideTypingIndicator();
         isLoading = false;
         updateUIState();
-        
+
         showToast('Requisição cancelada pelo usuário.', 'info');
         addMessage('assistant', {
             erro: '❌ Requisição cancelada pelo usuário.',
@@ -483,7 +447,7 @@ function cancelRequest(e) {
 function setupEventListeners() {
     // Formulário de envio
     chatForm.addEventListener('submit', handleFormSubmit);
-    
+
     // Enter no textarea (sem Shift = enviar, com Shift = nova linha)
     // Detecta quando usuário começa a digitar (SURPRISED)
     userInput.addEventListener('input', () => {
@@ -505,7 +469,7 @@ function setupEventListeners() {
             }
         }
     });
-    
+
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -514,16 +478,16 @@ function setupEventListeners() {
             }
         }
     });
-    
+
     // Auto-expansão do textarea
     userInput.addEventListener('input', () => {
         updateCharCounter();
         autoResizeTextarea(userInput);
     });
-    
+
     // Toggle de tema
     themeToggle.addEventListener('click', toggleTheme);
-    
+
     // Botão limpar chat
     const clearChatButton = document.getElementById('clear-chat-button');
     if (clearChatButton) {
@@ -533,7 +497,7 @@ function setupEventListeners() {
             }
         });
     }
-    
+
     // Foco automático no input
     userInput.focus();
 }
@@ -578,8 +542,8 @@ function removeLastErrorMessage() {
     let removed = false;
     for (let i = messages.length - 1; i >= 0; i--) {
         const message = messages[i];
-        if (message.role === 'assistant' && 
-            typeof message.content === 'object' && 
+        if (message.role === 'assistant' &&
+            typeof message.content === 'object' &&
             message.content.erro) {
             messages.splice(i, 1);
             removed = true;
@@ -599,11 +563,11 @@ function removeLastErrorMessage() {
 // =========================================
 function renderMessages() {
     if (!chatContainer) return;
-    
+
     // Remove mensagem de digitação da contagem para lógica de sugestões
     const realMessages = messages.filter(msg => msg.content !== TYPING_MESSAGE_ID);
     const hasMessages = realMessages.length > 0;
-    
+
     // Gerencia visibilidade do card de introdução e sugestões
     const introCard = document.getElementById('intro-card');
     if (introCard) {
@@ -613,7 +577,7 @@ function renderMessages() {
             introCard.classList.remove('hidden');
         }
     }
-    
+
     if (suggestionChipsEmpty) {
         if (hasMessages || searchFilter) {
             suggestionChipsEmpty.classList.add('hidden');
@@ -621,23 +585,23 @@ function renderMessages() {
             suggestionChipsEmpty.classList.remove('hidden');
         }
     }
-    
+
     // Remove apenas mensagens existentes, mantém intro-card se existir
     const existingMessages = chatContainer.querySelectorAll('.message');
     existingMessages.forEach(msg => msg.remove());
-    
+
     // Filtra mensagens se houver busca
     let filteredMessages = messages;
     if (searchFilter) {
         filteredMessages = messages.filter(msg => {
             if (msg.content === TYPING_MESSAGE_ID) return false; // Não mostra indicador na busca
-            const content = typeof msg.content === 'string' 
-                ? msg.content 
+            const content = typeof msg.content === 'string'
+                ? msg.content
                 : (msg.content.erro || JSON.stringify(msg.content));
             return content.toLowerCase().includes(searchFilter);
         });
     }
-    
+
     if (filteredMessages.length === 0) {
         if (searchFilter) {
             const noResults = document.createElement('div');
@@ -647,12 +611,12 @@ function renderMessages() {
         }
         return; // Deixa o ::before do CSS mostrar a mensagem padrão
     }
-    
+
     filteredMessages.forEach((message, index) => {
         const messageElement = createMessageElement(message, index);
         chatContainer.appendChild(messageElement);
     });
-    
+
     // Scroll para o final
     scrollToBottom();
 }
@@ -664,15 +628,15 @@ function createMessageElement(message, index) {
     messageDiv.setAttribute('data-testid', `chat-mensagem-${message.role}`);
     messageDiv.setAttribute('data-message-id', index);
     messageDiv.setAttribute('data-message-role', message.role);
-    
+
     // Avatar
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
     avatar.setAttribute('data-testid', `avatar-${message.role}`);
     avatar.setAttribute('aria-hidden', 'true');
-    
+
     let avatarImg = null; // Declara fora do if para poder usar depois
-    
+
     if (message.role === 'user') {
         // Tenta usar avatar personalizado, senão usa emoji
         const userAvatarImg = document.createElement('img');
@@ -690,7 +654,7 @@ function createMessageElement(message, index) {
     } else {
         // Usa avatar da Ada - escolhe baseado no estado da mensagem
         avatarImg = document.createElement('img');
-        
+
         // Se é mensagem de digitação, usa THINKING
         if (message.content === TYPING_MESSAGE_ID) {
             avatarImg.src = getAvatarPath(AVATAR_STATES.THINKING);
@@ -711,25 +675,25 @@ function createMessageElement(message, index) {
             // Mensagem de sucesso - usa HAPPY
             avatarImg.src = getAvatarPath(AVATAR_STATES.HAPPY);
         }
-        
+
         avatarImg.alt = 'Ada';
         avatarImg.style.width = '100%';
         avatarImg.style.height = '100%';
         avatarImg.style.objectFit = 'contain';
         avatar.appendChild(avatarImg);
     }
-    
+
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
     bubble.setAttribute('data-testid', `message-bubble-${message.role}`);
-    
+
     // Timestamp
     const timestamp = document.createElement('div');
     timestamp.className = 'message-timestamp';
     timestamp.setAttribute('data-testid', 'message-timestamp');
     const messageDate = message.timestamp ? new Date(message.timestamp) : new Date();
     timestamp.textContent = messageDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    
+
     if (message.role === 'user') {
         bubble.textContent = message.content;
         bubble.appendChild(timestamp);
@@ -743,25 +707,25 @@ function createMessageElement(message, index) {
             bubble.setAttribute('data-testid', 'typing-indicator');
             bubble.setAttribute('aria-live', 'polite');
             bubble.setAttribute('aria-label', 'Bot está pesquisando resposta');
-            
+
             // Texto informativo
             const textSpan = document.createElement('span');
             textSpan.className = 'typing-text';
             textSpan.textContent = 'Aguarde que estou pesquisando';
             bubble.appendChild(textSpan);
-            
+
             // Dots animados
             const dots = document.createElement('div');
             dots.className = 'typing-dots';
             dots.setAttribute('aria-hidden', 'true');
-            
+
             for (let i = 0; i < 3; i++) {
                 const dot = document.createElement('span');
                 dot.className = 'typing-dot';
                 dot.style.animationDelay = `${i * 0.2}s`;
                 dots.appendChild(dot);
             }
-            
+
             bubble.appendChild(dots);
             bubble.appendChild(timestamp);
             messageDiv.appendChild(avatar);
@@ -784,12 +748,12 @@ function createMessageElement(message, index) {
                 // Renderiza as seções como expanders
                 const sectionsDiv = document.createElement('div');
                 sectionsDiv.className = 'response-sections';
-                
+
                 Object.entries(message.content).forEach(([title, content], idx) => {
                     const section = createExpanderSection(title, content, idx === 0);
                     sectionsDiv.appendChild(section);
                 });
-                
+
                 bubble.appendChild(sectionsDiv);
                 bubble.appendChild(timestamp);
                 messageDiv.appendChild(avatar);
@@ -797,7 +761,7 @@ function createMessageElement(message, index) {
             }
         }
     }
-    
+
     return messageDiv;
 }
 
@@ -805,41 +769,41 @@ function createExpanderSection(title, content, isExpanded = false) {
     const section = document.createElement('div');
     section.className = 'response-section';
     section.setAttribute('data-testid', 'expander-section');
-    
+
     const uniqueId = `content-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const header = document.createElement('button');
     header.className = 'expander-header';
     header.setAttribute('type', 'button');
     header.setAttribute('data-testid', 'expander-header');
     header.setAttribute('aria-expanded', isExpanded);
     header.setAttribute('aria-controls', uniqueId);
-    
+
     const titleSpan = document.createElement('span');
     // Remove formatação markdown (asteriscos) do título
     const cleanTitle = title.replace(/\*\*/g, '').trim();
     titleSpan.textContent = cleanTitle;
     titleSpan.style.flex = '1';
     header.appendChild(titleSpan);
-    
+
     const icon = document.createElement('span');
     icon.className = 'expander-icon';
     icon.setAttribute('aria-hidden', 'true');
     header.appendChild(icon);
-    
+
     const contentDiv = document.createElement('div');
     contentDiv.className = 'expander-content';
     contentDiv.id = header.getAttribute('aria-controls');
     contentDiv.setAttribute('aria-hidden', !isExpanded);
     contentDiv.innerHTML = formatMarkdown(content);
-    
+
     // Toggle ao clicar
     header.addEventListener('click', () => {
         const expanded = header.getAttribute('aria-expanded') === 'true';
         header.setAttribute('aria-expanded', !expanded);
         contentDiv.setAttribute('aria-hidden', expanded);
     });
-    
+
     // Suporte a teclado
     header.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -847,18 +811,18 @@ function createExpanderSection(title, content, isExpanded = false) {
             header.click();
         }
     });
-    
+
     section.appendChild(header);
     section.appendChild(contentDiv);
-    
+
     return section;
 }
 
 function formatMarkdown(text) {
     if (!text) return '';
-    
+
     let html = text;
-    
+
     // Protege blocos de código para não processar markdown dentro deles
     const codeBlocks = [];
     html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
@@ -866,58 +830,58 @@ function formatMarkdown(text) {
         codeBlocks.push(`<pre><code>${escapeHtml(code.trim())}</code></pre>`);
         return placeholder;
     });
-    
+
     // Headers (##, ###, ####)
     html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
     html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
     html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
     html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
-    
+
     // Tabelas Markdown
     html = html.replace(/(\|.+\|\n\|[-\s|:]+\|\n(?:\|.+\|\n?)+)/g, (match) => {
         const lines = match.trim().split('\n');
         if (lines.length < 2) return match;
-        
+
         const header = lines[0];
         const separator = lines[1];
         const rows = lines.slice(2);
-        
+
         // Processa header
         const headerCells = header.split('|').map(cell => cell.trim()).filter(cell => cell);
         const headerHtml = headerCells.map(cell => `<th>${cell}</th>`).join('');
-        
+
         // Processa rows
         const rowsHtml = rows.map(row => {
             const cells = row.split('|').map(cell => cell.trim()).filter(cell => cell);
             return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
         }).join('');
-        
+
         return `<table><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table>`;
     });
-    
+
     // Processa listas (ordenadas e não ordenadas) com suporte a aninhamento
     html = processLists(html);
-    
+
     // Links
     html = html.replace(
         /\[([^\]]+)\]\(([^)]+)\)/g,
         '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
     );
-    
+
     // Negrito
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    
+
     // Itálico (apenas se não for negrito)
     html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
-    
+
     // Código inline (apenas se não for bloco)
     html = html.replace(/(?<!`)`([^`]+)`(?!`)/g, '<code>$1</code>');
-    
+
     // Restaura blocos de código
     codeBlocks.forEach((block, index) => {
         html = html.replace(`__CODE_BLOCK_${index}__`, block);
     });
-    
+
     // Parágrafos (quebras de linha duplas)
     const paragraphs = html.split('\n\n');
     html = paragraphs
@@ -931,7 +895,7 @@ function formatMarkdown(text) {
             return `<p>${para}</p>`;
         })
         .join('\n');
-    
+
     return html;
 }
 
@@ -942,24 +906,24 @@ function processLists(text) {
     let inList = false;
     let listType = null; // 'ul' ou 'ol'
     let listStack = []; // Pilha para listas aninhadas
-    
+
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const trimmed = line.trim();
-        
+
         // Detecta lista ordenada
         const orderedMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
         // Detecta lista não ordenada
         const unorderedMatch = trimmed.match(/^[-*]\s+(.+)$/);
-        
+
         // Calcula nível de indentação (espaços ou tabs)
         const indent = line.match(/^(\s*)/)[1].length;
         const indentLevel = Math.floor(indent / 2); // Assume 2 espaços por nível
-        
+
         if (orderedMatch || unorderedMatch) {
             const itemText = orderedMatch ? orderedMatch[2] : unorderedMatch[1];
             const currentType = orderedMatch ? 'ol' : 'ul';
-            
+
             // Se mudou o tipo de lista ou nível, fecha listas anteriores
             if (inList && (listType !== currentType || indentLevel < listStack.length)) {
                 // Fecha listas até o nível correto
@@ -969,7 +933,7 @@ function processLists(text) {
                     result.push(`</${lastList.type}>`);
                 }
             }
-            
+
             // Se precisa abrir nova lista
             if (!inList || listStack.length < indentLevel) {
                 while (listStack.length < indentLevel) {
@@ -977,7 +941,7 @@ function processLists(text) {
                     result.push(`<${currentType}>`);
                 }
             }
-            
+
             result.push(`<li>${itemText}</li>`);
             inList = true;
             listType = currentType;
@@ -995,7 +959,7 @@ function processLists(text) {
             result.push(line);
         }
     }
-    
+
     // Fecha listas restantes
     if (inList) {
         while (listStack.length > 0) {
@@ -1003,7 +967,7 @@ function processLists(text) {
             result.push(`</${lastList.type}>`);
         }
     }
-    
+
     return result.join('\n');
 }
 
@@ -1031,7 +995,7 @@ function showTypingIndicator() {
         content: TYPING_MESSAGE_ID, // Conteúdo especial que será renderizado como indicador
         timestamp: Date.now()
     };
-    
+
     messages.push(typingMessage);
     saveMessagesToStorage();
     renderMessages();
@@ -1082,46 +1046,46 @@ async function checkAPIHealth() {
 
 async function sendMessage(pergunta) {
     if (isLoading) return;
-    
+
     isLoading = true;
     userTyping = false;
     foundAnswer = false;
-    
+
     // Garante que o botão de cancelar apareça
     if (!cancelButton) {
         cancelButton = document.getElementById('cancel-button');
     }
-    
+
     updateUIState();
-    
+
     // Adiciona mensagem do usuário
     addMessage('user', pergunta);
-    
+
     // Limpa o input
     userInput.value = '';
-    
+
     // Muda para THINKING quando começa a processar
     updateAvatar(AVATAR_STATES.THINKING, true);
-    
+
     // Adiciona indicador de digitação (typing indicator)
     showTypingIndicator();
-    
+
     resetSleepTimeout();
     // Skeleton loading removido - usando apenas typing indicator
-    
+
     // AbortController para timeout e cancelamento
     currentAbortController = new AbortController();
     const controller = currentAbortController;
     // Timeout reduzido para 60 segundos (mais responsivo)
     const timeoutMs = Math.min(frontendConfig.request_timeout_ms || 120000, 60000); // Máximo 60s
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    
+
     try {
         // Verifica se está offline
         if (!navigator.onLine) {
             throw new Error('OFFLINE');
         }
-        
+
         const response = await fetch(API_CHAT_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -1130,16 +1094,16 @@ async function sendMessage(pergunta) {
             body: JSON.stringify({ pergunta }),
             signal: controller.signal,
         });
-        
+
         clearTimeout(timeoutId);
-        
+
         // NÃO remove mensagens de erro aqui - só quando a resposta chegar
         // Isso evita que o indicador desapareça prematuramente
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: 'Erro desconhecido' }));
             const errorMessage = errorData.detail || `Erro ${response.status}`;
-            
+
             // Mensagens específicas por status
             if (response.status === 429) {
                 throw new Error('RATE_LIMIT');
@@ -1149,9 +1113,9 @@ async function sendMessage(pergunta) {
                 throw new Error(errorMessage);
             }
         }
-        
+
         const data = await response.json();
-        
+
         // Verifica se a resposta contém indicação de busca (EUREKA)
         const respostaStr = JSON.stringify(data.resposta).toLowerCase();
         if (respostaStr.includes('google') || respostaStr.includes('busca') || respostaStr.includes('pesquisa')) {
@@ -1167,16 +1131,16 @@ async function sendMessage(pergunta) {
             // Resposta direta, vai direto para HAPPY
             updateAvatar(AVATAR_STATES.HAPPY, true);
         }
-        
+
         // Remove indicador de digitação
         hideTypingIndicator();
-        
+
         // Remove qualquer mensagem de erro anterior do assistente
         removeLastErrorMessage();
-        
+
         // Adiciona resposta do assistente (aparecerá abaixo do indicador que foi removido)
         addMessage('assistant', data.resposta);
-        
+
         // Após resposta, volta para IDLE após 2 segundos
         setTimeout(() => {
             if (!isLoading && currentAvatarState === AVATAR_STATES.HAPPY) {
@@ -1184,10 +1148,10 @@ async function sendMessage(pergunta) {
             }
             resetSleepTimeout();
         }, 2000);
-        
+
     } catch (error) {
         clearTimeout(timeoutId);
-        
+
         // Se foi cancelado manualmente pelo usuário, não mostra erro
         // (o cancelRequest já tratou isso)
         if (error.name === 'AbortError' && controller.signal.aborted && !currentAbortController) {
@@ -1195,14 +1159,14 @@ async function sendMessage(pergunta) {
             console.log('Requisição cancelada manualmente pelo usuário');
             return; // Não faz nada, o cancelRequest já tratou
         }
-        
+
         // Remove indicador de digitação
         hideTypingIndicator();
-        
+
         // Mensagens de erro específicas e estados do avatar
         let errorMessage = '';
         let avatarState = AVATAR_STATES.ERROR;
-        
+
         if (error.name === 'AbortError' || error.message === 'AbortError') {
             errorMessage = '⏱️ A requisição demorou muito para responder (timeout). Por favor, tente novamente.';
             avatarState = AVATAR_STATES.BACK_SOON; // WORRIED (usando back-soon como equivalente)
@@ -1225,16 +1189,16 @@ async function sendMessage(pergunta) {
             errorMessage = `❌ Erro ao processar sua pergunta: ${error.message}. Por favor, tente novamente.`;
             avatarState = AVATAR_STATES.CONFUSED; // Pergunta ambígua ou erro genérico
         }
-        
+
         // Atualiza avatar para estado de erro
         updateAvatar(avatarState, true);
-        
+
         // Adiciona mensagem de erro com tipo específico
         addMessage('assistant', {
             erro: errorMessage,
             errorType: getErrorType(error)
         });
-        
+
         // Após erro, volta para IDLE após 3 segundos
         setTimeout(() => {
             if (!isLoading && (currentAvatarState === avatarState)) {
@@ -1242,24 +1206,24 @@ async function sendMessage(pergunta) {
             }
             resetSleepTimeout();
         }, 3000);
-        
+
         // Mostra toast notification
         showToast(errorMessage, 'error');
-        
+
         console.error('Erro ao enviar mensagem:', error);
     } finally {
         // Limpa o controller
         if (currentAbortController === controller) {
             currentAbortController = null;
         }
-        
+
         // Garante que o indicador seja removido quando terminar (sucesso ou erro)
         hideTypingIndicator();
-        
+
         // SEMPRE reseta isLoading, mesmo se houver erro
         isLoading = false;
         updateUIState();
-        
+
         // Log para debug
         console.log('sendMessage finalizado, isLoading:', isLoading);
     }
@@ -1274,14 +1238,14 @@ function updateUIState() {
         console.warn('isLoading estava undefined/null, resetando para false');
         isLoading = false;
     }
-    
+
     userInput.disabled = isLoading;
     sendButton.disabled = isLoading;
-    
+
     if (isLoading) {
         sendButton.style.opacity = '0.6';
         sendButton.setAttribute('aria-label', 'Enviando mensagem...');
-        
+
         // Garante que o botão de cancelar apareça
         if (!cancelButton) {
             cancelButton = document.getElementById('cancel-button');
@@ -1326,22 +1290,22 @@ window.resetAdaState = resetStuckState;
 // =========================================
 async function handleFormSubmit(e) {
     e.preventDefault();
-    
+
     const pergunta = userInput.value.trim();
-    
+
     // Debug: verifica estado
     console.log('handleFormSubmit chamado:', { pergunta: pergunta.substring(0, 20), isLoading });
-    
+
     if (!pergunta) {
         console.log('Pergunta vazia, ignorando');
         return;
     }
-    
+
     if (isLoading) {
         console.warn('Já está carregando, ignorando nova requisição');
         return;
     }
-    
+
     try {
         await sendMessage(pergunta);
     } catch (error) {

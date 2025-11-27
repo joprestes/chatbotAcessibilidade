@@ -9,6 +9,9 @@ install: ## Instala dependências e pre-commit hooks
 	pip install pre-commit black ruff mypy
 	pre-commit install
 
+run: ## Inicia o servidor de desenvolvimento
+	uvicorn src.backend.api:app --reload --port 8000
+
 lint: ## Executa linters (ruff)
 	ruff check src/ tests/
 

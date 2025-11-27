@@ -2,20 +2,15 @@
 Testes unitários para os middlewares de segurança, cache e compressão
 """
 
-import gzip
+from backend.middleware import (
+    SecurityHeadersMiddleware,
+    StaticCacheMiddleware,
+)
+
 import pytest
 from unittest.mock import MagicMock, patch
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.datastructures import Headers
-
-from backend.middleware import (
-    SecurityHeadersMiddleware,
-    StaticCacheMiddleware,
-    CompressionMiddleware,
-)
-
-
 # ==========================================
 # Testes para SecurityHeadersMiddleware
 # ==========================================
@@ -176,171 +171,4 @@ async def test_static_cache_middleware_no_cache_for_api():
     assert "Cache-Control" not in response.headers or "immutable" not in response.headers.get("Cache-Control", "")
 
 
-# ==========================================
-# Testes para CompressionMiddleware
-# ==========================================
 
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_compression_middleware_compresses_large_response():
-    """Testa se o middleware comprime respostas grandes"""
-    from starlette.responses import StreamingResponse
-    
-    # Cria uma resposta grande (> 1KB)
-    large_content = "x" * 2000
-    
-    mock_request = MagicMock(spec=Request)
-    mock_request.headers = Headers({"accept-encoding": "gzip, deflate"})
-    
-    async def content_generator():
-        yield large_content.encode()
-    
-    async def mock_call_next(request):
-        response = StreamingResponse(content_generator(), status_code=200)
-        response.headers["Content-Type"] = "application/json"
-        return response
-    
-    with patch("backend.middleware.settings") as mock_settings:
-        mock_settings.compression_enabled = True
-        
-        with patch("chatbot_acessibilidade.core.constants.COMPRESSION_MIN_SIZE_BYTES", 1000):
-            middleware = CompressionMiddleware(app=MagicMock())
-            response = await middleware.dispatch(mock_request, mock_call_next)
-            
-            # Verifica se foi comprimido
-            assert response.headers["Content-Encoding"] == "gzip"
-            assert "Content-Length" in response.headers
-            
-            # Verifica se o conteúdo está realmente comprimido
-            decompressed = gzip.decompress(response.body)
-            assert decompressed.decode() == large_content
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_compression_middleware_skips_small_response():
-    """Testa se o middleware não comprime respostas pequenas"""
-    from starlette.responses import StreamingResponse
-    
-    small_content = "small"
-    
-    mock_request = MagicMock(spec=Request)
-    mock_request.headers = Headers({"accept-encoding": "gzip"})
-    
-    async def content_generator():
-        yield small_content.encode()
-    
-    async def mock_call_next(request):
-        response = StreamingResponse(content_generator(), status_code=200)
-        response.headers["Content-Type"] = "application/json"
-        return response
-    
-    with patch("backend.middleware.settings") as mock_settings:
-        mock_settings.compression_enabled = True
-        
-        with patch("chatbot_acessibilidade.core.constants.COMPRESSION_MIN_SIZE_BYTES", 1000):
-            middleware = CompressionMiddleware(app=MagicMock())
-            response = await middleware.dispatch(mock_request, mock_call_next)
-            
-            # Não deve comprimir
-            assert "Content-Encoding" not in response.headers
-            assert response.body.decode() == small_content
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_compression_middleware_disabled():
-    """Testa se o middleware não comprime quando desabilitado"""
-    large_content = "x" * 2000
-    
-    mock_request = MagicMock(spec=Request)
-    mock_request.headers = Headers({"accept-encoding": "gzip"})
-    
-    async def mock_call_next(request):
-        response = Response(content=large_content, status_code=200)
-        response.headers["Content-Type"] = "application/json"
-        return response
-    
-    with patch("backend.middleware.settings") as mock_settings:
-        mock_settings.compression_enabled = False
-        
-        middleware = CompressionMiddleware(app=MagicMock())
-        response = await middleware.dispatch(mock_request, mock_call_next)
-        
-        # Não deve comprimir
-        assert "Content-Encoding" not in response.headers
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_compression_middleware_no_gzip_support():
-    """Testa se o middleware não comprime quando cliente não aceita gzip"""
-    large_content = "x" * 2000
-    
-    mock_request = MagicMock(spec=Request)
-    mock_request.headers = Headers({"accept-encoding": "deflate"})  # Sem gzip
-    
-    async def mock_call_next(request):
-        response = Response(content=large_content, status_code=200)
-        response.headers["Content-Type"] = "application/json"
-        return response
-    
-    with patch("backend.middleware.settings") as mock_settings:
-        mock_settings.compression_enabled = True
-        
-        middleware = CompressionMiddleware(app=MagicMock())
-        response = await middleware.dispatch(mock_request, mock_call_next)
-        
-        # Não deve comprimir
-        assert "Content-Encoding" not in response.headers
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_compression_middleware_already_compressed():
-    """Testa se o middleware não comprime respostas já comprimidas"""
-    large_content = "x" * 2000
-    
-    mock_request = MagicMock(spec=Request)
-    mock_request.headers = Headers({"accept-encoding": "gzip, br"})
-    
-    async def mock_call_next(request):
-        response = Response(content=large_content, status_code=200)
-        response.headers["Content-Type"] = "application/json"
-        response.headers["Content-Encoding"] = "br"  # Já comprimido com Brotli
-        return response
-    
-    with patch("backend.middleware.settings") as mock_settings:
-        mock_settings.compression_enabled = True
-        
-        middleware = CompressionMiddleware(app=MagicMock())
-        response = await middleware.dispatch(mock_request, mock_call_next)
-        
-        # Não deve comprimir novamente
-        assert response.headers["Content-Encoding"] == "br"
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_compression_middleware_non_compressible_type():
-    """Testa se o middleware não comprime tipos não comprimíveis"""
-    large_content = b"\x00" * 2000  # Conteúdo binário
-    
-    mock_request = MagicMock(spec=Request)
-    mock_request.headers = Headers({"accept-encoding": "gzip"})
-    
-    async def mock_call_next(request):
-        response = Response(content=large_content, status_code=200)
-        response.headers["Content-Type"] = "image/png"  # Tipo não comprimível
-        return response
-    
-    with patch("backend.middleware.settings") as mock_settings:
-        mock_settings.compression_enabled = True
-        
-        with patch("chatbot_acessibilidade.core.constants.COMPRESSION_MIN_SIZE_BYTES", 1000):
-            middleware = CompressionMiddleware(app=MagicMock())
-            response = await middleware.dispatch(mock_request, mock_call_next)
-            
-            # Não deve comprimir
-            assert "Content-Encoding" not in response.headers

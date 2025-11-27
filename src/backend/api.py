@@ -32,7 +32,6 @@ load_dotenv()
 from chatbot_acessibilidade.config import settings  # noqa: E402
 from backend.middleware import (  # noqa: E402
     SecurityHeadersMiddleware,
-    CompressionMiddleware,
     StaticCacheMiddleware,
 )
 
@@ -72,7 +71,7 @@ app = FastAPI(
 
     API REST desenvolvida com FastAPI que fornece respostas inteligentes sobre
     acessibilidade digital, utilizando Google Gemini 2.0 Flash com fallback
-    automático para múltiplos LLMs via OpenRouter.
+    automático para múltiplos LLMs via Hugging Face.
     
     ### ✨ Funcionalidades
     
@@ -142,8 +141,15 @@ app.add_middleware(SecurityHeadersMiddleware)
 # Middleware de cache para assets estáticos (após segurança)
 app.add_middleware(StaticCacheMiddleware)
 
-# Middleware de compressão (após cache, antes de CORS)
-app.add_middleware(CompressionMiddleware)
+# Middleware de compressão (usando implementação nativa do Starlette/FastAPI)
+if settings.compression_enabled:
+    from fastapi.middleware.gzip import GZipMiddleware
+    from chatbot_acessibilidade.core.constants import COMPRESSION_MIN_SIZE_BYTES
+    
+    app.add_middleware(
+        GZipMiddleware, 
+        minimum_size=COMPRESSION_MIN_SIZE_BYTES
+    )
 
 # Configura CORS com origens permitidas
 app.add_middleware(
