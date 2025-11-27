@@ -116,6 +116,7 @@ markers = [
     "slow: marca testes lentos",
     "contract: marca testes de contrato de API",
     "property: marca property-based tests",
+    "nondestructive: marks tests as non-destructive (safe to run)",
 ]
 filterwarnings = [
     # Suprimir warnings de dependências externas e ambiente

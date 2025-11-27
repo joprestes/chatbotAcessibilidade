@@ -1244,6 +1244,14 @@ async function sendMessage(pergunta) {
         // Adiciona resposta do assistente (aparecerá abaixo do indicador que foi removido)
         addMessage('assistant', data.resposta);
 
+        // Retorna foco ao input após resposta (WCAG 2.4.3)
+        // Melhora navegação por teclado permitindo que usuário continue digitando
+        setTimeout(() => {
+            if (userInput && !isLoading) {
+                userInput.focus();
+            }
+        }, 100);
+
         // Após resposta, volta para IDLE após 2 segundos
         setTimeout(() => {
             if (!isLoading && currentAvatarState === AVATAR_STATES.HAPPY) {
