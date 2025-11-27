@@ -10,7 +10,7 @@ A estrutura de testes segue a **Pirâmide de Testes**, organizando os testes por
 tests/
 ├── conftest.py                    # Configuração global de testes
 │
-├── unit/                          # 🧪 Testes Unitários (Base da Pirâmide)
+├── unit/                          # 🧪 Testes Unitários (Base da Pirâmide - 70%)
 │   ├── conftest.py               # Fixtures específicas de unitários
 │   ├── core/                     # Testes dos módulos core
 │   │   ├── test_cache.py
@@ -27,17 +27,25 @@ tests/
 │       ├── test_security_headers.py
 │       └── test_compression.py
 │
-├── integration/                   # 🔄 Testes de Integração (Meio da Pirâmide)
+├── integration/                   # 🔄 Testes de Integração (Meio da Pirâmide - 20%)
 │   ├── conftest.py               # Fixtures específicas de integração
-│   └── test_user_flow.py         # Fluxo completo do usuário
+│   ├── test_user_flow.py         # Fluxo completo do usuário
+│   └── test_deep_integration.py  # 🆕 Integração profunda (API -> Pipeline -> Agentes)
 │
-└── e2e/                           # 🎭 Testes End-to-End (Topo da Pirâmide)
+└── e2e/                           # 🎭 Testes End-to-End (Topo da Pirâmide - 10%)
     └── playwright/                # Testes com Playwright
         ├── conftest.py
         ├── test_api_playwright.py
         ├── test_frontend_playwright.py
         └── test_accessibility.py
 ```
+
+### 🆕 Rebalanceamento da Pirâmide (Novembro 2025)
+
+Para otimizar a velocidade e estabilidade da suite, adotamos uma estratégia de **Deep Integration Testing**:
+- **Unitários**: Focam em lógica isolada de classes e funções.
+- **Integração**: Validam o fluxo completo (API + Pipeline) usando mocks apenas para chamadas externas (LLM). Isso permite testar a orquestração sem a lentidão do browser.
+- **E2E**: Focam exclusivamente em fluxos que exigem interação visual ou comportamento do navegador (JavaScript, CSS, Acessibilidade).
 
 ### Execução Seletiva
 
