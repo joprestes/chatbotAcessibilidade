@@ -1285,6 +1285,16 @@ main {
     transform: rotate(0deg);
 }
 
+/* Título do Expander (h3 para hierarquia semântica - WCAG 2.4.10) */
+.expander-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+    text-align: left;
+}
+
+
 .expander-content {
     padding: 24px;
     /* Aumentado para mais respiro */
@@ -1664,7 +1674,8 @@ main {
 }
 
 #user-input:focus {
-    outline: none;
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 #user-input::placeholder {
@@ -1712,6 +1723,65 @@ main {
     color: var(--error-color);
     font-weight: 600;
 }
+
+/* ========================================= */
+/* Botão de Ajuda Contextual (WCAG 3.3.5) */
+/* ========================================= */
+.help-button {
+    width: 32px;
+    height: 32px;
+    background: rgba(124, 58, 237, 0.1);
+    border: 1px solid var(--accent-color);
+    border-radius: 50%;
+    color: var(--accent-color);
+    cursor: help;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.help-button:hover {
+    background: rgba(124, 58, 237, 0.2);
+    transform: scale(1.05);
+}
+
+.help-button:focus-visible {
+    outline: 2px solid var(--accent-focus);
+    outline-offset: 2px;
+}
+
+.help-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+[data-theme="dark"] .help-button {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .help-button:hover {
+    background: rgba(139, 92, 246, 0.25);
+}
+
+/* Hint de Ajuda */
+.input-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    margin-top: 4px;
+    background: rgba(124, 58, 237, 0.05);
+    border-radius: 6px;
+    line-height: 1.4;
+}
+
+[data-theme="dark"] .input-hint {
+    background: rgba(139, 92, 246, 0.1);
+}
+
 
 /* Botão Cancelar (Ícone Pequeno) */
 .cancel-button {

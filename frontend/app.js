@@ -356,12 +356,28 @@ function createUXElements() {
                 searchToggle.setAttribute('aria-expanded', 'false');
                 searchFilter = '';
                 renderMessages();
+                searchToggle.focus(); // Retorna foco ao botão ao fechar busca
             }
         });
     }
 
     // Atualiza contador inicial
     updateCharCounter();
+
+    // Botão de Ajuda Contextual (WCAG 3.3.5)
+    const helpButton = document.querySelector('.help-button');
+    if (helpButton) {
+        helpButton.addEventListener('click', () => {
+            showToast(
+                'Exemplos de perguntas:\n' +
+                '• Como testar contraste de cores?\n' +
+                '• O que é navegação por teclado?\n' +
+                '• Gere um checklist WCAG AA',
+                'info',
+                10000 // 10 segundos
+            );
+        });
+    }
 }
 
 // =========================================
@@ -498,6 +514,13 @@ function setupEventListeners() {
         });
     }
 
+    // Atalho Escape para cancelar requisição (WCAG 2.1.1)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isLoading) {
+            cancelRequest();
+        }
+    });
+
     // Foco automático no input
     userInput.focus();
 }
@@ -535,6 +558,7 @@ function clearMessages() {
     messages = [];
     saveMessagesToStorage();
     renderMessages();
+    userInput.focus(); // Retorna foco ao input após limpar chat
 }
 
 function removeLastErrorMessage() {
@@ -779,12 +803,12 @@ function createExpanderSection(title, content, isExpanded = false) {
     header.setAttribute('aria-expanded', isExpanded);
     header.setAttribute('aria-controls', uniqueId);
 
-    const titleSpan = document.createElement('span');
+    const titleHeading = document.createElement('h3');
+    titleHeading.className = 'expander-title';
     // Remove formatação markdown (asteriscos) do título
     const cleanTitle = title.replace(/\*\*/g, '').trim();
-    titleSpan.textContent = cleanTitle;
-    titleSpan.style.flex = '1';
-    header.appendChild(titleSpan);
+    titleHeading.textContent = cleanTitle;
+    header.appendChild(titleHeading);
 
     const icon = document.createElement('span');
     icon.className = 'expander-icon';

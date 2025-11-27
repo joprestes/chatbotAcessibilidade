@@ -27,7 +27,7 @@
                 <div class="header-content">
                     <div class="header-branding">
                         <div class="ada-header-profile" data-testid="ada-header-profile">
-                            <img src="/assets/ada-logo.png" alt="logo" class="ada-header-avatar" data-testid="logo-ada">
+                            <img src="/assets/ada-logo.png" alt="Ada - Assistente de Acessibilidade Digital" class="ada-header-avatar" data-testid="logo-ada">
                             <div class="ada-header-info">
                                 <h1>Ada</h1>
                                 <span class="ada-header-status">Sua Assistente de Inclusão Digital</span>
@@ -110,6 +110,21 @@
                 <form id="chat-form" class="chat-form" data-testid="form-chat">
                     <div class="input-container floating-pill">
                         <label for="user-input" class="sr-only">Digite sua pergunta</label>
+                        
+                        <!-- Botão de Ajuda Contextual (WCAG 3.3.5) -->
+                        <button type="button" class="help-button" 
+                                aria-label="Ajuda sobre como fazer perguntas"
+                                data-testid="btn-ajuda"
+                                title="Dicas de como usar o chatbot">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
+                                 fill="none" stroke="currentColor" stroke-width="2" 
+                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </button>
+                        
                         <button type="button" id="cancel-button" class="cancel-button hidden" data-testid="btn-cancelar"
                             aria-label="Cancelar requisição" title="Cancelar">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -117,9 +132,12 @@
                                 <rect x="6" y="6" width="12" height="12"></rect>
                             </svg>
                         </button>
+                        
                         <textarea id="user-input" name="pergunta" data-testid="input-pergunta"
                             placeholder="Pergunte sobre WCAG, ARIA ou testes..." autocomplete="off" rows="1"
-                            aria-label="Campo de texto para sua pergunta"></textarea>
+                            aria-label="Campo de texto para sua pergunta"
+                            aria-describedby="input-hint"></textarea>
+                        
                         <button type="submit" id="send-button" class="send-button" data-testid="btn-enviar"
                             aria-label="Enviar mensagem">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -128,6 +146,11 @@
                                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                             </svg>
                         </button>
+                    </div>
+                    
+                    <!-- Hint de Ajuda (WCAG 3.3.5) -->
+                    <div id="input-hint" class="input-hint">
+                        <strong>Dica:</strong> Pergunte sobre WCAG, ARIA, testes de acessibilidade, etc.
                     </div>
                 </form>
             </footer>
