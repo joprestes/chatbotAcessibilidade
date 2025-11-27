@@ -1,3 +1,5 @@
+<div align="center">
+
 # ♿ Chatbot de Acessibilidade Digital
 
 **Um assistente inteligente para tornar a web mais acessível** 💡
@@ -12,7 +14,11 @@
 
 [Português 🇧🇷](#-versão-em-português)
 
+</div>
+
 ---
+
+<div align="center">
 
 ## 👤 Sobre a Autora
 
@@ -22,7 +28,11 @@
 [![Medium](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)](https://medium.com/@joprestes)
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:joprestes@hotmail.com)
 
+</div>
+
 ---
+
+<div align="center">
 
 ### 👋 Olá! Eu sou a Ada
 
@@ -33,10 +43,12 @@
   height="150"
   style="border-radius: 50%; border: 4px solid rgba(124, 58, 237, 0.3); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3); margin: 20px 0;">
 
-**Sua Assistente de Acessibilidade e Inclusão Digital** 💜
+**Sua Assistente de Inclusão Digital** 💜
 
 [![GitHub stars](https://img.shields.io/github/stars/joprestes/chatbotAcessibilidade?style=social)](https://github.com/joprestes/chatbotAcessibilidade)
 [![GitHub forks](https://img.shields.io/github/forks/joprestes/chatbotAcessibilidade?style=social)](https://github.com/joprestes/chatbotAcessibilidade)
+
+</div>
 
 ---
 
