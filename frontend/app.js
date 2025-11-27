@@ -23,6 +23,13 @@ let frontendConfig = {
 let messages = [];
 let isLoading = false;
 let currentAbortController = null; // Para cancelar requisições
+
+// Timeout Ajustável (WCAG 2.2.6)
+let timeoutWarningShown = false;
+let timeoutExtensionCount = 0;
+let warningTimerId = null;
+const MAX_EXTENSIONS = 3;
+const WARNING_BEFORE_TIMEOUT_MS = 20000; // Avisa 20s antes do timeout
 let searchFilter = ''; // Filtro de busca no histórico
 const TYPING_MESSAGE_ID = '__typing_indicator__'; // ID especial para mensagem de digitação
 const MAX_QUESTION_LENGTH = 2000; // Máximo de caracteres (do backend)
@@ -455,6 +462,59 @@ function cancelRequest(e) {
     } else {
         console.warn('Tentativa de cancelar, mas não há requisição ativa');
     }
+}
+
+// =========================================
+// Timeout Ajustável (WCAG 2.2.6)
+// =========================================
+function showTimeoutWarning(controller, timeoutId) {
+    timeoutWarningShown = true;
+
+    const canExtend = timeoutExtensionCount < MAX_EXTENSIONS;
+    const extensionsLeft = MAX_EXTENSIONS - timeoutExtensionCount;
+
+    let message = '⏱️ A requisição está demorando mais que o esperado.';
+
+    if (canExtend) {
+        message += `\n\nDeseja estender o tempo de espera por mais 2 minutos?\n(${extensionsLeft} extensões restantes)`;
+
+        if (confirm(message)) {
+            extendTimeout(controller, timeoutId);
+        }
+    } else {
+        message += '\n\nLimite de extensões atingido. A requisição será cancelada em breve.';
+        showToast(message, 'warning', 10000);
+    }
+}
+
+function extendTimeout(controller, oldTimeoutId) {
+    timeoutExtensionCount++;
+    timeoutWarningShown = false;
+
+    // Cancela o timeout antigo
+    clearTimeout(oldTimeoutId);
+    if (warningTimerId) {
+        clearTimeout(warningTimerId);
+        warningTimerId = null;
+    }
+
+    // Cria novo timeout de 120 segundos (2 minutos)
+    const newTimeoutMs = 120000;
+    const newTimeoutId = setTimeout(() => controller.abort(), newTimeoutMs);
+
+    // Cria novo timer de aviso
+    const warningTime = Math.max(newTimeoutMs - WARNING_BEFORE_TIMEOUT_MS, 5000);
+    warningTimerId = setTimeout(() => {
+        if (isLoading && !timeoutWarningShown && currentAbortController === controller) {
+            showTimeoutWarning(controller, newTimeoutId);
+        }
+    }, warningTime);
+
+    showToast(
+        `⏱️ Tempo estendido por mais 2 minutos (${timeoutExtensionCount}/${MAX_EXTENSIONS})`,
+        'info',
+        5000
+    );
 }
 
 // =========================================
@@ -1100,9 +1160,24 @@ async function sendMessage(pergunta) {
     // AbortController para timeout e cancelamento
     currentAbortController = new AbortController();
     const controller = currentAbortController;
-    // Timeout reduzido para 60 segundos (mais responsivo)
-    const timeoutMs = Math.min(frontendConfig.request_timeout_ms || 120000, 60000); // Máximo 60s
+
+    // Timeout configurável (WCAG 2.2.6)
+    const timeoutMs = frontendConfig.request_timeout_ms || 120000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    // Reseta variáveis de aviso de timeout
+    timeoutWarningShown = false;
+    timeoutExtensionCount = 0; // Reseta contador para nova requisição
+
+    // Inicia timer de aviso (20s antes do timeout)
+    const warningTime = Math.max(timeoutMs - WARNING_BEFORE_TIMEOUT_MS, 5000);
+    if (warningTimerId) clearTimeout(warningTimerId);
+
+    warningTimerId = setTimeout(() => {
+        if (isLoading && !timeoutWarningShown && currentAbortController === controller) {
+            showTimeoutWarning(controller, timeoutId);
+        }
+    }, warningTime);
 
     try {
         // Verifica se está offline
@@ -1120,6 +1195,10 @@ async function sendMessage(pergunta) {
         });
 
         clearTimeout(timeoutId);
+        if (warningTimerId) {
+            clearTimeout(warningTimerId);
+            warningTimerId = null;
+        }
 
         // NÃO remove mensagens de erro aqui - só quando a resposta chegar
         // Isso evita que o indicador desapareça prematuramente
@@ -1175,6 +1254,10 @@ async function sendMessage(pergunta) {
 
     } catch (error) {
         clearTimeout(timeoutId);
+        if (warningTimerId) {
+            clearTimeout(warningTimerId);
+            warningTimerId = null;
+        }
 
         // Se foi cancelado manualmente pelo usuário, não mostra erro
         // (o cancelRequest já tratou isso)
