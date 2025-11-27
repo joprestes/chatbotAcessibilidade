@@ -160,22 +160,22 @@ def test_keyboard_navigation_focus_visible(page: Page, base_url: str):
 
 def test_focus_trap_in_modal(page: Page, base_url: str):
     """
-    Testa que o foco fica preso dentro de modais (se houver modais no futuro).
+    Testa que o foco fica preso dentro de modais (se houver modais abertos).
 
-    Nota: Atualmente não há modais no projeto, mas este teste serve como
-    documentação do padrão esperado quando modais forem adicionados.
+    Nota: Este teste verifica se há modais VISÍVEIS no projeto.
+    O modal existe no HTML mas fica hidden até ser aberto via JavaScript.
     """
     page.goto(base_url)
     page.wait_for_load_state("networkidle")
 
-    # Por enquanto, apenas verifica que não há modais
-    modals = page.locator("[role='dialog'], .modal, [aria-modal='true']")
+    # Verifica se há modais VISÍVEIS (não apenas presentes no DOM)
+    modals = page.locator("[role='dialog'][aria-hidden='false'], .modal:visible, [aria-modal='true']:visible")
     modal_count = modals.count()
 
     if modal_count == 0:
-        pytest.skip("Não há modais no projeto atualmente")
+        pytest.skip("Não há modais visíveis no projeto atualmente. Modal existe mas precisa ser aberto via JavaScript (window.openModal)")
     else:
-        # Se houver modais no futuro, testa que foco fica preso
+        # Se houver modais visíveis, testa que foco fica preso
         first_modal = modals.first
         first_modal.focus()
 
