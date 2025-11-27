@@ -61,7 +61,7 @@ def test_api_chat_endpoint_success_via_playwright(
         pytest.skip("Servidor não está rodando. Execute: uvicorn src.backend.api:app --port 8000")
 
     import httpx
-    
+
     # Usa httpx diretamente para evitar problema de compressão do Playwright
     # APIRequestContext tem bug com Content-Length duplicado quando há compressão gzip
     with httpx.Client(timeout=10.0) as client:

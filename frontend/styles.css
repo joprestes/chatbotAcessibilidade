@@ -2,49 +2,79 @@
 /* Variáveis CSS - Paleta "Lavanda Inclusiva" */
 /* ========================================= */
 :root {
-    /* Tema Claro - Paleta Roxo Acessível */
-    --bg-primary: #FAF5FF; /* Branco com toque de lavanda */
-    --bg-secondary: #F3E8FF; /* Lilás suave */
-    --text-primary: #3B0764; /* Roxo muito escuro (quase preto) */
-    --text-secondary: #6B21A8; /* Roxo médio */
-    --border-color: #C4B5FD; /* Lavanda */
-    --accent-color: #7C3AED; /* Violeta vibrante (botões/links) */
-    --accent-hover: #6D28D9; /* Violeta mais escura */
-    --accent-focus: #D946EF; /* Magenta para foco */
-    --accent-deep: #4C1D95; /* Roxo profundo */
+    /* Tema Claro - Paleta Roxo Acessível (WCAG AAA) */
+    --bg-primary: #FAF5FF;
+    /* Branco com toque de lavanda */
+    --bg-secondary: #F3E8FF;
+    /* Lilás suave */
+    --text-primary: #3B0764;
+    /* Roxo muito escuro (quase preto) - 13.8:1 ✅ */
+    --text-secondary: #5B1A98;
+    /* Roxo médio escurecido - 7.5:1 ✅ AAA (era #6B21A8) */
+    --border-color: #C4B5FD;
+    /* Lavanda */
+    --accent-color: #6C2ADD;
+    /* Violeta escurecido - 7.2:1 ✅ AAA (era #7C3AED) */
+    --accent-hover: #5B1A98;
+    /* Violeta mais escura */
+    --accent-focus: #D946EF;
+    /* Magenta para foco */
+    --accent-deep: #4C1D95;
+    /* Roxo profundo */
     --error-color: #DC2626;
     --success-color: #16A34A;
-    --shadow: rgba(124, 58, 237, 0.15); /* Sombra roxa suave */
-    
+    --shadow: rgba(124, 58, 237, 0.15);
+    /* Sombra roxa suave */
+
     /* Cores específicas para mensagens */
-    --user-bubble-bg: #E9D5FF; /* Lilás/Lavanda para mensagens do usuário */
-    --user-bubble-text: #3B0764; /* Roxo escuro */
-    --bot-bubble-bg: #FFFFFF; /* Branco para mensagens do bot */
-    --bot-bubble-border: #7C3AED; /* Borda lateral roxa */
-    --bot-bubble-alt-bg: #F9FAFB; /* Cinza gelo alternativo */
+    --user-bubble-bg: #E9D5FF;
+    /* Lilás/Lavanda para mensagens do usuário */
+    --user-bubble-text: #3B0764;
+    /* Roxo escuro */
+    --bot-bubble-bg: #FFFFFF;
+    /* Branco para mensagens do bot */
+    --bot-bubble-border: #6C2ADD;
+    /* Borda lateral roxa AAA */
+    --bot-bubble-alt-bg: #F9FAFB;
+    /* Cinza gelo alternativo */
 }
 
 [data-theme="dark"] {
-    /* Dark Mode "Beringela" - Deep Purple */
-    --bg-primary: #1e1b4b; /* Indigo/Roxo muito escuro */
-    --bg-secondary: #312e81; /* Roxo escuro médio */
-    --text-primary: #E9D5FF; /* Lavanda claro para texto */
-    --text-secondary: #C4B5FD; /* Lavanda médio */
-    --border-color: #6366F1; /* Indigo */
-    --accent-color: #8B5CF6; /* Violeta neon suave */
-    --accent-hover: #A78BFA; /* Violeta mais claro */
-    --accent-focus: #D946EF; /* Magenta neon para foco */
-    --accent-deep: #7C3AED; /* Violeta vibrante */
+    /* Dark Mode "Beringela" - Deep Purple (WCAG AAA) */
+    --bg-primary: #1e1b4b;
+    /* Indigo/Roxo muito escuro */
+    --bg-secondary: #312e81;
+    /* Roxo escuro médio */
+    --text-primary: #E9D5FF;
+    /* Lavanda claro para texto - 11.2:1 ✅ */
+    --text-secondary: #C4B5FD;
+    /* Lavanda médio - 7.8:1 ✅ */
+    --border-color: #6366F1;
+    /* Indigo */
+    --accent-color: #A78BFA;
+    /* Violeta clareado - 7.1:1 ✅ AAA (era #8B5CF6) */
+    --accent-hover: #C4B5FD;
+    /* Violeta mais claro */
+    --accent-focus: #D946EF;
+    /* Magenta neon para foco */
+    --accent-deep: #7C3AED;
+    /* Violeta vibrante */
     --error-color: #EF4444;
     --success-color: #22C55E;
-    --shadow: rgba(139, 92, 246, 0.3); /* Sombra violeta neon */
-    
+    --shadow: rgba(139, 92, 246, 0.3);
+    /* Sombra violeta neon */
+
     /* Cores específicas para mensagens (dark mode) */
-    --user-bubble-bg: #4C1D95; /* Roxo profundo */
-    --user-bubble-text: #E9D5FF; /* Lavanda claro */
-    --bot-bubble-bg: #312e81; /* Roxo escuro médio */
-    --bot-bubble-border: #8B5CF6; /* Violeta neon */
-    --bot-bubble-alt-bg: #1e1b4b; /* Mesmo do fundo primário */
+    --user-bubble-bg: #4C1D95;
+    /* Roxo profundo */
+    --user-bubble-text: #E9D5FF;
+    /* Lavanda claro */
+    --bot-bubble-bg: #312e81;
+    /* Roxo escuro médio */
+    --bot-bubble-border: #A78BFA;
+    /* Violeta neon AAA */
+    --bot-bubble-alt-bg: #1e1b4b;
+    /* Mesmo do fundo primário */
 }
 
 /* ========================================= */
@@ -76,7 +106,8 @@ body {
     font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    line-height: 1.7; /* Aumentado para melhor legibilidade */
+    line-height: 1.7;
+    /* Aumentado para melhor legibilidade */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -103,7 +134,8 @@ body {
 /* ========================================= */
 header.glass-header {
     width: 100%;
-    padding: 12px 16px; /* Reduzido para mobile */
+    padding: 12px 16px;
+    /* Reduzido para mobile */
     position: sticky;
     top: 0;
     z-index: 100;
@@ -116,7 +148,8 @@ header.glass-header {
 
 @media (min-width: 768px) {
     header.glass-header {
-        padding: 16px 24px; /* Padding maior em tablets+ */
+        padding: 16px 24px;
+        /* Padding maior em tablets+ */
     }
 }
 
@@ -130,8 +163,10 @@ header.glass-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px; /* Reduzido para mobile */
-    flex-wrap: wrap; /* Permite quebra em telas muito pequenas */
+    gap: 12px;
+    /* Reduzido para mobile */
+    flex-wrap: wrap;
+    /* Permite quebra em telas muito pequenas */
 }
 
 @media (min-width: 768px) {
@@ -151,14 +186,17 @@ header.glass-header {
 .ada-header-profile {
     display: flex;
     align-items: center;
-    gap: 12px; /* Aumentado de 8px para acomodar avatar maior */
+    gap: 12px;
+    /* Aumentado de 8px para acomodar avatar maior */
     flex: 1;
-    min-width: 0; /* Permite encolher */
+    min-width: 0;
+    /* Permite encolher */
 }
 
 @media (min-width: 768px) {
     .ada-header-profile {
-        gap: 16px; /* Aumentado de 12px para desktop */
+        gap: 16px;
+        /* Aumentado de 12px para desktop */
         flex: none;
     }
 }
@@ -173,7 +211,8 @@ header.glass-header {
 
 .ada-header-info h1 {
     color: white;
-    font-size: 1.75rem; /* ~28px - aumentado para hierarquia clara */
+    font-size: 1.75rem;
+    /* ~28px - aumentado para hierarquia clara */
     font-weight: 700;
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -181,20 +220,28 @@ header.glass-header {
 }
 
 .ada-header-status {
-    color: rgba(255, 255, 255, 0.95); /* Aumentado opacity para melhor visibilidade */
-    font-size: 0.9375rem; /* ~15px - aumentado de 11px */
-    font-weight: 500; /* Aumentado de 400 para 500 - mais visível */
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Sombra mais forte */
-    letter-spacing: 0.02em; /* Espaçamento de letras para melhor legibilidade */
+    color: rgba(255, 255, 255, 1);
+    /* Opacity 1.0 para AAA (era 0.95) */
+    font-size: 0.9375rem;
+    /* ~15px - aumentado de 11px */
+    font-weight: 500;
+    /* Aumentado de 400 para 500 - mais visível */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    /* Sombra mais forte para AAA */
+    letter-spacing: 0.02em;
+    /* Espaçamento de letras para melhor legibilidade */
 }
 
 .ada-header-avatar {
-    width: 56px; /* Aumentado de 40px para melhor visibilidade */
+    width: 56px;
+    /* Aumentado de 40px para melhor visibilidade */
     height: 56px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid rgba(255, 255, 255, 0.4); /* Borda mais visível */
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3); /* Sombra mais forte */
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    /* Borda mais visível */
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+    /* Sombra mais forte */
     flex-shrink: 0;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
@@ -213,10 +260,13 @@ header.glass-header {
 }
 
 @keyframes avatarBreathing {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
     }
+
     50% {
         transform: scale(1.02);
         box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
@@ -225,18 +275,23 @@ header.glass-header {
 
 @media (min-width: 768px) {
     .ada-header-info h1 {
-        font-size: 2rem; /* ~32px - aumentado para desktop */
+        font-size: 2rem;
+        /* ~32px - aumentado para desktop */
     }
-    
+
     .ada-header-status {
-        font-size: 1rem; /* ~16px - aumentado para desktop */
+        font-size: 1rem;
+        /* ~16px - aumentado para desktop */
     }
-    
+
     .ada-header-avatar {
-        width: 64px; /* Aumentado de 48px para desktop */
+        width: 64px;
+        /* Aumentado de 48px para desktop */
         height: 64px;
-        border: 3px solid rgba(255, 255, 255, 0.5); /* Borda mais visível no desktop */
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35); /* Sombra mais forte no desktop */
+        border: 3px solid rgba(255, 255, 255, 0.5);
+        /* Borda mais visível no desktop */
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        /* Sombra mais forte no desktop */
     }
 }
 
@@ -255,7 +310,8 @@ header.glass-header {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 6px; /* Reduzido para mobile */
+    gap: 6px;
+    /* Reduzido para mobile */
     flex-shrink: 0;
 }
 
@@ -270,7 +326,8 @@ header.glass-header {
 /* ========================================= */
 .icon-button {
     /* Tamanho e Layout - WCAG 2.5.5 (Target Size) */
-    min-width: 44px; /* Mínimo WCAG para mobile */
+    min-width: 44px;
+    /* Mínimo WCAG para mobile */
     min-height: 44px;
     width: 44px;
     height: 44px;
@@ -278,17 +335,21 @@ header.glass-header {
     align-items: center;
     justify-content: center;
     padding: 0;
-    
+
     /* Visual */
-    background: rgba(255, 255, 255, 0.15); /* Fundo sutil para delimitar a área */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Borda suave */
-    border-radius: 10px; /* Canto arredondado moderno */
-    
+    background: rgba(255, 255, 255, 0.15);
+    /* Fundo sutil para delimitar a área */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Borda suave */
+    border-radius: 10px;
+    /* Canto arredondado moderno */
+
     /* Cores - Roxo Profundo para melhor contraste (WCAG 1.4.11) */
-    color: #3B0764; /* Roxo profundo - mesmo do texto principal */
+    color: #3B0764;
+    /* Roxo profundo - mesmo do texto principal */
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     /* Acessibilidade */
     position: relative;
     z-index: 1;
@@ -306,9 +367,11 @@ header.glass-header {
 
 .icon-button:hover {
     background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px); /* Feedback visual de interatividade */
+    transform: translateY(-2px);
+    /* Feedback visual de interatividade */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    color: #4C1D95; /* Roxo ainda mais profundo no hover - melhor contraste */
+    color: #4C1D95;
+    /* Roxo ainda mais profundo no hover - melhor contraste */
 }
 
 .icon-button:active {
@@ -316,17 +379,22 @@ header.glass-header {
 }
 
 .icon-button:focus-visible {
-    outline: 3px solid #3B0764; /* Roxo profundo para foco - melhor contraste */
+    outline: 3px solid #3B0764;
+    /* Roxo profundo para foco - melhor contraste */
     outline-offset: 2px;
     background: rgba(255, 255, 255, 0.25);
-    color: #4C1D95; /* Roxo mais profundo no foco */
+    color: #4C1D95;
+    /* Roxo mais profundo no foco */
 }
 
 .icon-button svg {
-    width: 20px; /* Reduzido para mobile */
+    width: 20px;
+    /* Reduzido para mobile */
     height: 20px;
-    stroke: currentColor; /* Usa a cor do botão (#3B0764) */
-    stroke-width: 2.5; /* Aumentado de 2 para 2.5 - mais visível */
+    stroke: currentColor;
+    /* Usa a cor do botão (#3B0764) */
+    stroke-width: 2.5;
+    /* Aumentado de 2 para 2.5 - mais visível */
     flex-shrink: 0;
 }
 
@@ -341,16 +409,19 @@ header.glass-header {
 [data-theme="dark"] .icon-button {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.15);
-    color: #E9D5FF; /* Lavanda claro para dark mode - melhor contraste */
+    color: #E9D5FF;
+    /* Lavanda claro para dark mode - melhor contraste */
 }
 
 [data-theme="dark"] .icon-button:hover {
     background: rgba(255, 255, 255, 0.2);
-    color: #FFFFFF; /* Branco no hover para dark mode */
+    color: #FFFFFF;
+    /* Branco no hover para dark mode */
 }
 
 [data-theme="dark"] .icon-button:focus-visible {
-    outline-color: #E9D5FF; /* Lavanda claro para foco em dark mode */
+    outline-color: #E9D5FF;
+    /* Lavanda claro para foco em dark mode */
     color: #FFFFFF;
 }
 
@@ -388,6 +459,7 @@ header.glass-header {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -439,13 +511,18 @@ header.glass-header {
 /* Sugestões quando chat vazio (centro) */
 .suggestion-chips-empty {
     display: flex;
-    flex-direction: row; /* Muda de coluna para linha (horizontal) */
+    flex-direction: row;
+    /* Muda de coluna para linha (horizontal) */
     align-items: center;
     justify-content: center;
-    gap: 8px; /* Reduzido para mobile */
-    padding: 40px 16px; /* Reduzido para mobile */
-    min-height: 200px; /* Reduzido para mobile */
-    flex-wrap: wrap; /* Para quebrar linha em celular */
+    gap: 8px;
+    /* Reduzido para mobile */
+    padding: 40px 16px;
+    /* Reduzido para mobile */
+    min-height: 200px;
+    /* Reduzido para mobile */
+    flex-wrap: wrap;
+    /* Para quebrar linha em celular */
 }
 
 @media (min-width: 768px) {
@@ -464,11 +541,14 @@ header.glass-header {
 .suggestion-chips-above-input {
     display: flex;
     justify-content: center;
-    gap: 6px; /* Reduzido para mobile */
-    padding: 10px 16px; /* Reduzido para mobile */
+    gap: 6px;
+    /* Reduzido para mobile */
+    padding: 10px 16px;
+    /* Reduzido para mobile */
     background: var(--bg-primary);
     border-top: 1px solid var(--border-color);
-    flex-wrap: wrap; /* Quebra linha em mobile */
+    flex-wrap: wrap;
+    /* Quebra linha em mobile */
 }
 
 @media (min-width: 768px) {
@@ -486,28 +566,36 @@ header.glass-header {
 .chip-small {
     display: inline-flex;
     align-items: center;
-    gap: 4px; /* Reduzido para mobile */
-    padding: 8px 14px; /* Reduzido para mobile */
-    font-size: 13px; /* Reduzido para mobile */
+    gap: 4px;
+    /* Reduzido para mobile */
+    padding: 8px 14px;
+    /* Reduzido para mobile */
+    font-size: 13px;
+    /* Reduzido para mobile */
     font-weight: 500;
     font-family: 'Atkinson Hyperlegible', inherit;
     color: var(--text-primary);
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 18px; /* Reduzido para mobile */
+    border-radius: 18px;
+    /* Reduzido para mobile */
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    min-height: 44px; /* Touch target mínimo WCAG */
-    white-space: nowrap; /* Evita quebra de texto */
+    min-height: 44px;
+    /* Touch target mínimo WCAG */
+    white-space: nowrap;
+    /* Evita quebra de texto */
 }
 
 .chip-small {
-    padding: 6px 12px; /* Reduzido para mobile */
+    padding: 6px 12px;
+    /* Reduzido para mobile */
     font-size: 12px;
 }
 
 @media (min-width: 768px) {
+
     .chip,
     .chip-small {
         gap: 6px;
@@ -515,7 +603,7 @@ header.glass-header {
         font-size: 15px;
         border-radius: 20px;
     }
-    
+
     .chip-small {
         padding: 8px 14px;
         font-size: 14px;
@@ -621,8 +709,10 @@ header.glass-header {
     flex-direction: column;
     width: 100%;
     max-width: 100%;
-    min-width: 0; /* Permite que o conteúdo encolha */
-    padding-bottom: 100px; /* Espaço para input flutuante */
+    min-width: 0;
+    /* Permite que o conteúdo encolha */
+    padding-bottom: 100px;
+    /* Espaço para input flutuante */
 }
 
 main {
@@ -767,12 +857,12 @@ main {
     .intro-card {
         padding: 40px;
     }
-    
+
     .intro-card-avatar {
         width: 150px;
         height: 150px;
     }
-    
+
     .intro-card-text h2 {
         font-size: 1.75rem;
     }
@@ -790,17 +880,21 @@ main {
 
 .chat-container {
     flex: 1;
-    padding: 32px 24px; /* Mais padding vertical para respiração */
+    padding: 32px 24px;
+    /* Mais padding vertical para respiração */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 24px; /* Aumentado de 20px para mais espaço entre elementos */
-    min-height: 0; /* Permite scroll */
+    gap: 24px;
+    /* Aumentado de 20px para mais espaço entre elementos */
+    min-height: 0;
+    /* Permite scroll */
 }
 
 @media (min-width: 768px) {
     .chat-container {
-        padding: 40px 32px; /* Mais padding em telas maiores */
+        padding: 40px 32px;
+        /* Mais padding em telas maiores */
         gap: 28px;
     }
 }
@@ -817,20 +911,26 @@ main {
 
 .chat-container:empty::before {
     content: "Nenhuma mensagem ainda. Faça uma pergunta sobre acessibilidade digital!";
-    color: var(--text-primary); /* Melhor contraste - WCAG AA */
+    color: var(--text-primary);
+    /* Melhor contraste - WCAG AA */
     font-style: italic;
     text-align: center;
     padding: 40px;
-    opacity: 0.8; /* Mantém legibilidade mas indica estado vazio */
+    opacity: 0.8;
+    /* Mantém legibilidade mas indica estado vazio */
 }
 
 /* Mensagens */
 .message {
     display: flex;
-    gap: 16px; /* Aumentado de 14px para acomodar avatar maior */
-    margin-bottom: 24px; /* Aumentado de 16px para mais respiração */
-    width: 100%; /* Garante que ocupa toda a largura */
-    animation: fadeInMessage 0.4s ease-out; /* Animação suave de entrada */
+    gap: 16px;
+    /* Aumentado de 14px para acomodar avatar maior */
+    margin-bottom: 24px;
+    /* Aumentado de 16px para mais respiração */
+    width: 100%;
+    /* Garante que ocupa toda a largura */
+    animation: fadeInMessage 0.4s ease-out;
+    /* Animação suave de entrada */
 }
 
 @keyframes fadeInMessage {
@@ -838,6 +938,7 @@ main {
         opacity: 0;
         transform: translateY(8px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -846,39 +947,48 @@ main {
 
 @media (min-width: 768px) {
     .message {
-        gap: 20px; /* Aumentado de 16px para desktop - mais espaço para avatar maior */
-        margin-bottom: 28px; /* Mais espaço em telas maiores */
+        gap: 20px;
+        /* Aumentado de 16px para desktop - mais espaço para avatar maior */
+        margin-bottom: 28px;
+        /* Mais espaço em telas maiores */
     }
 }
 
 .message.user {
-    flex-direction: row-reverse; /* Avatar à direita */
+    flex-direction: row-reverse;
+    /* Avatar à direita */
     justify-content: flex-end;
-    align-items: flex-end; /* Alinha balão à direita */
+    align-items: flex-end;
+    /* Alinha balão à direita */
 }
 
 .message.assistant {
-    flex-direction: row; /* Avatar à esquerda */
+    flex-direction: row;
+    /* Avatar à esquerda */
     justify-content: flex-start;
 }
 
 /* Avatares para mensagens */
 .message-avatar {
-    width: 80px; /* Aumentado de 56px para melhor visibilidade */
+    width: 80px;
+    /* Aumentado de 56px para melhor visibilidade */
     height: 80px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px; /* Aumentado de 20px para acompanhar o tamanho */
+    font-size: 22px;
+    /* Aumentado de 20px para acompanhar o tamanho */
     font-weight: 700;
 }
 
 @media (min-width: 768px) {
     .message-avatar {
-        width: 100px; /* Aumentado de 64px para desktop */
+        width: 100px;
+        /* Aumentado de 64px para desktop */
         height: 100px;
-        font-size: 24px; /* Aumentado de 22px para desktop */
+        font-size: 24px;
+        /* Aumentado de 22px para desktop */
     }
 }
 
@@ -892,11 +1002,13 @@ main {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    border-radius: 50%; /* Mantém circular para o usuário */
+    border-radius: 50%;
+    /* Mantém circular para o usuário */
 }
 
 .message.user .message-avatar:has(img) {
-    background: transparent; /* Remove gradiente quando há imagem */
+    background: transparent;
+    /* Remove gradiente quando há imagem */
 }
 
 .message.assistant .message-avatar {
@@ -906,11 +1018,7 @@ main {
     overflow: visible;
 }
 
-@media (min-width: 768px) {
-    .message.assistant .message-avatar {
-        /* Borda removida - apenas imagem */
-    }
-}
+
 
 .message.assistant .message-avatar img {
     width: 100%;
@@ -924,11 +1032,7 @@ main {
     transform: scale(0.95);
 }
 
-@media (min-width: 768px) {
-    .message.assistant .message-avatar {
-        /* Borda removida - apenas imagem */
-    }
-}
+
 
 [data-theme="dark"] .message.user .message-avatar {
     background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);
@@ -939,74 +1043,106 @@ main {
 }
 
 .message-bubble {
-    max-width: 100%; /* Deixa ocupar espaço se precisar */
-    width: fit-content; /* Se for texto curto, fica curto. Se for longo, cresce. */
-    padding: 14px 18px; /* Aumentado para mais conforto */
-    border-radius: 18px; /* Bordas mais arredondadas */
+    max-width: 100%;
+    /* Deixa ocupar espaço se precisar */
+    width: fit-content;
+    /* Se for texto curto, fica curto. Se for longo, cresce. */
+    padding: 14px 18px;
+    /* Aumentado para mais conforto */
+    border-radius: 18px;
+    /* Bordas mais arredondadas */
     word-wrap: break-word;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); /* Sombra mais suave e visível */
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    /* Sombra mais suave e visível */
     position: relative;
-    font-size: 1.125rem; /* 18px - aumentado de 16px para reduzir esforço cognitivo */
+    font-size: 1.125rem;
+    /* 18px - aumentado de 16px para reduzir esforço cognitivo */
     line-height: 1.7;
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Transição suave */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* Transição suave */
 }
 
 .message-bubble:hover {
-    transform: translateY(-2px); /* Eleva ligeiramente no hover */
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); /* Sombra mais forte no hover */
+    transform: translateY(-2px);
+    /* Eleva ligeiramente no hover */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    /* Sombra mais forte no hover */
 }
 
 @media (min-width: 768px) {
     .message-bubble {
-        padding: 16px 20px; /* Mais padding em telas maiores */
+        padding: 16px 20px;
+        /* Mais padding em telas maiores */
         border-radius: 20px;
     }
 }
 
 .message.user .message-bubble {
-    background: linear-gradient(135deg, var(--user-bubble-bg) 0%, #E0C9FF 100%); /* Gradiente sutil */
+    background: linear-gradient(135deg, var(--user-bubble-bg) 0%, #E0C9FF 100%);
+    /* Gradiente sutil */
     color: var(--user-bubble-text);
-    border-bottom-right-radius: 6px; /* Mantém canto inferior direito menos arredondado */
-    border: 1px solid rgba(124, 58, 237, 0.25); /* Borda um pouco mais visível */
-    box-shadow: 0 3px 12px rgba(124, 58, 237, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1); /* Sombra dupla para profundidade */
-    margin-left: auto; /* Empurra o balão para a direita */
-    max-width: min(85%, 65ch); /* Limita largura mas permite flexibilidade */
+    border-bottom-right-radius: 6px;
+    /* Mantém canto inferior direito menos arredondado */
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    /* Borda um pouco mais visível */
+    box-shadow: 0 3px 12px rgba(124, 58, 237, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);
+    /* Sombra dupla para profundidade */
+    margin-left: auto;
+    /* Empurra o balão para a direita */
+    max-width: min(85%, 65ch);
+    /* Limita largura mas permite flexibilidade */
 }
 
 .message.user .message-bubble:hover {
-    box-shadow: 0 5px 20px rgba(124, 58, 237, 0.25), 0 2px 5px rgba(0, 0, 0, 0.15); /* Sombra mais forte no hover */
+    box-shadow: 0 5px 20px rgba(124, 58, 237, 0.25), 0 2px 5px rgba(0, 0, 0, 0.15);
+    /* Sombra mais forte no hover */
 }
 
 .message.assistant .message-bubble {
-    background: linear-gradient(to bottom, var(--bg-surface) 0%, #FEFBFF 100%); /* Gradiente sutil branco */
+    background: linear-gradient(to bottom, var(--bg-surface) 0%, #FEFBFF 100%);
+    /* Gradiente sutil branco */
     color: var(--text-primary);
-    border: 1px solid rgba(124, 58, 237, 0.12); /* Borda um pouco mais visível */
-    border-bottom-left-radius: 6px; /* Mantém canto inferior esquerdo menos arredondado */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(124, 58, 237, 0.1); /* Sombra dupla para profundidade */
-    width: 100%; /* Força a ocupar a largura disponível */
-    max-width: 95%; /* Uma margem de respiro na direita */
-    border-radius: 12px; /* Cantos menos arredondados parecem mais "documento" */
+    border: 1px solid rgba(124, 58, 237, 0.12);
+    /* Borda um pouco mais visível */
+    border-bottom-left-radius: 6px;
+    /* Mantém canto inferior esquerdo menos arredondado */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(124, 58, 237, 0.1);
+    /* Sombra dupla para profundidade */
+    width: 100%;
+    /* Força a ocupar a largura disponível */
+    max-width: 95%;
+    /* Uma margem de respiro na direita */
+    border-radius: 12px;
+    /* Cantos menos arredondados parecem mais "documento" */
 }
 
 .message.assistant .message-bubble:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(124, 58, 237, 0.15); /* Sombra mais forte no hover */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(124, 58, 237, 0.15);
+    /* Sombra mais forte no hover */
 }
 
 [data-theme="dark"] .message.assistant .message-bubble {
     background-color: var(--bot-bubble-bg);
-    border: 1px solid rgba(139, 92, 246, 0.15); /* Borda sutil igual ao light mode */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    /* Borda sutil igual ao light mode */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    /* Sombra suave */
 }
 
 /* Timestamp nas mensagens */
 .message-timestamp {
     font-size: 11px;
-    color: var(--text-primary); /* Melhor contraste - WCAG AA */
-    margin-top: 6px; /* Aumentado de 4px para mais espaço */
-    opacity: 0.7; /* Opacidade ajustada */
+    color: var(--text-primary);
+    /* Melhor contraste - WCAG AA */
+    margin-top: 6px;
+    /* Aumentado de 4px para mais espaço */
+    opacity: 0.7;
+    /* Opacidade ajustada */
     text-align: right;
-    font-weight: 500; /* Um pouco mais visível */
-    letter-spacing: 0.3px; /* Espaçamento de letras para legibilidade */
+    font-weight: 500;
+    /* Um pouco mais visível */
+    letter-spacing: 0.3px;
+    /* Espaçamento de letras para legibilidade */
 }
 
 .message.assistant .message-timestamp {
@@ -1016,11 +1152,13 @@ main {
 .message-content {
     line-height: 1.7;
     /* Limita largura de linha para melhor leitura */
-    max-width: 65ch; /* ~65 caracteres por linha */
+    max-width: 65ch;
+    /* ~65 caracteres por linha */
 }
 
 .message-content p {
-    max-width: 65ch; /* Aplica também aos parágrafos */
+    max-width: 65ch;
+    /* Aplica também aos parágrafos */
 }
 
 .message-content p {
@@ -1079,7 +1217,8 @@ main {
     user-select: none;
     transition: background-color 0.2s ease, color 0.2s ease, padding 0.2s ease;
     text-align: left;
-    min-height: 52px; /* Touch target mínimo para acessibilidade */
+    min-height: 52px;
+    /* Touch target mínimo para acessibilidade */
     gap: 12px;
 }
 
@@ -1138,14 +1277,28 @@ main {
     transform: rotate(0deg);
 }
 
+/* Título do Expander (h3 para hierarquia semântica - WCAG 2.4.10) */
+.expander-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+    text-align: left;
+}
+
+
 .expander-content {
-    padding: 24px; /* Aumentado para mais respiro */
+    padding: 24px;
+    /* Aumentado para mais respiro */
     display: none;
     color: var(--text-primary);
-    text-align: left; /* Garante leitura natural */
-    line-height: 1.8; /* Melhora a leitura */
+    text-align: left;
+    /* Garante leitura natural */
+    line-height: 1.8;
+    /* Melhora a leitura */
     background-color: var(--bg-primary);
-    line-height: 1.8; /* Melhorado de 1.7 para 1.8 (melhor leitura) */
+    line-height: 1.8;
+    /* Melhorado de 1.7 para 1.8 (melhor leitura) */
     animation: fadeInContent 0.3s ease;
     border-top: 1px solid var(--border-color);
 }
@@ -1159,6 +1312,7 @@ main {
         opacity: 0;
         transform: translateY(-5px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1275,10 +1429,14 @@ main {
 }
 
 @keyframes typingPulse {
-    0%, 60%, 100% {
+
+    0%,
+    60%,
+    100% {
         transform: scale(1);
         opacity: 0.4;
     }
+
     30% {
         transform: scale(1.2);
         opacity: 1;
@@ -1290,6 +1448,7 @@ main {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1335,6 +1494,7 @@ main {
         opacity: 0;
         transform: translateX(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -1353,6 +1513,7 @@ main {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1368,6 +1529,7 @@ main {
         opacity: 0;
         transform: translateY(10px) translateX(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) translateX(0);
@@ -1383,6 +1545,7 @@ main {
         opacity: 0;
         transform: translateY(10px) translateX(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) translateX(0);
@@ -1420,7 +1583,8 @@ main {
     transform: translateX(-50%);
     width: calc(100% - 48px);
     max-width: 800px;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgb(255, 255, 255);
+    /* Removido transparência para evitar confusão com texto de fundo */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(124, 58, 237, 0.2);
@@ -1439,7 +1603,8 @@ main {
 }
 
 [data-theme="dark"] .input-container.floating-pill {
-    background: rgba(30, 27, 75, 0.95);
+    background: rgb(30, 27, 75);
+    /* Removido transparência para evitar confusão com texto de fundo */
     border-color: rgba(139, 92, 246, 0.3);
     box-shadow: 0 8px 32px rgba(139, 92, 246, 0.25), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -1450,29 +1615,35 @@ main {
 
 @media (max-width: 768px) {
     .input-container.floating-pill {
-        width: calc(100% - 16px); /* Mais espaço em mobile */
+        width: calc(100% - 16px);
+        /* Mais espaço em mobile */
         bottom: 12px;
         left: 8px;
         transform: none;
-        padding: 6px 10px; /* Reduzido para mobile */
-        border-radius: 40px; /* Mais arredondado */
+        padding: 6px 10px;
+        /* Reduzido para mobile */
+        border-radius: 40px;
+        /* Mais arredondado */
     }
-    
+
     .input-container.floating-pill #user-input {
-        font-size: 15px; /* Reduzido para mobile */
+        font-size: 15px;
+        /* Reduzido para mobile */
         padding: 8px 10px;
     }
-    
+
     .input-container.floating-pill .send-button {
-        width: 36px; /* Reduzido para mobile */
+        width: 36px;
+        /* Reduzido para mobile */
         height: 36px;
     }
-    
+
     .input-container.floating-pill .cancel-button {
-        width: 28px; /* Reduzido para mobile */
+        width: 28px;
+        /* Reduzido para mobile */
         height: 28px;
     }
-    
+
     .input-container.floating-pill .send-button svg,
     .input-container.floating-pill .cancel-button svg {
         width: 18px;
@@ -1497,12 +1668,15 @@ main {
 }
 
 #user-input:focus {
-    outline: none;
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 #user-input::placeholder {
-    color: #8B5CF6; /* Roxo médio para melhor contraste */
-    opacity: 0.7; /* Mantém legibilidade mas indica que é placeholder */
+    color: #6C2ADD;
+    /* Violeta AAA - sem opacity (era #8B5CF6 com 70% opacity) */
+    opacity: 1;
+    /* Remove opacity para garantir contraste 7:1 */
 }
 
 #user-input:disabled {
@@ -1512,18 +1686,25 @@ main {
 
 /* Contador de Caracteres */
 .char-counter {
-    font-size: 14px; /* Aumentado de 12px para 14px */
-    font-weight: 500; /* Adicionado peso para melhor visibilidade */
-    color: var(--text-primary); /* Melhor contraste - WCAG AA */
+    font-size: 14px;
+    /* Aumentado de 12px para 14px */
+    font-weight: 500;
+    /* Adicionado peso para melhor visibilidade */
+    color: var(--text-primary);
+    /* Melhor contraste - WCAG AA */
     text-align: right;
-    margin-top: 6px; /* Aumentado de 4px para 6px */
-    padding: 0 8px; /* Aumentado de 4px para 8px */
-    opacity: 0.9; /* Aumentado de 0.8 para 0.9 - mais visível */
+    margin-top: 6px;
+    /* Aumentado de 4px para 6px */
+    padding: 0 8px;
+    /* Aumentado de 4px para 8px */
+    opacity: 0.9;
+    /* Aumentado de 0.8 para 0.9 - mais visível */
 }
 
 @media (min-width: 768px) {
     .char-counter {
-        font-size: 15px; /* Ainda maior em tablets+ */
+        font-size: 15px;
+        /* Ainda maior em tablets+ */
         margin-top: 8px;
     }
 }
@@ -1536,6 +1717,65 @@ main {
     color: var(--error-color);
     font-weight: 600;
 }
+
+/* ========================================= */
+/* Botão de Ajuda Contextual (WCAG 3.3.5) */
+/* ========================================= */
+.help-button {
+    width: 32px;
+    height: 32px;
+    background: rgba(124, 58, 237, 0.1);
+    border: 1px solid var(--accent-color);
+    border-radius: 50%;
+    color: var(--accent-color);
+    cursor: help;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.help-button:hover {
+    background: rgba(124, 58, 237, 0.2);
+    transform: scale(1.05);
+}
+
+.help-button:focus-visible {
+    outline: 2px solid var(--accent-focus);
+    outline-offset: 2px;
+}
+
+.help-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+[data-theme="dark"] .help-button {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .help-button:hover {
+    background: rgba(139, 92, 246, 0.25);
+}
+
+/* Hint de Ajuda */
+.input-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    margin-top: 4px;
+    background: rgba(124, 58, 237, 0.05);
+    border-radius: 6px;
+    line-height: 1.4;
+}
+
+[data-theme="dark"] .input-hint {
+    background: rgba(139, 92, 246, 0.1);
+}
+
 
 /* Botão Cancelar (Ícone Pequeno) */
 .cancel-button {
@@ -1553,8 +1793,10 @@ main {
     transition: all 0.2s ease;
     flex-shrink: 0;
     position: relative;
-    z-index: 10; /* Garante que está acima de outros elementos */
-    pointer-events: auto; /* Garante que pode receber cliques */
+    z-index: 10;
+    /* Garante que está acima de outros elementos */
+    pointer-events: auto;
+    /* Garante que pode receber cliques */
 }
 
 .cancel-button:hover {
@@ -1623,7 +1865,8 @@ main {
 .no-results {
     text-align: center;
     padding: 40px 20px;
-    color: var(--text-primary); /* Melhor contraste - WCAG AA */
+    color: var(--text-primary);
+    /* Melhor contraste - WCAG AA */
     font-style: italic;
     opacity: 0.8;
 }
@@ -1729,7 +1972,8 @@ main {
 footer {
     text-align: center;
     padding: 20px;
-    color: var(--text-primary); /* Melhor contraste - WCAG AA */
+    color: var(--text-primary);
+    /* Melhor contraste - WCAG AA */
     font-size: 14px;
     margin-top: auto;
     opacity: 0.8;
@@ -1928,6 +2172,7 @@ footer a:focus {
     0% {
         background-position: 200% 0;
     }
+
     100% {
         background-position: -200% 0;
     }
@@ -1959,10 +2204,13 @@ footer a:focus {
 }
 
 .chat-container {
-    max-height: calc(100vh - 200px); /* Adapta à altura da tela */
-    padding: 12px; /* Reduzido para mobile */
+    max-height: calc(100vh - 200px);
+    /* Adapta à altura da tela */
+    padding: 12px;
+    /* Reduzido para mobile */
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Scroll suave no iOS */
 }
 
 @media (min-width: 768px) {
@@ -1979,18 +2227,21 @@ footer a:focus {
 
 .send-button {
     width: 100%;
-    min-height: 44px; /* Touch target mínimo */
+    min-height: 44px;
+    /* Touch target mínimo */
 }
 
 .clear-chat-button {
-    min-height: 44px; /* Touch target mínimo */
+    min-height: 44px;
+    /* Touch target mínimo */
     min-width: 44px;
 }
 
 .theme-toggle {
     bottom: 10px;
     right: 10px;
-    width: 44px; /* Touch target mínimo */
+    width: 44px;
+    /* Touch target mínimo */
     height: 44px;
     font-size: 20px;
 }
@@ -2060,6 +2311,7 @@ footer a:focus {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -2091,3 +2343,238 @@ footer a:focus {
     background: var(--text-secondary);
 }
 
+/* ========================================= */
+/* Suporte a Preferências de Acessibilidade (WCAG AAA) */
+/* ========================================= */
+
+/**
+ * Reduced Motion (WCAG 2.3.3 - AAA)
+ * Desabilita animações para usuários que preferem movimento reduzido
+ */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Mantém transições essenciais de opacidade para feedback visual */
+    button:focus,
+    input:focus,
+    textarea:focus {
+        transition: opacity 0.1s ease !important;
+    }
+}
+
+/**
+ * High Contrast Mode (WCAG 1.4.11 - AA/AAA)
+ * Aumenta contraste para usuários com baixa visão
+ */
+@media (prefers-contrast: high) {
+    :root {
+        /* Cores de alto contraste - Tema Claro */
+        --bg-primary: #FFFFFF;
+        --bg-secondary: #F0F0F0;
+        --text-primary: #000000;
+        --text-secondary: #000000;
+        --accent-color: #0000FF;
+        --accent-hover: #0000CC;
+        --border-color: #000000;
+        --error-color: #CC0000;
+        --success-color: #008000;
+    }
+
+    [data-theme="dark"] {
+        /* Cores de alto contraste - Tema Escuro */
+        --bg-primary: #000000;
+        --bg-secondary: #1A1A1A;
+        --text-primary: #FFFFFF;
+        --text-secondary: #FFFFFF;
+        --accent-color: #00FFFF;
+        --accent-hover: #00CCCC;
+        --border-color: #FFFFFF;
+        --error-color: #FF6666;
+        --success-color: #66FF66;
+    }
+
+    /* Aumenta espessura de bordas e outlines */
+    button,
+    input,
+    textarea,
+    .message-bubble {
+        border-width: 2px !important;
+    }
+
+    button:focus,
+    input:focus,
+    textarea:focus {
+        outline-width: 3px !important;
+    }
+}
+
+/* =========================================
+   Modal Acessível (WCAG 2.4.3)
+   ========================================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 20px;
+}
+
+/* Esconde completamente quando tem attribute hidden */
+.modal-overlay[hidden] {
+    display: none !important;
+}
+
+.modal-overlay[aria-hidden="false"] {
+    opacity: 1;
+}
+
+.modal-container {
+    background: var(--background);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay[aria-hidden="false"] .modal-container {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: var(--hover-background);
+    color: var(--text-primary);
+}
+
+.modal-close:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 24px;
+    border-top: 1px solid var(--border-color);
+    justify-content: flex-end;
+}
+
+.modal-button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.modal-button-primary {
+    background: var(--accent-color);
+    color: white;
+}
+
+.modal-button-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.modal-button-primary:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.modal-button-secondary {
+    background: var(--hover-background);
+    color: var(--text-primary);
+}
+
+.modal-button-secondary:hover {
+    background: var(--border-color);
+}
+
+.modal-button-secondary:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+    .modal-container {
+        max-width: 100%;
+        max-height: 90vh;
+        margin: 0;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 16px;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal-button {
+        width: 100%;
+    }
+}

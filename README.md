@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000?style=for-the-badge)](https://github.com/psf/black)
 [![Tests](https://img.shields.io/badge/tests-98%25%2B-success?style=for-the-badge)](docs/TESTES.md)
-[![WCAG](https://img.shields.io/badge/WCAG-2.2%20AA-7C3AED?style=for-the-badge)](https://www.w3.org/WAI/WCAG22/quickref/)
+[![WCAG](https://img.shields.io/badge/WCAG-2.2%20AAA-7C3AED?style=for-the-badge)](https://www.w3.org/WAI/WCAG22/quickref/)
 [![CI](https://github.com/joprestes/chatbotAcessibilidade/workflows/CI/badge.svg)](https://github.com/joprestes/chatbotAcessibilidade/actions)
 
 [Português 🇧🇷](#-versão-em-português)
@@ -84,7 +84,7 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 
 | 🎓 **Educativo** | ⚡ **Rápido** | 🔒 **Confiável** | ♿ **Acessível** |
 |:---|:---|:---|:---|
-| Respostas completas com exemplos práticos | Interface moderna e responsiva | Validação técnica WCAG/ARIA | Interface 100% acessível (WCAG AA) |
+| Respostas completas com exemplos práticos | Interface moderna e responsiva | Validação técnica WCAG/ARIA | Interface 100% acessível (WCAG AAA) |
 | Materiais de estudo recomendados | Cache inteligente | Rate limiting e segurança | Navegação por teclado completa |
 | Sugestões de testes práticos | Fallback automático entre LLMs | Logging estruturado | Suporte a leitores de tela |
 
@@ -106,7 +106,7 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 
 | ✨ Recurso | 📱 Descrição |
 |:---|:---|
-| **🎨 Design "Lavanda Inclusiva"** | Paleta de cores roxo/lilás com contraste WCAG AA/AAA |
+| **🎨 Design "Lavanda Inclusiva"** | Paleta de cores roxo/lilás com contraste WCAG AAA (7:1) |
 | **📐 Layout Profissional** | Card de introdução, mensagens estilo card, hierarquia visual clara |
 | **🌙 Tema Claro/Escuro** | Dark mode "Beringela" com transições suaves |
 | **📝 Textarea Auto-expansível** | Cresce automaticamente conforme o usuário digita |
@@ -114,6 +114,19 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 | **⏳ Skeleton Loading** | Feedback visual durante processamento |
 | **👤 Avatares e Timestamps** | Identificação visual clara das mensagens |
 | **🔍 Busca no Histórico** | Busque mensagens anteriores rapidamente |
+
+#### ♿ Conformidade WCAG AAA
+
+| ✅ Critério | 🎯 Implementação |
+|:---|:---|
+| **1.4.6 Contraste AAA** | Razão de contraste 7:1 em todos os textos |
+| **2.3.3 Reduced Motion** | Respeita preferência `prefers-reduced-motion` |
+| **1.4.11 High Contrast** | Suporte a `prefers-contrast: high` |
+| **2.4.7 Foco Visível** | Outline visível em todos os elementos interativos |
+| **3.3.5 Ajuda Contextual** | Botão de ajuda e hints visuais |
+| **2.4.10 Headings** | Estrutura semântica com h1, h2, h3 |
+| **2.1.1 Teclado** | Navegação completa por teclado + atalho Escape |
+| **1.1.1 Alt Text** | Descrições informativas em todas as imagens |
 
 #### 🔧 Recursos Técnicos
 

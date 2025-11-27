@@ -123,6 +123,7 @@ class Settings(BaseSettings):
     def huggingface_models_list(self) -> List[str]:
         """Retorna a lista de modelos Hugging Face parseada"""
         from typing import cast
+
         if isinstance(self.huggingface_models, str):
             return self.parse_huggingface_models(self.huggingface_models)
         # Se já for uma lista, retorna diretamente (após validação do Pydantic)

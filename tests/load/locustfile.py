@@ -25,15 +25,15 @@ import random
 class ChatbotUser(HttpUser):
     """
     Simula usuários fazendo perguntas sobre acessibilidade.
-    
+
     Comportamento:
         - Espera entre 1 e 3 segundos entre requisições
         - Faz perguntas variadas sobre acessibilidade
         - Simula cache hits e misses
     """
-    
+
     wait_time = between(1, 3)
-    
+
     # Perguntas de exemplo para simular diferentes cenários
     perguntas = [
         "Como testar contraste de cores?",
@@ -47,7 +47,7 @@ class ChatbotUser(HttpUser):
         "Como testar acessibilidade com axe-core?",
         "O que são landmarks ARIA?",
     ]
-    
+
     @task(10)
     def chat_request(self):
         """
@@ -55,12 +55,9 @@ class ChatbotUser(HttpUser):
         Peso: 10 (mais frequente)
         """
         pergunta = random.choice(self.perguntas)
-        
+
         with self.client.post(
-            "/api/chat",
-            json={"pergunta": pergunta},
-            catch_response=True,
-            name="/api/chat [POST]"
+            "/api/chat", json={"pergunta": pergunta}, catch_response=True, name="/api/chat [POST]"
         ) as response:
             if response.status_code == 200:
                 response.success()
@@ -69,7 +66,7 @@ class ChatbotUser(HttpUser):
                 response.failure("Rate limit exceeded")
             else:
                 response.failure(f"Unexpected status code: {response.status_code}")
-    
+
     @task(2)
     def health_check(self):
         """
@@ -81,7 +78,7 @@ class ChatbotUser(HttpUser):
                 response.success()
             else:
                 response.failure(f"Health check failed: {response.status_code}")
-    
+
     @task(1)
     def get_metrics(self):
         """
@@ -98,15 +95,15 @@ class ChatbotUser(HttpUser):
 class HealthCheckUser(HttpUser):
     """
     Simula monitoramento constante do health check.
-    
+
     Comportamento:
         - Espera 5 segundos entre requisições (constante)
         - Apenas verifica health check
         - Simula load balancers e sistemas de monitoramento
     """
-    
+
     wait_time = constant(5)
-    
+
     @task
     def health_check(self):
         """Verifica health check constantemente"""
@@ -118,27 +115,24 @@ class HealthCheckUser(HttpUser):
 class MixedUser(HttpUser):
     """
     Simula uso misto da API (mais realista).
-    
+
     Comportamento:
         - Espera entre 2 e 5 segundos entre requisições
         - Mistura chat, health check, config e métricas
         - Simula usuários reais navegando pela aplicação
     """
-    
+
     wait_time = between(2, 5)
-    
+
     perguntas = ChatbotUser.perguntas
-    
+
     @task(15)
     def chat_request(self):
         """Pergunta sobre acessibilidade (mais frequente)"""
         pergunta = random.choice(self.perguntas)
-        
+
         with self.client.post(
-            "/api/chat",
-            json={"pergunta": pergunta},
-            catch_response=True,
-            name="/api/chat [POST]"
+            "/api/chat", json={"pergunta": pergunta}, catch_response=True, name="/api/chat [POST]"
         ) as response:
             if response.status_code == 200:
                 response.success()
@@ -146,21 +140,21 @@ class MixedUser(HttpUser):
                 response.failure("Rate limit exceeded")
             else:
                 response.failure(f"Unexpected status code: {response.status_code}")
-    
+
     @task(3)
     def get_config(self):
         """Obtém configurações do frontend"""
         with self.client.get("/api/config", name="/api/config [GET]") as response:
             if response.status_code != 200:
                 response.failure(f"Config failed: {response.status_code}")
-    
+
     @task(2)
     def health_check(self):
         """Verifica health check"""
         with self.client.get("/api/health", name="/api/health [GET]") as response:
             if response.status_code != 200:
                 response.failure(f"Health check failed: {response.status_code}")
-    
+
     @task(1)
     def get_metrics(self):
         """Obtém métricas"""
@@ -172,29 +166,29 @@ class MixedUser(HttpUser):
 class StressTestUser(HttpUser):
     """
     Teste de stress - requisições rápidas e contínuas.
-    
+
     Comportamento:
         - Espera apenas 0.1 a 0.5 segundos entre requisições
         - Testa limites do rate limiting
         - Identifica pontos de falha sob carga extrema
-    
+
     Uso: Execute separadamente para testes de stress
     """
-    
+
     wait_time = between(0.1, 0.5)
-    
+
     perguntas = ChatbotUser.perguntas
-    
+
     @task
     def rapid_chat_requests(self):
         """Requisições rápidas para testar rate limiting"""
         pergunta = random.choice(self.perguntas)
-        
+
         with self.client.post(
             "/api/chat",
             json={"pergunta": pergunta},
             catch_response=True,
-            name="/api/chat [POST] - Stress"
+            name="/api/chat [POST] - Stress",
         ) as response:
             # Em stress test, rate limit é esperado
             if response.status_code in [200, 429]:

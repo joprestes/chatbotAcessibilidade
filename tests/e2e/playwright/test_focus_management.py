@@ -37,24 +37,26 @@ def test_focus_returns_to_input_after_send(page: Page, base_url: str, server_run
     # Aguarda mensagem do usuário aparecer (indica que processamento iniciou)
     user_message = page.get_by_test_id("chat-mensagem-user").first
     expect(user_message).to_be_visible(timeout=5000)
-    
+
     # Aguarda estado de rede estabilizar (resposta processada)
     page.wait_for_load_state("networkidle", timeout=10000)
 
     # Verifica que foco retornou ao input
     # Nota: Se este teste falhar, pode ser um bug no frontend que precisa ser corrigido
     focused_after = page.evaluate("() => document.activeElement.id")
-    
+
     # Se foco não retornou, documenta o estado atual para debug
     if focused_after != "user-input":
-        current_focus_info = page.evaluate("""() => {
+        current_focus_info = page.evaluate(
+            """() => {
             const el = document.activeElement;
             return {
                 id: el.id,
                 tagName: el.tagName,
                 className: el.className
             };
-        }""")
+        }"""
+        )
         pytest.skip(
             f"Foco não retornou ao input (bug do frontend). "
             f"Foco atual: {current_focus_info}. "
@@ -158,22 +160,22 @@ def test_keyboard_navigation_focus_visible(page: Page, base_url: str):
 
 def test_focus_trap_in_modal(page: Page, base_url: str):
     """
-    Testa que o foco fica preso dentro de modais (se houver modais no futuro).
+    Testa que o foco fica preso dentro de modais (se houver modais abertos).
 
-    Nota: Atualmente não há modais no projeto, mas este teste serve como
-    documentação do padrão esperado quando modais forem adicionados.
+    Nota: Este teste verifica se há modais VISÍVEIS no projeto.
+    O modal existe no HTML mas fica hidden até ser aberto via JavaScript.
     """
     page.goto(base_url)
     page.wait_for_load_state("networkidle")
 
-    # Por enquanto, apenas verifica que não há modais
-    modals = page.locator("[role='dialog'], .modal, [aria-modal='true']")
+    # Verifica se há modais VISÍVEIS (não apenas presentes no DOM)
+    modals = page.locator("[role='dialog'][aria-hidden='false'], .modal:visible, [aria-modal='true']:visible")
     modal_count = modals.count()
 
     if modal_count == 0:
-        pytest.skip("Não há modais no projeto atualmente")
+        pytest.skip("Não há modais visíveis no projeto atualmente. Modal existe mas precisa ser aberto via JavaScript (window.openModal)")
     else:
-        # Se houver modais no futuro, testa que foco fica preso
+        # Se houver modais visíveis, testa que foco fica preso
         first_modal = modals.first
         first_modal.focus()
 

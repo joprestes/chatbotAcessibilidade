@@ -23,6 +23,13 @@ let frontendConfig = {
 let messages = [];
 let isLoading = false;
 let currentAbortController = null; // Para cancelar requisições
+
+// Timeout Ajustável (WCAG 2.2.6)
+let timeoutWarningShown = false;
+let timeoutExtensionCount = 0;
+let warningTimerId = null;
+const MAX_EXTENSIONS = 3;
+const WARNING_BEFORE_TIMEOUT_MS = 20000; // Avisa 20s antes do timeout
 let searchFilter = ''; // Filtro de busca no histórico
 const TYPING_MESSAGE_ID = '__typing_indicator__'; // ID especial para mensagem de digitação
 const MAX_QUESTION_LENGTH = 2000; // Máximo de caracteres (do backend)
@@ -356,12 +363,28 @@ function createUXElements() {
                 searchToggle.setAttribute('aria-expanded', 'false');
                 searchFilter = '';
                 renderMessages();
+                searchToggle.focus(); // Retorna foco ao botão ao fechar busca
             }
         });
     }
 
     // Atualiza contador inicial
     updateCharCounter();
+
+    // Botão de Ajuda Contextual (WCAG 3.3.5)
+    const helpButton = document.querySelector('.help-button');
+    if (helpButton) {
+        helpButton.addEventListener('click', () => {
+            showToast(
+                'Exemplos de perguntas:\n' +
+                '• Como testar contraste de cores?\n' +
+                '• O que é navegação por teclado?\n' +
+                '• Gere um checklist WCAG AA',
+                'info',
+                10000 // 10 segundos
+            );
+        });
+    }
 }
 
 // =========================================
@@ -442,6 +465,214 @@ function cancelRequest(e) {
 }
 
 // =========================================
+// Timeout Ajustável (WCAG 2.2.6)
+// =========================================
+function showTimeoutWarning(controller, timeoutId) {
+    timeoutWarningShown = true;
+
+    const canExtend = timeoutExtensionCount < MAX_EXTENSIONS;
+    const extensionsLeft = MAX_EXTENSIONS - timeoutExtensionCount;
+
+    let message = '⏱️ A requisição está demorando mais que o esperado.';
+
+    if (canExtend) {
+        message += `\n\nDeseja estender o tempo de espera por mais 2 minutos?\n(${extensionsLeft} extensões restantes)`;
+
+        if (confirm(message)) {
+            extendTimeout(controller, timeoutId);
+        }
+    } else {
+        message += '\n\nLimite de extensões atingido. A requisição será cancelada em breve.';
+        showToast(message, 'warning', 10000);
+    }
+}
+
+function extendTimeout(controller, oldTimeoutId) {
+    timeoutExtensionCount++;
+    timeoutWarningShown = false;
+
+    // Cancela o timeout antigo
+    clearTimeout(oldTimeoutId);
+    if (warningTimerId) {
+        clearTimeout(warningTimerId);
+        warningTimerId = null;
+    }
+
+    // Cria novo timeout de 120 segundos (2 minutos)
+    const newTimeoutMs = 120000;
+    const newTimeoutId = setTimeout(() => controller.abort(), newTimeoutMs);
+
+    // Cria novo timer de aviso
+    const warningTime = Math.max(newTimeoutMs - WARNING_BEFORE_TIMEOUT_MS, 5000);
+    warningTimerId = setTimeout(() => {
+        if (isLoading && !timeoutWarningShown && currentAbortController === controller) {
+            showTimeoutWarning(controller, newTimeoutId);
+        }
+    }, warningTime);
+
+    showToast(
+        `⏱️ Tempo estendido por mais 2 minutos (${timeoutExtensionCount}/${MAX_EXTENSIONS})`,
+        'info',
+        5000
+    );
+}
+
+// =========================================
+// Sistema de Modal Acessível (WCAG 2.4.3)
+// =========================================
+let modalElement = null;
+let modalLastFocusedElement = null;
+let modalFocusableElements = [];
+let modalFirstFocusable = null;
+let modalLastFocusable = null;
+
+function openModal(title, content, options = {}) {
+    modalElement = document.getElementById('accessible-modal');
+    if (!modalElement) return;
+
+    // Salva elemento que tinha foco antes do modal
+    modalLastFocusedElement = document.activeElement;
+
+    // Define título e conteúdo
+    const modalTitle = modalElement.querySelector('#modal-title');
+    const modalContent = modalElement.querySelector('#modal-content');
+
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalContent) modalContent.innerHTML = content;
+
+    // Configura botões do footer
+    const cancelButton = modalElement.querySelector('[data-action="cancel"]');
+    const confirmButton = modalElement.querySelector('[data-action="confirm"]');
+
+    if (options.hideCancelButton) {
+        cancelButton.style.display = 'none';
+    } else {
+        cancelButton.style.display = '';
+        cancelButton.textContent = options.cancelText || 'Cancelar';
+    }
+
+    if (options.hideConfirmButton) {
+        confirmButton.style.display = 'none';
+    } else {
+        confirmButton.style.display = '';
+        confirmButton.textContent = options.confirmText || 'Confirmar';
+    }
+
+    // Callbacks
+    if (options.onConfirm) {
+        confirmButton.onclick = () => {
+            options.onConfirm();
+            closeModal();
+        };
+    }
+
+    if (options.onCancel) {
+        cancelButton.onclick = () => {
+            options.onCancel();
+            closeModal();
+        };
+    } else {
+        cancelButton.onclick = closeModal;
+    }
+
+    // Mostra modal
+    modalElement.removeAttribute('hidden');
+    modalElement.setAttribute('aria-hidden', 'false');
+
+    // Previne scroll do body
+    document.body.style.overflow = 'hidden';
+
+    // Configura focus trap
+    setupModalFocusTrap();
+
+    // Foca no primeiro elemento focável
+    setTimeout(() => {
+        if (modalFirstFocusable) {
+            modalFirstFocusable.focus();
+        }
+    }, 100);
+}
+
+function closeModal() {
+    if (!modalElement) return;
+
+    // Esconde modal
+    modalElement.setAttribute('aria-hidden', 'true');
+
+    // Aguarda animação antes de adicionar hidden
+    setTimeout(() => {
+        modalElement.setAttribute('hidden', '');
+    }, 300);
+
+    // Restaura scroll do body
+    document.body.style.overflow = '';
+
+    // Retorna foco ao elemento anterior
+    if (modalLastFocusedElement) {
+        modalLastFocusedElement.focus();
+    }
+
+    // Limpa referências
+    modalElement = null;
+    modalLastFocusedElement = null;
+    modalFocusableElements = [];
+}
+
+function setupModalFocusTrap() {
+    if (!modalElement) return;
+
+    // Encontra todos os elementos focáveis dentro do modal
+    const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    modalFocusableElements = Array.from(modalElement.querySelectorAll(focusableSelectors));
+
+    if (modalFocusableElements.length === 0) return;
+
+    modalFirstFocusable = modalFocusableElements[0];
+    modalLastFocusable = modalFocusableElements[modalFocusableElements.length - 1];
+
+    // Event listener para Tab (focus trap)
+    modalElement.addEventListener('keydown', handleModalKeydown);
+
+    // Event listener para fechar com X
+    const closeButton = modalElement.querySelector('.modal-close');
+    if (closeButton) {
+        closeButton.onclick = closeModal;
+    }
+
+    // Event listener para fechar ao clicar no overlay
+    modalElement.addEventListener('click', (e) => {
+        if (e.target === modalElement) {
+            closeModal();
+        }
+    });
+}
+
+function handleModalKeydown(e) {
+    // Escape fecha o modal
+    if (e.key === 'Escape') {
+        closeModal();
+        return;
+    }
+
+    // Tab navigation (focus trap)
+    if (e.key === 'Tab') {
+        if (e.shiftKey) {
+            // Shift + Tab
+            if (document.activeElement === modalFirstFocusable) {
+                e.preventDefault();
+                modalLastFocusable.focus();
+            }
+        } else {
+            // Tab
+            if (document.activeElement === modalLastFocusable) {
+                e.preventDefault();
+                modalFirstFocusable.focus();
+            }
+        }
+    }
+}
+
+// =========================================
 // Event Listeners
 // =========================================
 function setupEventListeners() {
@@ -498,6 +729,13 @@ function setupEventListeners() {
         });
     }
 
+    // Atalho Escape para cancelar requisição (WCAG 2.1.1)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isLoading) {
+            cancelRequest();
+        }
+    });
+
     // Foco automático no input
     userInput.focus();
 }
@@ -535,6 +773,7 @@ function clearMessages() {
     messages = [];
     saveMessagesToStorage();
     renderMessages();
+    userInput.focus(); // Retorna foco ao input após limpar chat
 }
 
 function removeLastErrorMessage() {
@@ -779,12 +1018,12 @@ function createExpanderSection(title, content, isExpanded = false) {
     header.setAttribute('aria-expanded', isExpanded);
     header.setAttribute('aria-controls', uniqueId);
 
-    const titleSpan = document.createElement('span');
+    const titleHeading = document.createElement('h3');
+    titleHeading.className = 'expander-title';
     // Remove formatação markdown (asteriscos) do título
     const cleanTitle = title.replace(/\*\*/g, '').trim();
-    titleSpan.textContent = cleanTitle;
-    titleSpan.style.flex = '1';
-    header.appendChild(titleSpan);
+    titleHeading.textContent = cleanTitle;
+    header.appendChild(titleHeading);
 
     const icon = document.createElement('span');
     icon.className = 'expander-icon';
@@ -1076,9 +1315,24 @@ async function sendMessage(pergunta) {
     // AbortController para timeout e cancelamento
     currentAbortController = new AbortController();
     const controller = currentAbortController;
-    // Timeout reduzido para 60 segundos (mais responsivo)
-    const timeoutMs = Math.min(frontendConfig.request_timeout_ms || 120000, 60000); // Máximo 60s
+
+    // Timeout configurável (WCAG 2.2.6)
+    const timeoutMs = frontendConfig.request_timeout_ms || 120000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    // Reseta variáveis de aviso de timeout
+    timeoutWarningShown = false;
+    timeoutExtensionCount = 0; // Reseta contador para nova requisição
+
+    // Inicia timer de aviso (20s antes do timeout)
+    const warningTime = Math.max(timeoutMs - WARNING_BEFORE_TIMEOUT_MS, 5000);
+    if (warningTimerId) clearTimeout(warningTimerId);
+
+    warningTimerId = setTimeout(() => {
+        if (isLoading && !timeoutWarningShown && currentAbortController === controller) {
+            showTimeoutWarning(controller, timeoutId);
+        }
+    }, warningTime);
 
     try {
         // Verifica se está offline
@@ -1096,6 +1350,10 @@ async function sendMessage(pergunta) {
         });
 
         clearTimeout(timeoutId);
+        if (warningTimerId) {
+            clearTimeout(warningTimerId);
+            warningTimerId = null;
+        }
 
         // NÃO remove mensagens de erro aqui - só quando a resposta chegar
         // Isso evita que o indicador desapareça prematuramente
@@ -1141,6 +1399,14 @@ async function sendMessage(pergunta) {
         // Adiciona resposta do assistente (aparecerá abaixo do indicador que foi removido)
         addMessage('assistant', data.resposta);
 
+        // Retorna foco ao input após resposta (WCAG 2.4.3)
+        // Melhora navegação por teclado permitindo que usuário continue digitando
+        setTimeout(() => {
+            if (userInput && !isLoading) {
+                userInput.focus();
+            }
+        }, 100);
+
         // Após resposta, volta para IDLE após 2 segundos
         setTimeout(() => {
             if (!isLoading && currentAvatarState === AVATAR_STATES.HAPPY) {
@@ -1151,6 +1417,10 @@ async function sendMessage(pergunta) {
 
     } catch (error) {
         clearTimeout(timeoutId);
+        if (warningTimerId) {
+            clearTimeout(warningTimerId);
+            warningTimerId = null;
+        }
 
         // Se foi cancelado manualmente pelo usuário, não mostra erro
         // (o cancelRequest já tratou isso)
@@ -1284,6 +1554,10 @@ function resetStuckState() {
 
 // Expõe função globalmente para debug (pode ser chamada no console)
 window.resetAdaState = resetStuckState;
+
+// Expõe funções de modal globalmente para uso e testes
+window.openModal = openModal;
+window.closeModal = closeModal;
 
 // =========================================
 // Handlers
