@@ -31,7 +31,7 @@ def axe():
 def test_contrast_ratio_aaa(page: Page, base_url: str, axe):
     """
     Testa contraste de cores AAA (WCAG 1.4.6).
-    
+
     Requisito AAA:
     - Texto normal: razão mínima de 7:1
     - Texto grande (18pt+ ou 14pt+ bold): razão mínima de 4.5:1
@@ -54,9 +54,7 @@ def test_contrast_ratio_aaa(page: Page, base_url: str, axe):
     )
 
     # Verifica violações de contraste AAA
-    contrast_violations = [
-        v for v in results.violations if "contrast" in v.id.lower()
-    ]
+    contrast_violations = [v for v in results.violations if "contrast" in v.id.lower()]
 
     assert (
         len(contrast_violations) == 0
@@ -66,7 +64,7 @@ def test_contrast_ratio_aaa(page: Page, base_url: str, axe):
 def test_text_spacing_override(page: Page, base_url: str):
     """
     Testa suporte a override de espaçamento de texto (WCAG 1.4.12 - AA).
-    
+
     Requisitos:
     - line-height: pelo menos 1.5x o tamanho da fonte
     - letter-spacing: pelo menos 0.12x o tamanho da fonte
@@ -107,16 +105,14 @@ def test_text_spacing_override(page: Page, base_url: str):
     # Verifica que texto não está cortado
     intro_card = page.locator("#intro-card")
     if intro_card.is_visible():
-        overflow = intro_card.evaluate(
-            "el => window.getComputedStyle(el).overflow"
-        )
+        overflow = intro_card.evaluate("el => window.getComputedStyle(el).overflow")
         assert overflow != "hidden", "Texto pode estar cortado após override"
 
 
 def test_focus_indicator_contrast(page: Page, base_url: str):
     """
     Testa contraste do indicador de foco (WCAG 2.4.11 - AAA).
-    
+
     Requisito: Indicador de foco deve ter contraste mínimo de 3:1
     com cores adjacentes.
     """
@@ -137,26 +133,20 @@ def test_focus_indicator_contrast(page: Page, base_url: str):
             page.wait_for_timeout(200)
 
             # Verifica que elemento tem outline visível
-            outline_width = element.evaluate(
-                "el => window.getComputedStyle(el).outlineWidth"
-            )
-            outline_style = element.evaluate(
-                "el => window.getComputedStyle(el).outlineStyle"
-            )
+            outline_width = element.evaluate("el => window.getComputedStyle(el).outlineWidth")
+            outline_style = element.evaluate("el => window.getComputedStyle(el).outlineStyle")
 
             # Outline deve ter pelo menos 2px
             assert (
                 outline_width and outline_width != "0px"
             ), f"Elemento {selector} não tem outline visível ao focar"
-            assert (
-                outline_style != "none"
-            ), f"Elemento {selector} tem outline-style: none"
+            assert outline_style != "none", f"Elemento {selector} tem outline-style: none"
 
 
 def test_no_text_images(page: Page, base_url: str):
     """
     Testa ausência de imagens de texto (WCAG 1.4.9 - AAA).
-    
+
     Requisito: Imagens de texto não devem ser usadas, exceto para
     logotipos ou quando essencial.
     """
@@ -164,12 +154,8 @@ def test_no_text_images(page: Page, base_url: str):
     page.wait_for_load_state("networkidle")
 
     # Verifica que fonte web está sendo usada
-    body_font = page.evaluate(
-        "() => window.getComputedStyle(document.body).fontFamily"
-    )
-    assert (
-        "Atkinson Hyperlegible" in body_font
-    ), "Fonte web não está sendo usada"
+    body_font = page.evaluate("() => window.getComputedStyle(document.body).fontFamily")
+    assert "Atkinson Hyperlegible" in body_font, "Fonte web não está sendo usada"
 
     # Verifica que não há imagens com texto (exceto logo)
     images = page.locator("img")
@@ -193,7 +179,7 @@ def test_no_text_images(page: Page, base_url: str):
 def test_animation_reduced_motion_all(page: Page, base_url: str):
     """
     Testa que todas as animações respeitam prefers-reduced-motion (WCAG 2.3.3 - AAA).
-    
+
     Requisito: Animações devem ser desabilitadas quando usuário
     prefere movimento reduzido.
     """
@@ -206,16 +192,12 @@ def test_animation_reduced_motion_all(page: Page, base_url: str):
     body_element = page.locator("body")
 
     # Verifica transition-duration
-    transition = body_element.evaluate(
-        "el => window.getComputedStyle(el).transitionDuration"
-    )
+    transition = body_element.evaluate("el => window.getComputedStyle(el).transitionDuration")
 
     # Deve ser 0s ou muito curto (< 0.1s)
     if transition and transition != "0s":
         duration_ms = float(transition.replace("s", "")) * 1000
-        assert (
-            duration_ms < 100
-        ), f"Transições não foram desabilitadas: {transition}"
+        assert duration_ms < 100, f"Transições não foram desabilitadas: {transition}"
 
     # Envia mensagem e verifica que não há animação longa
     input_field = page.get_by_test_id("input-pergunta")
@@ -234,7 +216,7 @@ def test_animation_reduced_motion_all(page: Page, base_url: str):
 def test_help_contextual(page: Page, base_url: str):
     """
     Testa disponibilidade de ajuda contextual (WCAG 3.3.5 - AAA).
-    
+
     Requisito: Ajuda sensível ao contexto deve estar disponível.
     """
     page.goto(base_url)
@@ -263,10 +245,10 @@ def test_help_contextual(page: Page, base_url: str):
 def test_timeout_warning(page: Page, base_url: str):
     """
     Testa aviso de timeout (WCAG 2.2.6 - AAA).
-    
+
     Requisito: Usuário deve ser avisado antes de timeout e poder
     estender o tempo.
-    
+
     Nota: Este teste verifica a estrutura, não o comportamento real
     de timeout que levaria 2 minutos.
     """
@@ -294,7 +276,7 @@ def test_timeout_warning(page: Page, base_url: str):
 def test_language_identification(page: Page, base_url: str):
     """
     Testa identificação de idioma (WCAG 3.1.1 - A, 3.1.2 - AA).
-    
+
     Requisito: Idioma da página deve ser identificado.
     """
     page.goto(base_url)
@@ -312,7 +294,7 @@ def test_language_identification(page: Page, base_url: str):
 def test_heading_structure_complete(page: Page, base_url: str):
     """
     Testa estrutura completa de headings (WCAG 2.4.10 - AAA).
-    
+
     Requisito: Seções devem ter headings descritivos.
     """
     page.goto(base_url)
@@ -339,7 +321,7 @@ def test_heading_structure_complete(page: Page, base_url: str):
 def test_consistent_identification(page: Page, base_url: str):
     """
     Testa identificação consistente de componentes (WCAG 3.2.4 - AA).
-    
+
     Requisito: Componentes com mesma funcionalidade devem ser
     identificados consistentemente.
     """
@@ -359,15 +341,13 @@ def test_consistent_identification(page: Page, base_url: str):
     # Verifica botão de tema
     theme_button = page.get_by_test_id("btn-toggle-tema")
     theme_label = theme_button.get_attribute("aria-label")
-    assert (
-        theme_label and "tema" in theme_label.lower()
-    ), "Botão de tema não tem label consistente"
+    assert theme_label and "tema" in theme_label.lower(), "Botão de tema não tem label consistente"
 
 
 def test_target_size_minimum(page: Page, base_url: str):
     """
     Testa tamanho mínimo de alvos (WCAG 2.5.5 - AAA).
-    
+
     Requisito: Alvos de ponteiro devem ter pelo menos 44x44 pixels.
     """
     page.goto(base_url)
@@ -395,7 +375,7 @@ def test_target_size_minimum(page: Page, base_url: str):
 def test_visual_presentation_aaa(page: Page, base_url: str):
     """
     Testa apresentação visual AAA (WCAG 1.4.8).
-    
+
     Requisitos:
     - Largura de linha não excede 80 caracteres
     - Texto não é justificado
@@ -415,12 +395,8 @@ def test_visual_presentation_aaa(page: Page, base_url: str):
     page.wait_for_timeout(3000)
 
     # Verifica line-height do body
-    line_height = page.evaluate(
-        "() => window.getComputedStyle(document.body).lineHeight"
-    )
-    font_size = page.evaluate(
-        "() => window.getComputedStyle(document.body).fontSize"
-    )
+    line_height = page.evaluate("() => window.getComputedStyle(document.body).lineHeight")
+    font_size = page.evaluate("() => window.getComputedStyle(document.body).fontSize")
 
     # Converte para números
     line_height_num = float(line_height.replace("px", ""))
@@ -430,7 +406,5 @@ def test_visual_presentation_aaa(page: Page, base_url: str):
     assert ratio >= 1.5, f"Line-height muito baixo: {ratio} (mínimo 1.5)"
 
     # Verifica que texto não é justificado
-    text_align = page.evaluate(
-        "() => window.getComputedStyle(document.body).textAlign"
-    )
+    text_align = page.evaluate("() => window.getComputedStyle(document.body).textAlign")
     assert text_align != "justify", "Texto não deve ser justificado (AAA)"

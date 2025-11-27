@@ -214,14 +214,14 @@ def test_compression_large_response(mock_pipeline, client):
 
     # Verifica se foi comprimido (resposta grande deve ser comprimida)
     content_encoding = response.headers.get("Content-Encoding")
-    
+
     # Com GZipMiddleware padrão e settings default, deve comprimir
     assert content_encoding == "gzip"
-    
+
     # TestClient pode ter descomprimido automaticamente o conteúdo
     # Se o conteúdo já for texto (JSON), verificamos diretamente
     # Se for binário (gzip), descomprimimos
-    
+
     try:
         # Tenta descomprimir (caso TestClient não tenha feito)
         decompressed = gzip.decompress(response.content)
@@ -229,7 +229,7 @@ def test_compression_large_response(mock_pipeline, client):
     except (gzip.BadGzipFile, OSError):
         # Se falhar, assume que já está descomprimido
         content_str = response.content.decode("utf-8")
-        
+
     assert "Introdução" in content_str
 
 

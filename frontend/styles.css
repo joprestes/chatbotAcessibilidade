@@ -2438,6 +2438,11 @@ footer a:focus {
     padding: 20px;
 }
 
+/* Esconde completamente quando tem attribute hidden */
+.modal-overlay[hidden] {
+    display: none !important;
+}
+
 .modal-overlay[aria-hidden="false"] {
     opacity: 1;
 }

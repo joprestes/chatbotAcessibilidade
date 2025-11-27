@@ -3,7 +3,6 @@ Middleware de segurança e compressão para adicionar headers HTTP de segurança
 e comprimir respostas
 """
 
-
 from typing import Awaitable, Callable
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -15,7 +14,9 @@ from chatbot_acessibilidade.config import settings
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware que adiciona headers de segurança HTTP"""
 
-    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Adiciona headers de segurança à resposta"""
         response = await call_next(request)
 
@@ -95,7 +96,9 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
         self.STATIC_TTL = STATIC_CACHE_TTL_SECONDS
         self.ASSETS_TTL = ASSETS_CACHE_TTL_SECONDS
 
-    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Adiciona headers de cache para assets estáticos"""
         response = await call_next(request)
 
@@ -112,6 +115,3 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
             response.headers["Vary"] = "Accept-Encoding"
 
         return response
-
-
-

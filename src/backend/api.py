@@ -145,11 +145,8 @@ app.add_middleware(StaticCacheMiddleware)
 if settings.compression_enabled:
     from fastapi.middleware.gzip import GZipMiddleware
     from chatbot_acessibilidade.core.constants import COMPRESSION_MIN_SIZE_BYTES
-    
-    app.add_middleware(
-        GZipMiddleware, 
-        minimum_size=COMPRESSION_MIN_SIZE_BYTES
-    )
+
+    app.add_middleware(GZipMiddleware, minimum_size=COMPRESSION_MIN_SIZE_BYTES)
 
 # Configura CORS com origens permitidas
 app.add_middleware(
