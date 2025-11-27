@@ -518,6 +518,161 @@ function extendTimeout(controller, oldTimeoutId) {
 }
 
 // =========================================
+// Sistema de Modal Acessível (WCAG 2.4.3)
+// =========================================
+let modalElement = null;
+let modalLastFocusedElement = null;
+let modalFocusableElements = [];
+let modalFirstFocusable = null;
+let modalLastFocusable = null;
+
+function openModal(title, content, options = {}) {
+    modalElement = document.getElementById('accessible-modal');
+    if (!modalElement) return;
+
+    // Salva elemento que tinha foco antes do modal
+    modalLastFocusedElement = document.activeElement;
+
+    // Define título e conteúdo
+    const modalTitle = modalElement.querySelector('#modal-title');
+    const modalContent = modalElement.querySelector('#modal-content');
+
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalContent) modalContent.innerHTML = content;
+
+    // Configura botões do footer
+    const cancelButton = modalElement.querySelector('[data-action="cancel"]');
+    const confirmButton = modalElement.querySelector('[data-action="confirm"]');
+
+    if (options.hideCancelButton) {
+        cancelButton.style.display = 'none';
+    } else {
+        cancelButton.style.display = '';
+        cancelButton.textContent = options.cancelText || 'Cancelar';
+    }
+
+    if (options.hideConfirmButton) {
+        confirmButton.style.display = 'none';
+    } else {
+        confirmButton.style.display = '';
+        confirmButton.textContent = options.confirmText || 'Confirmar';
+    }
+
+    // Callbacks
+    if (options.onConfirm) {
+        confirmButton.onclick = () => {
+            options.onConfirm();
+            closeModal();
+        };
+    }
+
+    if (options.onCancel) {
+        cancelButton.onclick = () => {
+            options.onCancel();
+            closeModal();
+        };
+    } else {
+        cancelButton.onclick = closeModal;
+    }
+
+    // Mostra modal
+    modalElement.removeAttribute('hidden');
+    modalElement.setAttribute('aria-hidden', 'false');
+
+    // Previne scroll do body
+    document.body.style.overflow = 'hidden';
+
+    // Configura focus trap
+    setupModalFocusTrap();
+
+    // Foca no primeiro elemento focável
+    setTimeout(() => {
+        if (modalFirstFocusable) {
+            modalFirstFocusable.focus();
+        }
+    }, 100);
+}
+
+function closeModal() {
+    if (!modalElement) return;
+
+    // Esconde modal
+    modalElement.setAttribute('aria-hidden', 'true');
+
+    // Aguarda animação antes de adicionar hidden
+    setTimeout(() => {
+        modalElement.setAttribute('hidden', '');
+    }, 300);
+
+    // Restaura scroll do body
+    document.body.style.overflow = '';
+
+    // Retorna foco ao elemento anterior
+    if (modalLastFocusedElement) {
+        modalLastFocusedElement.focus();
+    }
+
+    // Limpa referências
+    modalElement = null;
+    modalLastFocusedElement = null;
+    modalFocusableElements = [];
+}
+
+function setupModalFocusTrap() {
+    if (!modalElement) return;
+
+    // Encontra todos os elementos focáveis dentro do modal
+    const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    modalFocusableElements = Array.from(modalElement.querySelectorAll(focusableSelectors));
+
+    if (modalFocusableElements.length === 0) return;
+
+    modalFirstFocusable = modalFocusableElements[0];
+    modalLastFocusable = modalFocusableElements[modalFocusableElements.length - 1];
+
+    // Event listener para Tab (focus trap)
+    modalElement.addEventListener('keydown', handleModalKeydown);
+
+    // Event listener para fechar com X
+    const closeButton = modalElement.querySelector('.modal-close');
+    if (closeButton) {
+        closeButton.onclick = closeModal;
+    }
+
+    // Event listener para fechar ao clicar no overlay
+    modalElement.addEventListener('click', (e) => {
+        if (e.target === modalElement) {
+            closeModal();
+        }
+    });
+}
+
+function handleModalKeydown(e) {
+    // Escape fecha o modal
+    if (e.key === 'Escape') {
+        closeModal();
+        return;
+    }
+
+    // Tab navigation (focus trap)
+    if (e.key === 'Tab') {
+        if (e.shiftKey) {
+            // Shift + Tab
+            if (document.activeElement === modalFirstFocusable) {
+                e.preventDefault();
+                modalLastFocusable.focus();
+            }
+        } else {
+            // Tab
+            if (document.activeElement === modalLastFocusable) {
+                e.preventDefault();
+                modalFirstFocusable.focus();
+            }
+        }
+    }
+}
+
+// =========================================
 // Event Listeners
 // =========================================
 function setupEventListeners() {
@@ -1399,6 +1554,10 @@ function resetStuckState() {
 
 // Expõe função globalmente para debug (pode ser chamada no console)
 window.resetAdaState = resetStuckState;
+
+// Expõe funções de modal globalmente para uso e testes
+window.openModal = openModal;
+window.closeModal = closeModal;
 
 // =========================================
 // Handlers
