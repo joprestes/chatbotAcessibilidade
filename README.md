@@ -327,11 +327,11 @@ Acesse: **http://localhost:8000**
 
 | 📘 Documento | 📝 Descrição |
 |:---|:---|
-| [📝 CHANGELOG.md](docs/CHANGELOG.md) | Histórico de mudanças |
-| [📋 REGRAS_REVISAO.md](docs/REGRAS_REVISAO.md) | Regras e padrões do projeto (inclui linters) |
-| [♿ PADROES_ACESSIBILIDADE.md](docs/PADROES_ACESSIBILIDADE.md) | Padrões de acessibilidade e gerenciamento de foco |
-| [🚀 DEPLOY.md](docs/DEPLOY.md) | Guia completo de deploy |
-| [🧪 TESTES.md](docs/TESTES.md) | Documentação de testes |
+| [📝 CHANGELOG.md](docs/project/CHANGELOG.md) | Histórico de mudanças |
+| [📋 REGRAS_REVISAO.md](docs/qa/guides/GUIA_CODE_REVIEW.md) | Regras e padrões do projeto (inclui linters) |
+| [♿ PADROES_ACESSIBILIDADE.md](docs/qa/specifications/PADROES_ACESSIBILIDADE.md) | Padrões de acessibilidade e gerenciamento de foco |
+| [🚀 DEPLOY.md](docs/ops/DEPLOY.md) | Guia completo de deploy |
+| [🧪 QA KNOWLEDGE BASE](docs/qa/README.md) | **Central de Qualidade (Estratégia, Specs, Guias)** |
 | [📚 API Interativa](http://localhost:8000/docs) | Swagger UI (quando servidor rodando) |
 | [📚 API ReDoc](http://localhost:8000/redoc) | ReDoc (quando servidor rodando) |
 
@@ -396,11 +396,11 @@ make check                   # Todas as verificações
 
 #### 📚 Documentação de Testes
 
-- [📋 INDICE_TESTES.md](docs/INDICE_TESTES.md) - Índice completo
-- [🧪 TESTES.md](docs/TESTES.md) - Estratégia geral
-- [🔥 TESTES_CARGA.md](docs/TESTES_CARGA.md) - Locust + Benchmarks
-- [🧬 MUTATION_TESTING.md](docs/MUTATION_TESTING.md) - mutmut
-- [📊 ALLURE_REPORTS.md](docs/ALLURE_REPORTS.md) - Relatórios visuais
+- [📋 INDICE_TESTES.md](docs/qa/guides/INDICE_GERAL_TESTES.md) - Índice completo
+- [🧪 GUIA DO DESENVOLVEDOR](docs/qa/guides/GUIA_DESENVOLVEDOR_TESTES.md) - Estratégia geral
+- [🔥 RELATORIO_CARGA.md](docs/qa/reports/RELATORIO_CARGA_BASELINE.md) - Locust + Benchmarks
+- [🧬 GUIA_MUTATION.md](docs/qa/reports/GUIA_MUTATION.md) - mutmut
+- [📊 GUIA_ALLURE.md](docs/qa/reports/GUIA_ALLURE.md) - Relatórios visuais
 
 ---
 
