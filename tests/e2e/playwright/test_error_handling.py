@@ -69,8 +69,8 @@ def test_offline_error(page: Page, base_url: str):
     send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
-    # Verifica mensagem de offline
-    offline_message = page.locator("text=📡 Você está offline")
+    # Verifica mensagem de offline (Toast)
+    offline_message = page.locator(".toast-message:has-text('📡 Você está offline')")
     expect(offline_message).to_be_visible(timeout=5000)
 
     # Simula reconexão
@@ -98,7 +98,7 @@ def test_rate_limit_error(page: Page, base_url: str):
             body=json.dumps({"detail": "Rate limit exceeded"}),
         )
 
-    page.route(f"{base_url}/api/chat", handle_route)
+    page.route("**/api/chat", handle_route)
 
     # Preenche input
     input_field = page.get_by_test_id("input-pergunta")
@@ -108,11 +108,11 @@ def test_rate_limit_error(page: Page, base_url: str):
     send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
-    # Verifica mensagem de rate limit
-    rate_limit_message = page.locator("text=🚦 Muitas requisições")
+    # Verifica mensagem de rate limit (Toast ou Bubble)
+    rate_limit_message = page.locator(".toast-message:has-text('🚦 Muitas requisições')").first
     expect(rate_limit_message).to_be_visible(timeout=5000)
 
-    page.unroute(f"{base_url}/api/chat")
+    page.unroute("**/api/chat")
 
 
 def test_server_error_500(page: Page, base_url: str):
@@ -132,7 +132,7 @@ def test_server_error_500(page: Page, base_url: str):
             body=json.dumps({"detail": "Internal server error"}),
         )
 
-    page.route(f"{base_url}/api/chat", handle_route)
+    page.route("**/api/chat", handle_route)
 
     # Preenche input
     input_field = page.get_by_test_id("input-pergunta")
@@ -142,11 +142,11 @@ def test_server_error_500(page: Page, base_url: str):
     send_button = page.get_by_test_id("btn-enviar")
     send_button.click()
 
-    # Verifica mensagem de erro do servidor
-    server_error_message = page.locator("text=🔧 Erro no servidor")
+    # Verifica mensagem de erro do servidor (Toast ou Bubble)
+    server_error_message = page.locator(".toast-message:has-text('🔧 Erro no servidor')").first
     expect(server_error_message).to_be_visible(timeout=5000)
 
-    page.unroute(f"{base_url}/api/chat")
+    page.unroute("**/api/chat")
 
 
 @pytest.mark.skipif(
@@ -156,10 +156,19 @@ def test_server_error_500(page: Page, base_url: str):
 def test_manual_cancellation(page: Page, base_url: str):
     """
     Testa cancelamento manual de requisição.
-
-    Nota: Este teste é pulado no CI devido a problemas de timing.
-    Execute localmente para validar a funcionalidade de cancelamento.
+    
+    Usa interceptação de rota para garantir que a requisição demore o suficiente
+    para que o botão de cancelar possa ser clicado.
     """
+    # Intercepta a rota do chat para simular delay
+    def handle_route(route):
+        # Delay de 5 segundos para dar tempo de cancelar
+        page.wait_for_timeout(5000)
+        route.fulfill(status=200, body='{"response": "Delayed response"}')
+
+    # Configura a interceptação para qualquer rota que termine em /api/chat
+    page.route("**/api/chat", handle_route)
+
     page.goto(base_url)
     page.wait_for_load_state("networkidle")
 
@@ -172,23 +181,16 @@ def test_manual_cancellation(page: Page, base_url: str):
     send_button.click()
 
     # Aguarda botão cancelar aparecer
-    # O botão aparece quando isLoading é true e updateUIState() foi chamado
     cancel_button = page.get_by_test_id("btn-cancelar")
-
-    # Aguarda que o botão esteja visível (mais simples e direto)
-    # Playwright já faz a verificação de visibilidade automaticamente
     expect(cancel_button).to_be_visible(timeout=10000)
 
     # Clica no botão cancelar
     cancel_button.click()
 
-    # Aguarda um pouco
-    page.wait_for_timeout(500)
-
-    # Verifica que não há mensagem de erro
-    # Busca mensagens assistant que tenham classe error
+    # Verifica que há mensagem de cancelamento
     error_messages = page.locator('[data-testid="chat-mensagem-assistant"].error')
-    expect(error_messages).to_have_count(0)
+    expect(error_messages).to_have_count(1)
+    expect(error_messages).to_contain_text("Requisição cancelada pelo usuário")
 
     # Verifica que indicador foi removido
     typing_indicator = page.locator("text=Aguarde que estou pesquisando")
@@ -210,8 +212,8 @@ def test_malformed_response(page: Page, base_url: str):
             headers={"Content-Type": "application/json"},
             body="{invalid json}",
         )
-
-    page.route(f"{base_url}/api/chat", handle_route)
+    
+    page.route("**/api/chat", handle_route)
 
     # Preenche input
     input_field = page.get_by_test_id("input-pergunta")
@@ -227,4 +229,4 @@ def test_malformed_response(page: Page, base_url: str):
     error_message = page.locator('[data-testid="chat-mensagem-assistant"].error')
     expect(error_message).to_be_visible(timeout=5000)
 
-    page.unroute(f"{base_url}/api/chat")
+    page.unroute("**/api/chat")

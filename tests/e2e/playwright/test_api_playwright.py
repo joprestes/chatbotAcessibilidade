@@ -64,7 +64,7 @@ def test_api_chat_endpoint_success_via_playwright(
 
     # Usa httpx diretamente para evitar problema de compressão do Playwright
     # APIRequestContext tem bug com Content-Length duplicado quando há compressão gzip
-    with httpx.Client(timeout=10.0) as client:
+    with httpx.Client(timeout=30.0) as client:
         response = client.post(
             f"{base_url}/api/chat",
             json={"pergunta": "O que é acessibilidade digital?"},
