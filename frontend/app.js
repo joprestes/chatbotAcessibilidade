@@ -33,6 +33,7 @@ const WARNING_BEFORE_TIMEOUT_MS = 20000; // Avisa 20s antes do timeout
 let searchFilter = ''; // Filtro de busca no histórico
 const TYPING_MESSAGE_ID = '__typing_indicator__'; // ID especial para mensagem de digitação
 const MAX_QUESTION_LENGTH = 2000; // Máximo de caracteres (do backend)
+let isCodeMode = false; // Estado do modo de código
 
 // =========================================
 // Sistema de Avatar Dinâmico
@@ -144,6 +145,8 @@ const chatForm = document.getElementById('chat-form');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const themeToggle = document.getElementById('theme-toggle');
+const codeModeToggle = document.getElementById('code-mode-toggle');
+const personaToggle = document.getElementById('persona-toggle');
 
 // Elementos que serão criados dinamicamente
 let cancelButton = null;
@@ -376,15 +379,130 @@ function createUXElements() {
     if (helpButton) {
         helpButton.addEventListener('click', () => {
             showToast(
-                'Exemplos de perguntas:\n' +
-                '• Como testar contraste de cores?\n' +
-                '• O que é navegação por teclado?\n' +
-                '• Gere um checklist WCAG AA',
+                'Dicas de uso:\n' +
+                '• Use o botão </> para ativar o Modo de Código\n' +
+                '• Use o ícone de usuário para Analisar Cenários\n' +
+                '• Pergunte sobre qualquer critério WCAG',
                 'info',
                 10000 // 10 segundos
             );
         });
     }
+    if (codeModeToggle) {
+        codeModeToggle.addEventListener('click', toggleCodeMode);
+    }
+
+    // Botão de Personas
+    if (personaToggle) {
+        personaToggle.addEventListener('click', openPersonaModal);
+    }
+}
+
+function openPersonaModal() {
+    const content = `
+        <p class="modal-description" style="margin-bottom: 20px; color: var(--text-secondary);">
+            Teste como seu conteúdo é percebido por diferentes tecnologias e necessidades. 
+            Isso ajuda a identificar barreiras invisíveis para quem navega visualmente.
+        </p>
+        <div class="persona-grid">
+            <button class="persona-btn" onclick="selectPersona('leitor-tela')">
+                <span class="persona-icon">🔈</span>
+                <span class="persona-name">Leitor de Tela</span>
+                <span class="persona-desc">Cenário de uso sem visão</span>
+            </button>
+            <button class="persona-btn" onclick="selectPersona('zoom-contraste')">
+                <span class="persona-icon">🔍</span>
+                <span class="persona-name">Zoom e Contraste</span>
+                <span class="persona-desc">Cenário de baixa visão</span>
+            </button>
+            <button class="persona-btn" onclick="selectPersona('teclado')">
+                <span class="persona-icon">⌨️</span>
+                <span class="persona-name">Navegação por Teclado</span>
+                <span class="persona-desc">Cenário com limitações motoras</span>
+            </button>
+            <button class="persona-btn" onclick="selectPersona('linguagem-simples')">
+                <span class="persona-icon">🧩</span>
+                <span class="persona-name">Linguagem Simples</span>
+                <span class="persona-desc">Cenário cognitivo/atenção</span>
+            </button>
+        </div>
+    `;
+
+    openModal('Escolha um Cenário de Acessibilidade', content, {
+        hideConfirmButton: true,
+        cancelText: 'Fechar'
+    });
+}
+
+function selectPersona(persona) {
+    const examples = {
+        'leitor-tela': 'Estou tentando comprar um ingresso, mas o leitor de tela não anuncia o preço quando navego pela tabela de assentos.',
+        'zoom-contraste': 'O texto cinza claro do rodapé fica ilegível quando aumento o zoom da página para 200%.',
+        'teclado': 'Não consigo acessar o submenu "Configurações" usando apenas a tecla Tab; o foco pula direto para o próximo link.',
+        'linguagem-simples': 'A mensagem de erro "Falha na validação do input X509" é muito técnica e não entendo o que preciso corrigir.'
+    };
+
+    const exampleText = examples[persona] || '';
+    userInput.value = `/simular ${persona} ${exampleText}`;
+
+    closeModal(false); // Não restaura foco para o botão, pois queremos focar no input
+
+    // Aguarda um pouco para garantir que o modal não interfira no foco
+    setTimeout(() => {
+        userInput.focus();
+        // Move cursor para o final
+        userInput.selectionStart = userInput.selectionEnd = userInput.value.length;
+    }, 150);
+
+    showToast(`Cenário selecionado. Exemplo carregado.`, 'info');
+}
+
+// Expõe para o HTML
+window.selectPersona = selectPersona;
+
+function toggleCodeMode() {
+    isCodeMode = !isCodeMode;
+    const codeModeBtn = document.getElementById('code-mode-toggle');
+
+    if (isCodeMode) {
+        userInput.classList.add('code-mode-active');
+        codeModeBtn.classList.add('active');
+        codeModeBtn.setAttribute('aria-pressed', 'true');
+        userInput.placeholder = "Cole seu código aqui para refatoração...";
+        showToast('Modo de Código Ativado. Cole seu snippet.', 'info');
+    } else {
+        userInput.classList.remove('code-mode-active');
+        codeModeBtn.classList.remove('active');
+        codeModeBtn.setAttribute('aria-pressed', 'false');
+        userInput.placeholder = "Pergunte sobre WCAG, ARIA ou testes...";
+        showToast('Modo de Código Desativado.', 'info');
+    }
+    userInput.focus();
+}
+
+// Lógica de Expansão do Input
+const expandBtn = document.getElementById('expand-input-toggle');
+if (expandBtn) {
+    expandBtn.addEventListener('click', () => {
+        const isExpanded = userInput.classList.toggle('input-expanded');
+        const iconExpand = document.getElementById('icon-expand');
+        const iconCollapse = document.getElementById('icon-collapse');
+
+        // Atualiza ARIA e Tooltip
+        expandBtn.setAttribute('aria-expanded', isExpanded);
+        expandBtn.setAttribute('data-tooltip', isExpanded ? 'Reduzir área de texto' : 'Aumentar área de digitação');
+
+        // Alterna visibilidade dos ícones
+        if (isExpanded) {
+            iconExpand.style.display = 'none';
+            iconCollapse.style.display = 'block';
+        } else {
+            iconExpand.style.display = 'block';
+            iconCollapse.style.display = 'none';
+        }
+
+        userInput.focus();
+    });
 }
 
 // =========================================
@@ -593,29 +711,46 @@ function openModal(title, content, options = {}) {
     }, 100);
 }
 
-function closeModal() {
+function closeModal(restoreFocus = true) {
     if (!modalElement) return;
 
     // Esconde modal
     modalElement.setAttribute('aria-hidden', 'true');
 
+    // Captura elemento para uso no timeout
+    const elementToHide = modalElement;
+
     // Aguarda animação antes de adicionar hidden
     setTimeout(() => {
-        modalElement.setAttribute('hidden', '');
+        if (elementToHide) {
+            elementToHide.setAttribute('hidden', '');
+        }
     }, 300);
 
     // Restaura scroll do body
     document.body.style.overflow = '';
 
     // Retorna foco ao elemento anterior
-    if (modalLastFocusedElement) {
+    if (restoreFocus && modalLastFocusedElement) {
         modalLastFocusedElement.focus();
+    }
+
+    // Remove event listeners
+    if (modalElement) {
+        modalElement.removeEventListener('keydown', handleModalKeydown);
+        modalElement.removeEventListener('click', handleModalClick);
     }
 
     // Limpa referências
     modalElement = null;
     modalLastFocusedElement = null;
     modalFocusableElements = [];
+}
+
+function handleModalClick(e) {
+    if (e.target === modalElement) {
+        closeModal();
+    }
 }
 
 function setupModalFocusTrap() {
@@ -640,11 +775,7 @@ function setupModalFocusTrap() {
     }
 
     // Event listener para fechar ao clicar no overlay
-    modalElement.addEventListener('click', (e) => {
-        if (e.target === modalElement) {
-            closeModal();
-        }
-    });
+    modalElement.addEventListener('click', handleModalClick);
 }
 
 function handleModalKeydown(e) {
@@ -676,6 +807,9 @@ function handleModalKeydown(e) {
 // Event Listeners
 // =========================================
 function setupEventListeners() {
+    window.setupStarted = true;
+    console.log('Starting setupEventListeners');
+
     // Formulário de envio
     chatForm.addEventListener('submit', handleFormSubmit);
 
@@ -719,14 +853,49 @@ function setupEventListeners() {
     // Toggle de tema
     themeToggle.addEventListener('click', toggleTheme);
 
-    // Botão limpar chat
-    const clearChatButton = document.getElementById('clear-chat-button');
-    if (clearChatButton) {
-        clearChatButton.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja limpar todo o histórico do chat?')) {
-                clearMessages();
-            }
-        });
+    // Botão limpar chat (Event Delegation para robustez)
+    document.addEventListener('click', (e) => {
+        const clearBtn = e.target.closest('#clear-chat-button');
+        if (clearBtn) {
+            console.log('Clear chat button clicked (delegation)');
+            openModal(
+                'Limpar Histórico',
+                '<p>Tem certeza que deseja limpar todo o histórico do chat? Esta ação não pode ser desfeita.</p>',
+                {
+                    confirmText: 'Limpar',
+                    cancelText: 'Cancelar',
+                    onConfirm: () => {
+                        clearMessages();
+                        showToast('Histórico limpo com sucesso.', 'success');
+                    }
+                }
+            );
+        }
+    });
+
+    // Fallback: atribuição direta ao onclick
+    const clearChatBtnDirect = document.getElementById('clear-chat-button');
+    if (clearChatBtnDirect) {
+        console.log('Found clearChatBtnDirect, attaching onclick');
+        clearChatBtnDirect.onclick = (e) => {
+            e.preventDefault(); // Previne comportamento padrão se houver
+            e.stopPropagation(); // Previne propagação para o document listener (evita duplo modal)
+            console.log('Clear chat button clicked (direct)');
+            openModal(
+                'Limpar Histórico',
+                '<p>Tem certeza que deseja limpar todo o histórico do chat? Esta ação não pode ser desfeita.</p>',
+                {
+                    confirmText: 'Limpar',
+                    cancelText: 'Cancelar',
+                    onConfirm: () => {
+                        clearMessages();
+                        showToast('Histórico limpo com sucesso.', 'success');
+                    }
+                }
+            );
+        };
+    } else {
+        console.error('clearChatBtnDirect NOT FOUND');
     }
 
     // Atalho Escape para cancelar requisição (WCAG 2.1.1)
@@ -738,6 +907,9 @@ function setupEventListeners() {
 
     // Foco automático no input
     userInput.focus();
+
+    window.setupDone = true;
+    console.log('Finished setupEventListeners');
 }
 
 // =========================================
@@ -1557,7 +1729,55 @@ window.resetAdaState = resetStuckState;
 
 // Expõe funções de modal globalmente para uso e testes
 window.openModal = openModal;
+window.openModal = openModal;
 window.closeModal = closeModal;
+
+/**
+ * Mostra uma notificação toast
+ * @param {string} message - Mensagem a ser exibida
+ * @param {string} type - Tipo de notificação: 'info', 'success', 'warning', 'error'
+ * @param {number} duration - Duração em ms (padrão: 3000)
+ */
+function showToast(message, type = 'info', duration = 3000) {
+    const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.setAttribute('role', 'alert');
+
+    // Ícone baseado no tipo
+    let icon = '';
+    switch (type) {
+        case 'success': icon = '✅'; break;
+        case 'error': icon = '❌'; break;
+        case 'warning': icon = '⚠️'; break;
+        default: icon = 'ℹ️';
+    }
+
+    toast.innerHTML = `
+        <span class="toast-icon" aria-hidden="true">${icon}</span>
+        <span class="toast-message">${message}</span>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // Animação de entrada
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Remove após duração
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.addEventListener('transitionend', () => {
+            toast.remove();
+        });
+    }, duration);
+}
+
+// Expõe globalmente
+window.showToast = showToast;
 
 // =========================================
 // Handlers
@@ -1567,8 +1787,11 @@ async function handleFormSubmit(e) {
 
     const pergunta = userInput.value.trim();
 
+    // Se estiver em modo código, adiciona o comando
+    const finalMessage = isCodeMode ? `/refatorar ${pergunta}` : pergunta;
+
     // Debug: verifica estado
-    console.log('handleFormSubmit chamado:', { pergunta: pergunta.substring(0, 20), isLoading });
+    console.log('handleFormSubmit chamado:', { pergunta: finalMessage.substring(0, 20), isLoading, isCodeMode });
 
     if (!pergunta) {
         console.log('Pergunta vazia, ignorando');
@@ -1581,7 +1804,7 @@ async function handleFormSubmit(e) {
     }
 
     try {
-        await sendMessage(pergunta);
+        await sendMessage(finalMessage);
     } catch (error) {
         console.error('Erro em handleFormSubmit:', error);
         // Garante que isLoading seja resetado mesmo em caso de erro não tratado
@@ -1590,3 +1813,4 @@ async function handleFormSubmit(e) {
     }
 }
 
+// Test write

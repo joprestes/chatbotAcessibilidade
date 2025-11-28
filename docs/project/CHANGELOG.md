@@ -2,6 +2,22 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.15.0] - 2025-11-28
+
+### Adicionado
+- **Estratégia de QA Completa**: Implementada suíte de governança e planejamento de qualidade
+  - `docs/qa/strategy/GOVERNANCA_QUALIDADE.md`: Matriz de rastreabilidade, ciclo de vida de defeitos e KPIs
+  - `docs/qa/strategy/PLANO_MESTRE_TESTES.md`: Plano mestre cobrindo Smoke, Edge e Exception testing
+  - `docs/qa/strategy/PLANO_NAO_FUNCIONAIS.md`: Estratégia para Performance e Segurança
+  - `docs/qa/specifications/CENARIOS_BDD.md`: Cenários em Gherkin (PT-BR) para todos os níveis de teste
+  - `docs/qa/guides/GUIA_INICIANTE_QA.md`: Guia de onboarding para novos QAs
+
+### Modificado
+- **Reorganização da Documentação**: Estrutura completa refatorada para `docs/qa/`, `docs/ops/` e `docs/project/`
+  - Centralização de documentos de qualidade em `docs/qa/`
+  - Separação clara entre documentos técnicos, de processo e de projeto
+  - Atualização de todos os links e referências
+
 ## [3.14.0] - 2025-11-27
 
 ### Adicionado
