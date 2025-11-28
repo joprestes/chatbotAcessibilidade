@@ -87,7 +87,8 @@
 }
 
 /* Classe utilitária para ocultar elementos */
-.hidden {
+.hidden,
+[hidden] {
     display: none !important;
 }
 
@@ -423,6 +424,45 @@ header.glass-header {
     outline-color: #E9D5FF;
     /* Lavanda claro para foco em dark mode */
     color: #FFFFFF;
+}
+
+.icon-button.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.icon-button-small {
+    /* Herda estilos base de icon-button */
+    min-width: 36px;
+    min-height: 36px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-button-small:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--accent-color);
+}
+
+.icon-button-small.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+[data-theme="dark"] .icon-button-small:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent-color);
 }
 
 /* .clear-chat-button agora usa .icon-button - estilos removidos para evitar conflito */
@@ -2448,7 +2488,8 @@ footer a:focus {
 }
 
 .modal-container {
-    background: var(--background);
+    background: var(--bg-primary);
+    /* Usa cor sólida do tema */
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     max-width: 600px;
@@ -2464,6 +2505,12 @@ footer a:focus {
     transform: scale(1) translateY(0);
 }
 
+[data-theme="dark"] .modal-container {
+    background-color: #1e1b4b !important;
+    /* Garante fundo sólido e escuro */
+    border: 1px solid var(--border-color);
+}
+
 .modal-header {
     display: flex;
     align-items: center;
@@ -2477,6 +2524,11 @@ footer a:focus {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-title {
+    color: #FFFFFF !important;
+    /* Força branco em dark mode */
 }
 
 .modal-close {
@@ -2495,6 +2547,18 @@ footer a:focus {
 .modal-close:hover {
     background: var(--hover-background);
     color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-close {
+    color: #E2E8F0 !important;
+    /* Cinza claro em dark mode */
+    background: rgba(255, 255, 255, 0.1);
+    /* Fundo sutil para melhor visibilidade */
+}
+
+[data-theme="dark"] .modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #FFFFFF !important;
 }
 
 .modal-close:focus {
@@ -2577,4 +2641,159 @@ footer a:focus {
     .modal-button {
         width: 100%;
     }
+}
+
+/* =========================================
+   Modo Código
+   ========================================= */
+.code-mode-active {
+    font-family: 'Fira Code', monospace;
+    background-color: #1e1e1e !important;
+    color: #d4d4d4 !important;
+    border: 1px solid #3c3c3c !important;
+}
+
+/* =========================================
+   Input Expandido (Acessibilidade)
+   ========================================= */
+.input-expanded {
+    min-height: 150px !important;
+    max-height: 40vh !important;
+    transition: min-height 0.3s ease;
+}
+
+/* Ajuste do container quando expandido */
+.chat-footer:has(.input-expanded) {
+    padding-top: 20px;
+}
+
+[data-theme="dark"] .code-mode-active {
+    background-color: rgba(30, 27, 75, 0.8) !important;
+    /* Aumentado opacidade para melhor contraste */
+    border: 1px solid var(--accent-color) !important;
+}
+
+/* ========================================= */
+/* Persona Modal Styles */
+/* ========================================= */
+.persona-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    padding: 10px 0;
+}
+
+.persona-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    /* Borda mais visível */
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    height: 100%;
+    position: relative;
+    /* Para focus ring */
+}
+
+.persona-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+    /* Sombra mais forte */
+}
+
+.persona-btn:focus-visible {
+    outline: 3px solid var(--accent-color);
+    /* Outline mais espesso */
+    outline-offset: 4px;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2);
+}
+
+.persona-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.persona-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.persona-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+[data-theme="dark"] .persona-btn {
+    background: rgba(30, 41, 59, 0.8);
+    /* Fundo mais claro que o overlay */
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .persona-btn:hover {
+    background: rgba(124, 58, 237, 0.2);
+    /* Tint de roxo no hover */
+    border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .persona-name {
+    color: #FFFFFF;
+    /* Branco puro para contraste */
+}
+
+[data-theme="dark"] .persona-desc {
+    color: #E2E8F0;
+    /* Cinza muito claro */
+}
+
+/* ========================================= */
+/* Custom Tooltips (Acessibilidade) */
+/* ========================================= */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-4px);
+}
+
+[data-theme="dark"] [data-tooltip]::after {
+    background: #1E1B4B;
+    border-color: var(--accent-color);
+    color: #FFFFFF;
 }

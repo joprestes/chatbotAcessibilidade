@@ -90,17 +90,17 @@
                         <!-- Sugestões dentro do card de introdução -->
                         <div id="suggestion-chips-empty" class="suggestion-chips-empty"
                             data-testid="suggestion-chips-empty">
-                            <button class="chip" onclick="fillInput('Como testar contraste de cores?')"
-                                aria-label="Perguntar sobre contraste de cores" data-testid="chip-contraste">
-                                <span aria-hidden="true">🎨</span> Como testar contraste?
+                            <button class="chip" onclick="fillInput('Explique o critério 1.4.3 da WCAG')"
+                                aria-label="Perguntar sobre critério de contraste" data-testid="chip-contraste">
+                                <span aria-hidden="true">🎨</span> Explique WCAG 1.4.3
                             </button>
-                            <button class="chip" onclick="fillInput('O que é navegação por teclado?')"
-                                aria-label="Perguntar sobre navegação por teclado" data-testid="chip-teclado">
-                                <span aria-hidden="true">⌨️</span> O que é navegação por teclado?
+                            <button class="chip" onclick="fillInput('Quais são as roles ARIA para abas?')"
+                                aria-label="Perguntar sobre roles ARIA" data-testid="chip-aria">
+                                <span aria-hidden="true">🏷️</span> Roles ARIA para Abas
                             </button>
-                            <button class="chip" onclick="fillInput('Gere um checklist WCAG AA')"
-                                aria-label="Gerar checklist WCAG AA" data-testid="chip-checklist">
-                                <span aria-hidden="true">✅</span> Gerar Checklist WCAG
+                            <button class="chip" onclick="fillInput('Como tornar um carrossel acessível?')"
+                                aria-label="Perguntar sobre carrossel acessível" data-testid="chip-carrossel">
+                                <span aria-hidden="true">🎠</span> Carrossel Acessível
                             </button>
                         </div>
                     </div>
@@ -113,8 +113,8 @@
                         <label for="user-input" class="sr-only">Digite sua pergunta</label>
 
                         <!-- Botão de Ajuda Contextual (WCAG 3.3.5) -->
-                        <button type="button" class="help-button" aria-label="Ajuda sobre como fazer perguntas"
-                            data-testid="btn-ajuda" title="Dicas de como usar o chatbot">
+                        <button type="button" class="help-button" aria-label="Ver exemplos de perguntas"
+                            data-testid="btn-ajuda" data-tooltip="Clique para ver exemplos de perguntas">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" aria-hidden="true">
@@ -124,8 +124,57 @@
                             </svg>
                         </button>
 
+                        <!-- Botão de Modo Código (Novo) -->
+                        <button type="button" id="code-mode-toggle" class="icon-button-small"
+                            aria-label="Ativar Modo de Refatoração de Código" data-testid="btn-code-mode"
+                            data-tooltip="Ativa o modo para colar código">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                        </button>
+
+                        <!-- Botão de Personas (Novo) -->
+                        <button type="button" id="persona-toggle" class="icon-button-small"
+                            aria-label="Simular Experiência de Usuário com Personas" data-testid="btn-persona"
+                            data-tooltip="Escolha um perfil de usuário para simular">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </button>
+
+                        <!-- Botão de Expandir Input (Novo) -->
+                        <button type="button" id="expand-input-toggle" class="icon-button-small"
+                            aria-label="Expandir área de texto" data-testid="btn-expand"
+                            data-tooltip="Aumentar área de digitação para facilitar leitura">
+                            <!-- Ícone Expandir -->
+                            <svg id="icon-expand" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                            <!-- Ícone Colapsar (Oculto inicialmente) -->
+                            <svg id="icon-collapse" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                                style="display: none;">
+                                <polyline points="4 14 10 14 10 20"></polyline>
+                                <polyline points="20 10 14 10 14 4"></polyline>
+                                <line x1="14" y1="10" x2="21" y2="3"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
+
                         <button type="button" id="cancel-button" class="cancel-button hidden" data-testid="btn-cancelar"
-                            aria-label="Cancelar requisição" title="Cancelar">
+                            aria-label="Cancelar resposta" data-tooltip="Parar a geração da resposta">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <rect x="6" y="6" width="12" height="12"></rect>
@@ -137,7 +186,7 @@
                             aria-label="Campo de texto para sua pergunta" aria-describedby="input-hint"></textarea>
 
                         <button type="submit" id="send-button" class="send-button" data-testid="btn-enviar"
-                            aria-label="Enviar mensagem">
+                            aria-label="Enviar mensagem" data-tooltip="Enviar sua pergunta">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
