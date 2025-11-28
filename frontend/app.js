@@ -36,6 +36,30 @@ const MAX_QUESTION_LENGTH = 2000; // Máximo de caracteres (do backend)
 let isCodeMode = false; // Estado do modo de código
 
 // =========================================
+// Estado de Acessibilidade
+// =========================================
+let currentFontSize = 100; // %
+const MIN_FONT_SIZE = 100;
+const MAX_FONT_SIZE = 150;
+const FONT_STEP = 10;
+
+let isSoundEnabled = true;
+let isTTSEnabled = false;
+let isListening = false;
+let recognition = null;
+let synthesis = window.speechSynthesis;
+let audioContext = null;
+
+// Sons sintetizados (Oscillators)
+const SOUNDS = {
+    SENT: { type: 'sine', freq: 880, duration: 0.1 }, // A5
+    RECEIVED: { type: 'sine', freq: [523.25, 659.25], duration: 0.15, gap: 0.05 }, // C5, E5
+    ERROR: { type: 'sawtooth', freq: 110, duration: 0.3 }, // A2
+    ON: { type: 'sine', freq: 660, duration: 0.1 },
+    OFF: { type: 'sine', freq: 440, duration: 0.1 }
+};
+
+// =========================================
 // Sistema de Avatar Dinâmico
 // =========================================
 const AVATAR_STATES = {
@@ -147,6 +171,7 @@ const sendButton = document.getElementById('send-button');
 const themeToggle = document.getElementById('theme-toggle');
 const codeModeToggle = document.getElementById('code-mode-toggle');
 const personaToggle = document.getElementById('persona-toggle');
+const settingsToggle = document.getElementById('settings-toggle');
 
 // Elementos que serão criados dinamicamente
 let cancelButton = null;
@@ -213,7 +238,252 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     setupAvatarClickHandler();
     resetSleepTimeout();
+
+    // Inicializa recursos de acessibilidade
+    initializeAccessibility();
+    loadAdvancedSettings();
 });
+
+// =========================================
+// Inicialização de Acessibilidade
+// =========================================
+function initializeAccessibility() {
+    // Carrega preferências salvas
+    const savedFontSize = localStorage.getItem('fontSize');
+    if (savedFontSize) {
+        currentFontSize = parseInt(savedFontSize);
+        applyFontSize();
+    }
+
+    const savedSound = localStorage.getItem('soundEnabled');
+    if (savedSound !== null) {
+        isSoundEnabled = savedSound === 'true';
+        updateSoundIcon();
+    }
+
+    const savedTTS = localStorage.getItem('ttsEnabled');
+    if (savedTTS !== null) {
+        isTTSEnabled = savedTTS === 'true';
+        updateTTSIcon();
+    }
+
+    // Configura Listeners
+    document.getElementById('font-increase')?.addEventListener('click', () => changeFontSize(1));
+    document.getElementById('font-decrease')?.addEventListener('click', () => changeFontSize(-1));
+    document.getElementById('sound-toggle')?.addEventListener('click', toggleSound);
+    document.getElementById('mic-button')?.addEventListener('click', toggleDictation);
+    document.getElementById('tts-toggle')?.addEventListener('click', toggleTTS);
+
+    // Inicializa Web Speech API se disponível
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'pt-BR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            isListening = true;
+            updateMicIcon();
+            playSound('ON');
+            showToast('Ouvindo...', 'info');
+        };
+
+        recognition.onend = () => {
+            isListening = false;
+            updateMicIcon();
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            const input = document.getElementById('user-input');
+            if (input) {
+                const currentText = input.value;
+                input.value = currentText ? `${currentText} ${transcript}` : transcript;
+                input.focus();
+                updateCharCounter();
+                playSound('ON'); // Feedback de sucesso
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Erro no reconhecimento de fala:', event.error);
+            isListening = false;
+            updateMicIcon();
+            playSound('ERROR');
+            showToast('Erro ao ouvir. Tente novamente.', 'error');
+        };
+    } else {
+        const micBtn = document.getElementById('mic-button');
+        if (micBtn) {
+            micBtn.style.display = 'none'; // Esconde se não suportado
+        }
+    }
+
+    // Esconde TTS se não suportado
+    if (!('speechSynthesis' in window)) {
+        const ttsBtn = document.getElementById('tts-toggle');
+        if (ttsBtn) ttsBtn.style.display = 'none';
+    }
+}
+
+// =========================================
+// Lógica de Fonte
+// =========================================
+function changeFontSize(direction) {
+    const newSize = currentFontSize + (direction * FONT_STEP);
+
+    if (newSize >= MIN_FONT_SIZE && newSize <= MAX_FONT_SIZE) {
+        currentFontSize = newSize;
+        applyFontSize();
+        localStorage.setItem('fontSize', currentFontSize);
+        playSound('ON');
+    } else {
+        playSound('ERROR'); // Limite atingido
+    }
+}
+
+function applyFontSize() {
+    document.documentElement.style.fontSize = `${currentFontSize}%`;
+}
+
+// =========================================
+// Lógica de Som (AudioContext)
+// =========================================
+function initAudioContext() {
+    if (!audioContext) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContext();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+}
+
+function playSound(type) {
+    if (!isSoundEnabled) return;
+
+    try {
+        initAudioContext();
+        const sound = SOUNDS[type];
+        if (!sound) return;
+
+        const playTone = (freq, startTime, duration) => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.type = sound.type;
+            osc.frequency.value = freq;
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.start(startTime);
+
+            // Envelope simples para evitar cliques
+            gain.gain.setValueAtTime(0.1, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+            osc.stop(startTime + duration);
+        };
+
+        const now = audioContext.currentTime;
+
+        if (Array.isArray(sound.freq)) {
+            // Toca sequência (ex: acorde ou melodia simples)
+            sound.freq.forEach((f, i) => {
+                playTone(f, now + (i * (sound.gap || 0.1)), sound.duration);
+            });
+        } else {
+            playTone(sound.freq, now, sound.duration);
+        }
+
+    } catch (e) {
+        console.warn('Erro ao tocar som:', e);
+    }
+}
+
+function toggleSound() {
+    isSoundEnabled = !isSoundEnabled;
+    localStorage.setItem('soundEnabled', isSoundEnabled);
+    updateSoundIcon();
+    if (isSoundEnabled) playSound('ON');
+}
+
+function updateSoundIcon() {
+    const btn = document.getElementById('sound-toggle');
+    if (!btn) return;
+
+    btn.setAttribute('aria-pressed', isSoundEnabled);
+    btn.setAttribute('aria-label', isSoundEnabled ? 'Desativar sons' : 'Ativar sons');
+
+    // Opacidade reduzida quando desativado
+    btn.style.opacity = isSoundEnabled ? '1' : '0.5';
+}
+
+// =========================================
+// Lógica de Voz (STT/TTS)
+// =========================================
+function toggleDictation() {
+    if (!recognition) return;
+
+    if (isListening) {
+        recognition.stop();
+    } else {
+        recognition.start();
+    }
+}
+
+function updateMicIcon() {
+    const btn = document.getElementById('mic-button');
+    if (!btn) return;
+
+    if (isListening) {
+        btn.classList.add('mic-active');
+        btn.setAttribute('aria-label', 'Parar ditado');
+    } else {
+        btn.classList.remove('mic-active');
+        btn.setAttribute('aria-label', 'Ativar ditado por voz');
+    }
+}
+
+function toggleTTS() {
+    isTTSEnabled = !isTTSEnabled;
+    localStorage.setItem('ttsEnabled', isTTSEnabled);
+    updateTTSIcon();
+
+    if (isTTSEnabled) {
+        speak('Leitura de respostas ativada');
+    } else {
+        synthesis.cancel();
+    }
+}
+
+function updateTTSIcon() {
+    const btn = document.getElementById('tts-toggle');
+    if (!btn) return;
+
+    if (isTTSEnabled) {
+        btn.classList.add('tts-active');
+        btn.setAttribute('aria-pressed', 'true');
+    } else {
+        btn.classList.remove('tts-active');
+        btn.setAttribute('aria-pressed', 'false');
+    }
+}
+
+function speak(text) {
+    if (!isTTSEnabled || !synthesis) return;
+
+    synthesis.cancel(); // Para fala anterior
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.1; // Um pouco mais rápido que o normal
+    utterance.pitch = 1;
+
+    synthesis.speak(utterance);
+}
 
 // =========================================
 // Gerenciamento de Tema
@@ -395,6 +665,129 @@ function createUXElements() {
     // Botão de Personas
     if (personaToggle) {
         personaToggle.addEventListener('click', openPersonaModal);
+    }
+
+    // Botão de Configurações
+    if (settingsToggle) {
+        settingsToggle.addEventListener('click', openSettingsModal);
+    }
+}
+
+function openSettingsModal() {
+    const isDyslexic = document.body.classList.contains('font-dyslexic');
+    const currentFilter = getCurrentFilter();
+
+    const content = `
+        <div class="settings-grid">
+            <div class="setting-item">
+                <label for="dyslexia-toggle" class="setting-label">
+                    <span class="setting-icon">🔤</span>
+                    Fonte para Dislexia (OpenDyslexic)
+                </label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="dyslexia-toggle" ${isDyslexic ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <label for="color-filter-select" class="setting-label">
+                    <span class="setting-icon">👁️</span>
+                    Simulador de Daltonismo
+                </label>
+                <select id="color-filter-select" class="setting-select">
+                    <option value="" ${currentFilter === '' ? 'selected' : ''}>Nenhum</option>
+                    <option value="protanopia" ${currentFilter === 'protanopia' ? 'selected' : ''}>Protanopia (Vermelho)</option>
+                    <option value="deuteranopia" ${currentFilter === 'deuteranopia' ? 'selected' : ''}>Deuteranopia (Verde)</option>
+                    <option value="tritanopia" ${currentFilter === 'tritanopia' ? 'selected' : ''}>Tritanopia (Azul)</option>
+                    <option value="achromatopsia" ${currentFilter === 'achromatopsia' ? 'selected' : ''}>Acromatopsia (Monocromático)</option>
+                </select>
+            </div>
+            
+            <div class="setting-info">
+                <p><strong>Nota:</strong> O widget VLibras está ativo no canto direito da tela.</p>
+            </div>
+        </div>
+    `;
+
+    openModal('Configurações de Acessibilidade', content, {
+        hideConfirmButton: true,
+        cancelText: 'Fechar',
+        onCancel: () => {
+            // Salva preferências ao fechar
+            saveAccessibilitySettings();
+        }
+    });
+
+    // Adiciona listeners aos inputs do modal
+    setTimeout(() => {
+        const dyslexiaToggle = document.getElementById('dyslexia-toggle');
+        const filterSelect = document.getElementById('color-filter-select');
+
+        if (dyslexiaToggle) {
+            dyslexiaToggle.addEventListener('change', (e) => {
+                toggleDyslexiaFont(e.target.checked);
+            });
+        }
+
+        if (filterSelect) {
+            filterSelect.addEventListener('change', (e) => {
+                applyColorFilter(e.target.value);
+            });
+        }
+    }, 100);
+}
+
+function toggleDyslexiaFont(enable) {
+    if (enable) {
+        document.body.classList.add('font-dyslexic');
+        showToast('Fonte OpenDyslexic ativada', 'info');
+    } else {
+        document.body.classList.remove('font-dyslexic');
+        showToast('Fonte padrão restaurada', 'info');
+    }
+    localStorage.setItem('dyslexiaFont', enable);
+}
+
+function applyColorFilter(filterName) {
+    // Remove todos os filtros anteriores
+    document.body.classList.remove(
+        'filter-protanopia',
+        'filter-deuteranopia',
+        'filter-tritanopia',
+        'filter-achromatopsia'
+    );
+
+    if (filterName) {
+        document.body.classList.add(`filter-${filterName}`);
+        showToast(`Filtro ${filterName} aplicado`, 'info');
+    }
+
+    localStorage.setItem('colorFilter', filterName);
+}
+
+function getCurrentFilter() {
+    if (document.body.classList.contains('filter-protanopia')) return 'protanopia';
+    if (document.body.classList.contains('filter-deuteranopia')) return 'deuteranopia';
+    if (document.body.classList.contains('filter-tritanopia')) return 'tritanopia';
+    if (document.body.classList.contains('filter-achromatopsia')) return 'achromatopsia';
+    return '';
+}
+
+function saveAccessibilitySettings() {
+    // Já salvamos individualmente, mas pode ser usado para sync futuro
+}
+
+// Carrega configurações avançadas na inicialização
+function loadAdvancedSettings() {
+    const savedDyslexia = localStorage.getItem('dyslexiaFont');
+    if (savedDyslexia === 'true') {
+        toggleDyslexiaFont(true);
+    }
+
+    const savedFilter = localStorage.getItem('colorFilter');
+    if (savedFilter) {
+        applyColorFilter(savedFilter);
     }
 }
 
@@ -939,6 +1332,35 @@ function addMessage(role, content) {
     messages.push({ role, content, timestamp: Date.now() });
     saveMessagesToStorage();
     renderMessages();
+
+    // Feedback de Acessibilidade
+    if (content === TYPING_MESSAGE_ID) return;
+
+    if (role === 'user') {
+        playSound('SENT');
+    } else if (role === 'assistant') {
+        playSound('RECEIVED');
+
+        // TTS
+        if (isTTSEnabled) {
+            if (typeof content === 'string') {
+                // Remove markdown simples para leitura melhor
+                // Remove headers, bold, italic, code blocks markers
+                const cleanText = content
+                    .replace(/#{1,6}\s/g, '') // Headers
+                    .replace(/\*\*/g, '') // Bold
+                    .replace(/\*/g, '') // Italic
+                    .replace(/```/g, '') // Code blocks
+                    .replace(/`/g, '') // Inline code
+                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Links (mantém texto)
+
+                speak(cleanText);
+            } else if (content.erro) {
+                speak(`Erro: ${content.erro}`);
+                playSound('ERROR');
+            }
+        }
+    }
 }
 
 function clearMessages() {

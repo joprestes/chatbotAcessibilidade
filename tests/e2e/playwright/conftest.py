@@ -49,7 +49,9 @@ def context(browser: Browser) -> Generator[BrowserContext, None, None]:
     # Verifica se trace está habilitado
     enable_trace = os.getenv("PLAYWRIGHT_ENABLE_TRACE", "true").lower() == "true"
 
-    context_options = {
+    from typing import Any, Dict
+
+    context_options: Dict[str, Any] = {
         "viewport": {"width": 1280, "height": 720},
         "locale": "pt-BR",
         "timezone_id": "America/Sao_Paulo",

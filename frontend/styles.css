@@ -1,4 +1,9 @@
 /* ========================================= */
+/* Fontes Externas */
+/* ========================================= */
+@import url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0/open-dyslexic.min.css');
+
+/* ========================================= */
 /* Variáveis CSS - Paleta "Lavanda Inclusiva" */
 /* ========================================= */
 :root {
@@ -113,6 +118,30 @@ body {
     display: flex;
     flex-direction: column;
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Fonte para Dislexia */
+body.font-dyslexic {
+    font-family: 'OpenDyslexic', sans-serif !important;
+    line-height: 2 !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Filtros de Daltonismo */
+body.filter-protanopia {
+    filter: url('#protanopia');
+}
+
+body.filter-deuteranopia {
+    filter: url('#deuteranopia');
+}
+
+body.filter-tritanopia {
+    filter: url('#tritanopia');
+}
+
+body.filter-achromatopsia {
+    filter: url('#achromatopsia');
 }
 
 /* ========================================= */
@@ -322,6 +351,23 @@ header.glass-header {
     }
 }
 
+.accessibility-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.divider-vertical {
+    width: 1px;
+    height: 24px;
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 0 8px;
+}
+
+[data-theme="dark"] .divider-vertical {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* ========================================= */
 /* Botões de Ícone (Acessíveis - WCAG 2.5.5) */
 /* ========================================= */
@@ -463,6 +509,45 @@ header.glass-header {
 [data-theme="dark"] .icon-button-small:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--accent-color);
+}
+
+/* Voice Controls */
+.voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 8px;
+    padding-right: 8px;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .voice-controls {
+    border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Animação do Microfone Ativo */
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    }
+}
+
+.icon-button-small.mic-active {
+    color: var(--error-color);
+    animation: pulse-red 1.5s infinite;
+}
+
+.icon-button-small.tts-active {
+    color: var(--success-color);
+    background-color: rgba(22, 163, 74, 0.1);
 }
 
 /* .clear-chat-button agora usa .icon-button - estilos removidos para evitar conflito */
