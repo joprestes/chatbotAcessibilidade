@@ -758,7 +758,7 @@ function openSettingsModal() {
                 </select>
             </div>
             
-            <div class="setting-info">
+            <div class="setting-info" role="note" aria-live="polite" aria-label="Informação sobre VLibras">
                 <p><strong>Nota:</strong> O widget VLibras está ativo no canto direito da tela.</p>
             </div>
         </div>
