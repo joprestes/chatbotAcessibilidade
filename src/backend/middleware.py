@@ -36,7 +36,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             # Política restritiva mas funcional para o frontend
             csp_policy = (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' blob: https://vlibras.gov.br https://www.vlibras.gov.br https://cdn.jsdelivr.net; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://vlibras.gov.br https://www.vlibras.gov.br https://cdn.jsdelivr.net; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
                 "img-src 'self' data: https:; "
                 "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net https://vlibras.gov.br https://www.vlibras.gov.br; "
