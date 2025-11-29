@@ -10,21 +10,13 @@ from playwright.sync_api import Page, expect
 
 pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
 
-# Tenta importar axe-playwright
-try:
-    from axe_playwright_python.sync_playwright import Axe
-
-    AXE_AVAILABLE = True
-except ImportError:
-    AXE_AVAILABLE = False
-    Axe = None
+# Import axe-playwright (biblioteca está instalada)
+from axe_playwright_python.sync_playwright import Axe
 
 
 @pytest.fixture
 def axe():
     """Fixture para instância do Axe."""
-    if not AXE_AVAILABLE:
-        pytest.skip("axe-playwright não está instalado")
     return Axe()
 
 
