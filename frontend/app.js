@@ -1954,13 +1954,25 @@ function getErrorType(error) {
 /**
  * Inicializa o widget VLibras carregando o script dinamicamente
  * Isso evita problemas de carregamento e garante que o DOM esteja pronto
+ * Baseado em: https://pt.stackoverflow.com/questions/511562/dificuldade-para-implementar-vlibras-usando-javascript
  */
 function initVLibras() {
     // Verifica se já existe para evitar duplicidade
-    if (document.getElementById('vlibras-script')) return;
+    if (document.querySelector('[vw]')) return;
 
+    // Injeta a estrutura HTML necessária
+    const vlibrasDOM = `
+        <div vw class="enabled">
+            <div vw-access-button class="active"></div>
+            <div vw-plugin-wrapper>
+                <div class="vw-plugin-top-wrapper"></div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', vlibrasDOM);
+
+    // Carrega o script
     const script = document.createElement('script');
-    script.id = 'vlibras-script';
     script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js';
     script.async = true;
 
