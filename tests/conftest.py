@@ -22,8 +22,28 @@ except ImportError:
 warnings.filterwarnings("ignore", category=FutureWarning, module="google.api_core")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="google.genai")
 
+import asyncio  # noqa: E402
+import pytest  # noqa: E402
+import nest_asyncio  # noqa: E402
+
+# Aplica nest_asyncio para permitir loops aninhados (necessário para testes com pytest-asyncio + playwright)
+nest_asyncio.apply()
+
 # Configura plugins do pytest
-pytest_plugins = ("pytest_asyncio", "pytest_playwright")
+# pytest_plugins = ("pytest_asyncio", "pytest_playwright")
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """
+    Cria uma instância do event loop para toda a sessão de testes.
+    Isso resolve conflitos entre pytest-asyncio e pytest-playwright.
+    """
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 # Adiciona src ao path para imports
 src_path = Path(__file__).parent.parent / "src"

@@ -8,7 +8,7 @@ para facilitar debugging quando testes falham.
 from playwright.sync_api import Page, expect
 
 
-async def assert_message_contains(page: Page, text: str, role: str = "user", timeout: int = 5000):
+def assert_message_contains(page: Page, text: str, role: str = "user", timeout: int = 5000):
     """
     Verifica se mensagem contém texto esperado.
 
@@ -22,9 +22,9 @@ async def assert_message_contains(page: Page, text: str, role: str = "user", tim
         AssertionError: Se mensagem não contiver o texto
     """
     message = page.get_by_test_id(f"chat-mensagem-{role}").first
-    await expect(message).to_be_visible(timeout=timeout)
+    expect(message).to_be_visible(timeout=timeout)
 
-    content = await message.text_content()
+    content = message.text_content()
     assert (
         text.lower() in (content or "").lower()
     ), f"Esperado '{text}' na mensagem {role}, mas recebeu: {content}"
