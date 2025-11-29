@@ -8,7 +8,7 @@ garantindo acessibilidade e boa experiência do usuário.
 import pytest
 from playwright.sync_api import Page, expect
 
-pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
+pytestmark = [pytest.mark.e2e, pytest.mark.playwright]
 
 
 def test_focus_returns_to_input_after_send(page: Page, base_url: str, server_running: bool):
@@ -42,26 +42,8 @@ def test_focus_returns_to_input_after_send(page: Page, base_url: str, server_run
     page.wait_for_load_state("networkidle", timeout=10000)
 
     # Verifica que foco retornou ao input
-    # Nota: Se este teste falhar, pode ser um bug no frontend que precisa ser corrigido
-    focused_after = page.evaluate("() => document.activeElement.id")
-
-    # Se foco não retornou, documenta o estado atual para debug
-    if focused_after != "user-input":
-        current_focus_info = page.evaluate(
-            """() => {
-            const el = document.activeElement;
-            return {
-                id: el.id,
-                tagName: el.tagName,
-                className: el.className
-            };
-        }"""
-        )
-        pytest.skip(
-            f"Foco não retornou ao input (bug do frontend). "
-            f"Foco atual: {current_focus_info}. "
-            f"Este teste deve passar quando o frontend for corrigido."
-        )
+    # Usa expect com retry automático para lidar com o setTimeout do frontend
+    expect(input_field).to_be_focused(timeout=5000)
 
 
 def test_focus_after_search_toggle(page: Page, base_url: str):

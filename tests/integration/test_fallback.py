@@ -33,7 +33,6 @@ async def test_automatic_fallback_on_gemini_failure():
     """
     from chatbot_acessibilidade.core.llm_provider import (
         GoogleGeminiClient,
-        HuggingFaceClient,
         generate_with_fallback,
     )
     from chatbot_acessibilidade.core.exceptions import APIError
@@ -41,30 +40,30 @@ async def test_automatic_fallback_on_gemini_failure():
     # Mock de falha do Gemini
     mock_gemini = MagicMock(spec=GoogleGeminiClient)
     mock_gemini.generate = AsyncMock(side_effect=APIError("Google Gemini quota exceeded"))
+    mock_gemini.should_fallback.return_value = True
 
-    # Mock de sucesso do HuggingFace
-    mock_huggingface = MagicMock(spec=HuggingFaceClient)
-    mock_huggingface.generate = AsyncMock(return_value="Resposta do HuggingFace")
+    # Mock de sucesso de um cliente genérico de fallback
+    mock_fallback_client = MagicMock()
+    mock_fallback_client.get_provider_name.return_value = "Generic Fallback"
+    mock_fallback_client.generate = AsyncMock(return_value="Resposta do Fallback")
+    mock_fallback_client.should_fallback.return_value = True
 
     # Mock de settings para habilitar fallback
     with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
         mock_settings.fallback_enabled = True
 
-        # Configura mocks para retornar valores corretos
-        mock_huggingface.get_provider_name = MagicMock(return_value="HuggingFace")
-
         # Testa fallback diretamente
         resposta, provedor = await generate_with_fallback(
             primary_client=mock_gemini,
             prompt="Teste de fallback",
-            fallback_clients=[mock_huggingface],
+            fallback_clients=[mock_fallback_client],
         )
 
         # Verifica que fallback foi usado
-        assert "HuggingFace" in provedor or provedor == "HuggingFace"
-        assert resposta == "Resposta do HuggingFace"
+        assert "Generic Fallback" in provedor or provedor == "Generic Fallback"
+        assert resposta == "Resposta do Fallback"
         assert mock_gemini.generate.called
-        assert mock_huggingface.generate.called
+        assert mock_fallback_client.generate.called
 
 
 @pytest.mark.asyncio

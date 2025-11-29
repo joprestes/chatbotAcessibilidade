@@ -1,6 +1,6 @@
 """
 Testes adicionais para aumentar cobertura de llm_provider.py
-Focando nas linhas não cobertas: 191, 311, 435-439
+Focando nas linhas não cobertas
 """
 
 import asyncio
@@ -13,7 +13,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from chatbot_acessibilidade.core.exceptions import APIError, QuotaExhaustedError
 from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
-    HuggingFaceClient,
     generate_with_fallback,
 )
 
@@ -67,42 +66,6 @@ async def test_google_gemini_client_timeout_linha_191(
     assert "timeout" in str(exc_info.value).lower() or "demorou mais" in str(exc_info.value).lower()
 
 
-@patch("chatbot_acessibilidade.core.llm_provider.httpx.AsyncClient")
-@pytest.mark.asyncio
-async def test_huggingface_client_content_nao_string_linha_311(mock_client_class):
-    """
-    Testa linha 311: quando content não é string
-    O erro é capturado e transformado em erro genérico, mas a linha 311 é executada
-    """
-
-    # Mock response com content que não é string
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "choices": [
-            {
-                "message": {
-                    "content": 12345,  # Não é string!
-                }
-            }
-        ]
-    }
-
-    mock_client = AsyncMock()
-    mock_client.post = AsyncMock(return_value=mock_response)
-    mock_client_class.return_value = mock_client
-
-    with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.huggingface_api_key = "test_key"
-        mock_settings.huggingface_timeout_seconds = 60
-
-        client = HuggingFaceClient()
-        with pytest.raises(APIError):
-            # A linha 311 é executada e levanta o erro, mas é capturado no except geral
-            # O importante é que a linha 311 seja executada
-            await client.generate("Teste", model="test-model")
-
-
 @patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
 @patch("chatbot_acessibilidade.core.llm_provider.Runner")
 @patch("chatbot_acessibilidade.core.llm_provider.InMemorySessionService")
@@ -112,7 +75,7 @@ async def test_generate_with_fallback_continue_linhas_435_439(
     mock_settings, mock_session_service, mock_runner_class, mock_client_class, mock_agent
 ):
     """
-    Testa linhas 435-439: quando should_fallback retorna True para outros clientes (não HuggingFace)
+    Testa linhas 435-439: quando should_fallback retorna True para outros clientes
     e o código faz continue para tentar o próximo cliente
     """
     from chatbot_acessibilidade.core.llm_provider import GoogleGeminiClient
