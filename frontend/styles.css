@@ -2575,8 +2575,8 @@ footer a:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000000;
-    /* Acima do VLibras (9999999) */
+    z-index: 2147483647;
+    /* Máximo z-index seguro (32-bit int) */
     opacity: 0;
     transition: opacity 0.3s ease;
     padding: 20px;
