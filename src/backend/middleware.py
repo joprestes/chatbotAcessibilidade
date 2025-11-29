@@ -40,7 +40,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
                 "img-src 'self' data: https:; "
                 "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net https://vlibras.gov.br https://www.vlibras.gov.br; "
-                "connect-src 'self' https://vlibras.gov.br https://www.vlibras.gov.br https://dicionario2.vlibras.gov.br; "
+                "connect-src 'self' https://vlibras.gov.br https://www.vlibras.gov.br https://dicionario2.vlibras.gov.br https://cdn.jsdelivr.net; "
                 "frame-ancestors 'none'; "
                 "base-uri 'self'; "
                 "form-action 'self'"
