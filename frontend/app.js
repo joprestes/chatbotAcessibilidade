@@ -2077,10 +2077,15 @@ async function sendMessage(pergunta) {
         // Adiciona resposta do assistente (aparecerá abaixo do indicador que foi removido)
         addMessage('assistant', data.resposta);
 
+        // IMPORTANTE: Reseta isLoading ANTES de retornar foco
+        // Isso garante que updateUIState() habilite o input corretamente
+        isLoading = false;
+        updateUIState();
+
         // Retorna foco ao input após resposta (WCAG 2.4.3)
         // Melhora navegação por teclado permitindo que usuário continue digitando
         setTimeout(() => {
-            if (userInput && !isLoading) {
+            if (userInput) {
                 userInput.focus();
             }
         }, 100);
@@ -2168,9 +2173,12 @@ async function sendMessage(pergunta) {
         // Garante que o indicador seja removido quando terminar (sucesso ou erro)
         hideTypingIndicator();
 
-        // SEMPRE reseta isLoading, mesmo se houver erro
-        isLoading = false;
-        updateUIState();
+        // Reseta isLoading apenas se ainda não foi resetado (caso de erro)
+        // No caso de sucesso, já foi resetado antes do setTimeout de foco
+        if (isLoading) {
+            isLoading = false;
+            updateUIState();
+        }
 
         // Log para debug
         console.log('sendMessage finalizado, isLoading:', isLoading);
