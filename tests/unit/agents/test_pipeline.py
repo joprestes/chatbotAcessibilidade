@@ -1,4 +1,3 @@
-import asyncio
 import pytest
 from unittest.mock import AsyncMock, patch
 
@@ -9,7 +8,7 @@ pytestmark = pytest.mark.unit
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_sucesso_retorna_dicionario(mock_get_agent_response):
+async def test_pipeline_sucesso_retorna_dicionario(mock_get_agent_response):
     """
     Testa o caminho feliz do pipeline, garantindo que ele chame todos os agentes
     e retorne um dicionário formatado corretamente.
@@ -34,7 +33,7 @@ def test_pipeline_sucesso_retorna_dicionario(mock_get_agent_response):
     pergunta = "O que é WCAG?"
 
     # Executa a função assíncrona do pipeline dentro do teste síncrono
-    resultado = asyncio.run(pipeline_acessibilidade(pergunta))
+    resultado = await pipeline_acessibilidade(pergunta)
 
     # 1. Verifica se o resultado é um dicionário e se não contém erros
     assert isinstance(resultado, dict)
@@ -58,7 +57,7 @@ def test_pipeline_sucesso_retorna_dicionario(mock_get_agent_response):
     assert resultado["👋 **Dica Final**"].strip() != ""  # Apenas verifica se a dica foi gerada
 
 
-def test_pipeline_entrada_vazia():
+async def test_pipeline_entrada_vazia():
     """
     Testa se o pipeline lida corretamente com uma pergunta vazia,
     lançando uma exceção de validação.
@@ -67,14 +66,14 @@ def test_pipeline_entrada_vazia():
 
     # Executa o pipeline com uma string vazia ou com espaços
     with pytest.raises(ValidationError) as exc_info:
-        asyncio.run(pipeline_acessibilidade("   "))
+        await pipeline_acessibilidade("   ")
 
     # Verifica se a mensagem de erro está correta
     assert "pergunta" in str(exc_info.value).lower()
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_falha_no_primeiro_agente(mock_get_agent_response):
+async def test_pipeline_falha_no_primeiro_agente(mock_get_agent_response):
     """
     Testa o que acontece se o primeiro agente (assistente) falhar,
     garantindo que o pipeline pare e retorne um erro.
@@ -85,7 +84,7 @@ def test_pipeline_falha_no_primeiro_agente(mock_get_agent_response):
     pergunta = "O que é WCAG?"
 
     # Executa o pipeline
-    resultado = asyncio.run(pipeline_acessibilidade(pergunta))
+    resultado = await pipeline_acessibilidade(pergunta)
 
     # 1. Verifica se o resultado é um dicionário de erro
     assert isinstance(resultado, dict)
@@ -98,30 +97,30 @@ def test_pipeline_falha_no_primeiro_agente(mock_get_agent_response):
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_pergunta_muito_curta(mock_get_agent_response):
+async def test_pipeline_pergunta_muito_curta(mock_get_agent_response):
     """Testa pipeline com pergunta muito curta"""
     from chatbot_acessibilidade.core.exceptions import ValidationError
 
     with pytest.raises(ValidationError) as exc_info:
-        asyncio.run(pipeline_acessibilidade("ab"))
+        await pipeline_acessibilidade("ab")
 
     assert "caracteres" in str(exc_info.value).lower()
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_pergunta_muito_longa(mock_get_agent_response):
+async def test_pipeline_pergunta_muito_longa(mock_get_agent_response):
     """Testa pipeline com pergunta muito longa"""
     from chatbot_acessibilidade.core.exceptions import ValidationError
 
     pergunta_longa = "a" * 2001
     with pytest.raises(ValidationError) as exc_info:
-        asyncio.run(pipeline_acessibilidade(pergunta_longa))
+        await pipeline_acessibilidade(pergunta_longa)
 
     assert "caracteres" in str(exc_info.value).lower()
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_validador_falha_usando_resposta_inicial(mock_get_agent_response):
+async def test_pipeline_validador_falha_usando_resposta_inicial(mock_get_agent_response):
     """Testa quando validador falha, usa resposta inicial"""
     from chatbot_acessibilidade.core.exceptions import APIError
 
@@ -138,7 +137,7 @@ def test_pipeline_validador_falha_usando_resposta_inicial(mock_get_agent_respons
         sugestoes_aprofundamento,
     ]
 
-    resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+    resultado = await pipeline_acessibilidade("O que é WCAG?")
 
     # Deve usar resposta inicial quando validador falha
     assert isinstance(resultado, dict)
@@ -146,7 +145,7 @@ def test_pipeline_validador_falha_usando_resposta_inicial(mock_get_agent_respons
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_revisor_falha_usando_resposta_tecnica(mock_get_agent_response):
+async def test_pipeline_revisor_falha_usando_resposta_tecnica(mock_get_agent_response):
     """Testa quando revisor falha, usa resposta técnica"""
     from chatbot_acessibilidade.core.exceptions import APIError
 
@@ -163,7 +162,7 @@ def test_pipeline_revisor_falha_usando_resposta_tecnica(mock_get_agent_response)
         sugestoes_aprofundamento,
     ]
 
-    resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+    resultado = await pipeline_acessibilidade("O que é WCAG?")
 
     # Deve usar resposta técnica quando revisor falha
     assert isinstance(resultado, dict)
@@ -172,7 +171,7 @@ def test_pipeline_revisor_falha_usando_resposta_tecnica(mock_get_agent_response)
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_agentes_paralelos_falham(mock_get_agent_response):
+async def test_pipeline_agentes_paralelos_falham(mock_get_agent_response):
     """Testa quando agentes paralelos (testador e aprofundador) falham"""
     from chatbot_acessibilidade.core.exceptions import APIError
 
@@ -188,7 +187,7 @@ def test_pipeline_agentes_paralelos_falham(mock_get_agent_response):
         APIError("Erro no aprofundador"),  # Aprofundador falha
     ]
 
-    resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+    resultado = await pipeline_acessibilidade("O que é WCAG?")
 
     # Deve usar fallbacks para agentes paralelos
     assert isinstance(resultado, dict)
@@ -200,7 +199,7 @@ def test_pipeline_agentes_paralelos_falham(mock_get_agent_response):
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_introducao_igual_corpo(mock_get_agent_response):
+async def test_pipeline_introducao_igual_corpo(mock_get_agent_response):
     """Testa quando introdução é igual ao corpo completo"""
     resposta_revisada = "Resposta única sem parágrafos adicionais."
     sugestoes_testes = "Sugestões de testes."
@@ -214,7 +213,7 @@ def test_pipeline_introducao_igual_corpo(mock_get_agent_response):
         sugestoes_aprofundamento,
     ]
 
-    resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+    resultado = await pipeline_acessibilidade("O que é WCAG?")
 
     # Quando introdução == corpo, não deve duplicar
     assert isinstance(resultado, dict)
@@ -222,7 +221,7 @@ def test_pipeline_introducao_igual_corpo(mock_get_agent_response):
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_validador_retorna_erro_string(mock_get_agent_response):
+async def test_pipeline_validador_retorna_erro_string(mock_get_agent_response):
     """Testa quando validador retorna string de erro (não exceção)"""
     resposta_assistente = "Resposta inicial."
     resposta_revisada = "Resposta revisada."
@@ -237,7 +236,7 @@ def test_pipeline_validador_retorna_erro_string(mock_get_agent_response):
         sugestoes_aprofundamento,
     ]
 
-    resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+    resultado = await pipeline_acessibilidade("O que é WCAG?")
 
     # Deve usar resposta inicial quando validador retorna erro
     assert isinstance(resultado, dict)
@@ -245,7 +244,7 @@ def test_pipeline_validador_retorna_erro_string(mock_get_agent_response):
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_revisor_retorna_erro_string(mock_get_agent_response):
+async def test_pipeline_revisor_retorna_erro_string(mock_get_agent_response):
     """Testa quando revisor retorna string de erro (não exceção)"""
     resposta_assistente = "Resposta inicial."
     resposta_validada = "Resposta validada."
@@ -260,7 +259,7 @@ def test_pipeline_revisor_retorna_erro_string(mock_get_agent_response):
         sugestoes_aprofundamento,
     ]
 
-    resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+    resultado = await pipeline_acessibilidade("O que é WCAG?")
 
     # Deve usar resposta técnica quando revisor retorna erro
     assert isinstance(resultado, dict)
@@ -269,7 +268,7 @@ def test_pipeline_revisor_retorna_erro_string(mock_get_agent_response):
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_agentes_paralelos_excecao_geral(mock_get_agent_response):
+async def test_pipeline_agentes_paralelos_excecao_geral(mock_get_agent_response):
     """Testa quando agentes paralelos levantam exceção geral (linha 148-151)"""
     resposta_assistente = "Resposta inicial."
     resposta_validada = "Resposta validada."
@@ -291,7 +290,7 @@ def test_pipeline_agentes_paralelos_excecao_geral(mock_get_agent_response):
 
     mock_get_agent_response.side_effect = async_side_effect
 
-    resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+    resultado = await pipeline_acessibilidade("O que é WCAG?")
 
     # Deve usar fallbacks para agentes paralelos (linha 148-151)
     assert isinstance(resultado, dict)
@@ -306,13 +305,13 @@ def test_pipeline_agentes_paralelos_excecao_geral(mock_get_agent_response):
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_assistente_excecao_agent_error(mock_get_agent_response):
+async def test_pipeline_assistente_excecao_agent_error(mock_get_agent_response):
     """Testa quando assistente levanta AgentError"""
     from chatbot_acessibilidade.core.exceptions import AgentError
 
     mock_get_agent_response.side_effect = AgentError("Erro no agente")
 
-    resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+    resultado = await pipeline_acessibilidade("O que é WCAG?")
 
     assert isinstance(resultado, dict)
     assert "erro" in resultado
@@ -341,7 +340,7 @@ def test_pipeline_tratar_resultado_paralelo_com_excecao():
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.get_agent_response", new_callable=AsyncMock)
-def test_pipeline_agentes_paralelos_excecao_geral_no_gather(mock_get_agent_response):
+async def test_pipeline_agentes_paralelos_excecao_geral_no_gather(mock_get_agent_response):
     """Testa pipeline quando asyncio.gather levanta exceção geral (linha 148-151)"""
     resposta_assistente = "Resposta inicial."
     resposta_validada = "Resposta validada."
@@ -368,7 +367,7 @@ def test_pipeline_agentes_paralelos_excecao_geral_no_gather(mock_get_agent_respo
     with patch("chatbot_acessibilidade.pipeline.orquestrador.asyncio.gather") as mock_gather:
         mock_gather.side_effect = Exception("Erro geral no gather")
 
-        resultado = asyncio.run(pipeline_acessibilidade("O que é WCAG?"))
+        resultado = await pipeline_acessibilidade("O que é WCAG?")
 
         # Deve usar fallbacks (linha 148-151)
         assert isinstance(resultado, dict)
@@ -380,7 +379,7 @@ def test_pipeline_agentes_paralelos_excecao_geral_no_gather(mock_get_agent_respo
 
 
 @patch("chatbot_acessibilidade.pipeline.orquestrador.PipelineOrquestrador")
-def test_pipeline_erro_inesperado(mock_orquestrador_class):
+async def test_pipeline_erro_inesperado(mock_orquestrador_class):
     """
     Testa que pipeline_acessibilidade trata erros inesperados (não APIError/AgentError)
     e retorna mensagem genérica de erro.
@@ -395,7 +394,7 @@ def test_pipeline_erro_inesperado(mock_orquestrador_class):
     pergunta = "O que é WCAG?"
 
     # Executa o pipeline
-    resultado = asyncio.run(pipeline_acessibilidade(pergunta))
+    resultado = await pipeline_acessibilidade(pergunta)
 
     # Verifica que retornou erro genérico
     assert isinstance(resultado, dict)

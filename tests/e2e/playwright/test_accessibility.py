@@ -6,17 +6,18 @@ Valida conformidade com WCAG 2.1 AA usando axe-core via JavaScript.
 
 import pytest
 from playwright.sync_api import Page
+import json
 
 pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
 
 # Tenta importar axe-playwright, mas não falha se não estiver disponível
 try:
-    from axe_playwright.sync_playwright import Axe
+    from axe_playwright_python.sync_playwright import Axe
 
     AXE_AVAILABLE = True
 except ImportError:
     AXE_AVAILABLE = False
-    Axe = None  # type: ignore
+    Axe = None
 
 
 @pytest.fixture
@@ -44,12 +45,16 @@ def test_homepage_accessibility(page: Page, base_url: str, axe):
     results = axe.run(page)
 
     # Verifica se há violações
-    violations = results.violations
-    assert len(violations) == 0, f"Violations encontradas: {[v.id for v in violations]}"
+    violations = results.response["violations"]
+    if len(violations) > 0:
+        print(f"\nVIOLATIONS FOUND: {json.dumps(violations, indent=2)}")
+    assert len(violations) == 0, f"Violations encontradas: {[v['id'] for v in violations]}"
 
     # Verifica se há incompletudes críticas
-    incomplete = [r for r in results.incomplete if r.impact in ["critical", "serious"]]
-    assert len(incomplete) == 0, f"Incompletudes críticas: {[i.id for i in incomplete]}"
+    incomplete = [r for r in results.response["incomplete"] if r["impact"] in ["critical", "serious"]]
+    if len(incomplete) > 0:
+        print(f"\nINCOMPLETE CRITICAL FOUND: {json.dumps(incomplete, indent=2)}")
+    assert len(incomplete) == 0, f"Incompletudes críticas: {[i['id'] for i in incomplete]}"
 
 
 def test_chat_interface_accessibility(page: Page, base_url: str, axe):
@@ -72,8 +77,10 @@ def test_chat_interface_accessibility(page: Page, base_url: str, axe):
     # Executa análise
     results = axe.run(page)
 
-    violations = results.violations
-    assert len(violations) == 0, f"Violations: {[v.id for v in violations]}"
+    violations = results.response["violations"]
+    if len(violations) > 0:
+        print(f"\nVIOLATIONS FOUND: {json.dumps(violations, indent=2)}")
+    assert len(violations) == 0, f"Violations: {[v['id'] for v in violations]}"
 
 
 def test_keyboard_navigation_complete(page: Page, base_url: str):
@@ -167,13 +174,13 @@ def test_color_contrast(page: Page, base_url: str, axe):
         page,
         options={
             "rules": {
-                "color-contrast": {"enabled": True},
+                "color-contrast": {"enabled": "true"},
             }
         },
     )
 
     # Verifica violações de contraste
-    contrast_violations = [v for v in results.violations if v.id == "color-contrast"]
+    contrast_violations = [v for v in results.response["violations"] if v["id"] == "color-contrast"]
 
     assert len(contrast_violations) == 0, f"Violations de contraste: {contrast_violations}"
 

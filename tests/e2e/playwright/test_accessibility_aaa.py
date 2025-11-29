@@ -12,12 +12,12 @@ pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility
 
 # Tenta importar axe-playwright
 try:
-    from axe_playwright.sync_playwright import Axe
+    from axe_playwright_python.sync_playwright import Axe
 
     AXE_AVAILABLE = True
 except ImportError:
     AXE_AVAILABLE = False
-    Axe = None  # type: ignore
+    Axe = None
 
 
 @pytest.fixture
