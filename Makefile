@@ -197,5 +197,25 @@ clean: ## Limpa arquivos temporários
 	find . -type d -name ".mypy_cache" -exec rm -r {} +
 	rm -rf .coverage htmlcov/
 
-fix: format lint ## Formata e corrige problemas de lint automaticamente
+pre-commit: ## Executa verificações pré-commit (linters, formatação, testes, cobertura)
+	@echo "🔍 Executando verificações pré-commit..."
+	@echo ""
+	@echo "1️⃣  Verificando formatação com Black..."
+	@black --check src/ tests/ || (echo "❌ Black falhou. Execute 'make format' para corrigir." && exit 1)
+	@echo "✅ Black passou!"
+	@echo ""
+	@echo "2️⃣  Verificando linting com Ruff..."
+	@ruff check src/ tests/ || (echo "❌ Ruff falhou. Execute 'make lint' para ver detalhes." && exit 1)
+	@echo "✅ Ruff passou!"
+	@echo ""
+	@echo "3️⃣  Executando testes unitários..."
+	@pytest tests/unit/ -v -m "unit" --tb=short || (echo "❌ Testes unitários falharam." && exit 1)
+	@echo "✅ Testes unitários passaram!"
+	@echo ""
+	@echo "4️⃣  Verificando cobertura de testes (>95%)..."
+	@pytest --cov=chatbot_acessibilidade --cov-report=term --cov-fail-under=95 tests/unit/ tests/integration/ -q || (echo "❌ Cobertura insuficiente (< 95%)." && exit 1)
+	@echo "✅ Cobertura adequada!"
+	@echo ""
+	@echo "🎉 Todas as verificações passaram! Você pode fazer o commit com segurança."
 
+fix: format lint ## Formata e corrige problemas de lint automaticamente
