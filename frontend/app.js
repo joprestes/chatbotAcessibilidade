@@ -36,6 +36,30 @@ const MAX_QUESTION_LENGTH = 2000; // Máximo de caracteres (do backend)
 let isCodeMode = false; // Estado do modo de código
 
 // =========================================
+// Estado de Acessibilidade
+// =========================================
+let currentFontSize = 100; // %
+const MIN_FONT_SIZE = 100;
+const MAX_FONT_SIZE = 150;
+const FONT_STEP = 10;
+
+let isSoundEnabled = true;
+let isTTSEnabled = false;
+let isListening = false;
+let recognition = null;
+let synthesis = window.speechSynthesis;
+let audioContext = null;
+
+// Sons sintetizados (Oscillators)
+const SOUNDS = {
+    SENT: { type: 'sine', freq: 880, duration: 0.1 }, // A5
+    RECEIVED: { type: 'sine', freq: [523.25, 659.25], duration: 0.15, gap: 0.05 }, // C5, E5
+    ERROR: { type: 'sawtooth', freq: 110, duration: 0.3 }, // A2
+    ON: { type: 'sine', freq: 660, duration: 0.1 },
+    OFF: { type: 'sine', freq: 440, duration: 0.1 }
+};
+
+// =========================================
 // Sistema de Avatar Dinâmico
 // =========================================
 const AVATAR_STATES = {
@@ -147,6 +171,7 @@ const sendButton = document.getElementById('send-button');
 const themeToggle = document.getElementById('theme-toggle');
 const codeModeToggle = document.getElementById('code-mode-toggle');
 const personaToggle = document.getElementById('persona-toggle');
+const settingsToggle = document.getElementById('settings-toggle');
 
 // Elementos que serão criados dinamicamente
 let cancelButton = null;
@@ -213,7 +238,300 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     setupAvatarClickHandler();
     resetSleepTimeout();
+
+    // Inicializa recursos de acessibilidade
+    initializeAccessibility();
+    loadAdvancedSettings();
 });
+
+// =========================================
+// Inicialização de Acessibilidade
+// =========================================
+// =========================================
+// Função para Anúncios de Leitor de Tela
+// =========================================
+function announceToScreenReader(message) {
+    const liveRegion = document.getElementById('sr-announcements');
+    if (liveRegion) {
+        // Limpa primeiro para garantir que mudanças sejam detectadas
+        liveRegion.textContent = '';
+        // Pequeno delay para garantir que o leitor de tela detecte a mudança
+        setTimeout(() => {
+            liveRegion.textContent = message;
+        }, 100);
+    }
+}
+
+// =========================================
+// Inicialização de Acessibilidade
+// =========================================
+function initializeAccessibility() {
+    // Carrega preferências salvas
+    const savedFontSize = localStorage.getItem('fontSize');
+    if (savedFontSize) {
+        currentFontSize = parseInt(savedFontSize);
+        applyFontSize();
+    }
+
+    const savedSound = localStorage.getItem('soundEnabled');
+    if (savedSound !== null) {
+        isSoundEnabled = savedSound === 'true';
+        updateSoundIcon();
+    }
+
+    const savedTTS = localStorage.getItem('ttsEnabled');
+    if (savedTTS !== null) {
+        isTTSEnabled = savedTTS === 'true';
+        updateTTSIcon();
+    }
+
+    // Configura Listeners
+    document.getElementById('font-increase')?.addEventListener('click', () => changeFontSize(1));
+    document.getElementById('font-decrease')?.addEventListener('click', () => changeFontSize(-1));
+    document.getElementById('sound-toggle')?.addEventListener('click', toggleSound);
+    document.getElementById('mic-button')?.addEventListener('click', toggleDictation);
+    document.getElementById('tts-toggle')?.addEventListener('click', toggleTTS);
+
+    // Inicializa Web Speech API se disponível
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'pt-BR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            isListening = true;
+            updateMicIcon();
+            playSound('ON');
+            showToast('Ouvindo...', 'info');
+        };
+
+        recognition.onend = () => {
+            isListening = false;
+            updateMicIcon();
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            const input = document.getElementById('user-input');
+            if (input) {
+                const currentText = input.value;
+                input.value = currentText ? `${currentText} ${transcript}` : transcript;
+                input.focus();
+                updateCharCounter();
+                playSound('ON'); // Feedback de sucesso
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Erro no reconhecimento de fala:', event.error);
+            isListening = false;
+            updateMicIcon();
+
+            // Se o erro for "not-allowed", desabilita o botão permanentemente
+            if (event.error === 'not-allowed') {
+                const micBtn = document.getElementById('mic-button');
+                if (micBtn) {
+                    micBtn.disabled = true;
+                    micBtn.style.opacity = '0.5';
+                    micBtn.title = 'Permissão de microfone negada';
+                }
+                showToast('Permissão de microfone negada. Habilite nas configurações do navegador.', 'error');
+            } else {
+                playSound('ERROR');
+                showToast('Erro ao ouvir. Tente novamente.', 'error');
+            }
+        };
+    } else {
+        const micBtn = document.getElementById('mic-button');
+        if (micBtn) {
+            micBtn.style.display = 'none'; // Esconde se não suportado
+        }
+    }
+
+    // Esconde TTS se não suportado
+    if (!('speechSynthesis' in window)) {
+        const ttsBtn = document.getElementById('tts-toggle');
+        if (ttsBtn) ttsBtn.style.display = 'none';
+    }
+}
+
+// =========================================
+// Lógica de Fonte
+// =========================================
+function changeFontSize(direction) {
+    const newSize = currentFontSize + (direction * FONT_STEP);
+
+    if (newSize >= MIN_FONT_SIZE && newSize <= MAX_FONT_SIZE) {
+        currentFontSize = newSize;
+        applyFontSize();
+        localStorage.setItem('fontSize', currentFontSize);
+        playSound('ON');
+
+        // Anuncia mudança para leitor de tela
+        const action = direction > 0 ? 'aumentado' : 'diminuído';
+        announceToScreenReader(`Tamanho do texto ${action}`);
+    } else {
+        playSound('ERROR'); // Limite atingido
+        announceToScreenReader('Limite de tamanho atingido');
+    }
+}
+
+function applyFontSize() {
+    document.documentElement.style.fontSize = `${currentFontSize}%`;
+}
+
+// =========================================
+// Lógica de Som (AudioContext)
+// =========================================
+function initAudioContext() {
+    if (!audioContext) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContext();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+}
+
+function playSound(type) {
+    if (!isSoundEnabled) return;
+
+    try {
+        initAudioContext();
+        const sound = SOUNDS[type];
+        if (!sound) return;
+
+        const playTone = (freq, startTime, duration) => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.type = sound.type;
+            osc.frequency.value = freq;
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.start(startTime);
+
+            // Envelope simples para evitar cliques
+            gain.gain.setValueAtTime(0.1, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+            osc.stop(startTime + duration);
+        };
+
+        const now = audioContext.currentTime;
+
+        if (Array.isArray(sound.freq)) {
+            // Toca sequência (ex: acorde ou melodia simples)
+            sound.freq.forEach((f, i) => {
+                playTone(f, now + (i * (sound.gap || 0.1)), sound.duration);
+            });
+        } else {
+            playTone(sound.freq, now, sound.duration);
+        }
+
+    } catch (e) {
+        console.warn('Erro ao tocar som:', e);
+    }
+}
+
+function toggleSound() {
+    isSoundEnabled = !isSoundEnabled;
+    localStorage.setItem('soundEnabled', isSoundEnabled);
+    updateSoundIcon();
+    if (isSoundEnabled) playSound('ON');
+}
+
+function updateSoundIcon() {
+    const btn = document.getElementById('sound-toggle');
+    if (!btn) return;
+
+    btn.setAttribute('aria-pressed', isSoundEnabled);
+    btn.setAttribute('aria-label', isSoundEnabled ? 'Desativar sons' : 'Ativar sons');
+
+    // Opacidade reduzida quando desativado
+    btn.style.opacity = isSoundEnabled ? '1' : '0.5';
+}
+
+// =========================================
+// Lógica de Voz (STT/TTS)
+// =========================================
+function toggleDictation() {
+    console.log('toggleDictation chamado', { recognition, isListening });
+
+    if (!recognition) {
+        console.error('Recognition não está disponível');
+        showToast('Reconhecimento de voz não disponível neste navegador', 'error');
+        return;
+    }
+
+    if (isListening) {
+        console.log('Parando reconhecimento...');
+        recognition.stop();
+    } else {
+        console.log('Iniciando reconhecimento...');
+        try {
+            recognition.start();
+        } catch (error) {
+            console.error('Erro ao iniciar reconhecimento:', error);
+            showToast('Erro ao ativar microfone. Verifique as permissões do navegador.', 'error');
+        }
+    }
+}
+
+function updateMicIcon() {
+    const btn = document.getElementById('mic-button');
+    if (!btn) return;
+
+    if (isListening) {
+        btn.classList.add('mic-active');
+        btn.setAttribute('aria-label', 'Parar ditado');
+    } else {
+        btn.classList.remove('mic-active');
+        btn.setAttribute('aria-label', 'Ativar ditado por voz');
+    }
+}
+
+function toggleTTS() {
+    isTTSEnabled = !isTTSEnabled;
+    localStorage.setItem('ttsEnabled', isTTSEnabled);
+    updateTTSIcon();
+
+    if (isTTSEnabled) {
+        speak('Leitura de respostas ativada');
+    } else {
+        synthesis.cancel();
+    }
+}
+
+function updateTTSIcon() {
+    const btn = document.getElementById('tts-toggle');
+    if (!btn) return;
+
+    if (isTTSEnabled) {
+        btn.classList.add('tts-active');
+        btn.setAttribute('aria-pressed', 'true');
+    } else {
+        btn.classList.remove('tts-active');
+        btn.setAttribute('aria-pressed', 'false');
+    }
+}
+
+function speak(text) {
+    if (!isTTSEnabled || !synthesis) return;
+
+    synthesis.cancel(); // Para fala anterior
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.1; // Um pouco mais rápido que o normal
+    utterance.pitch = 1;
+
+    synthesis.speak(utterance);
+}
 
 // =========================================
 // Gerenciamento de Tema
@@ -230,6 +548,10 @@ function toggleTheme() {
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeToggle();
+
+    // Anuncia mudança para leitor de tela
+    const themeName = newTheme === 'dark' ? 'escuro' : 'claro';
+    announceToScreenReader(`Tema ${themeName} ativado`);
 }
 
 function updateThemeToggle() {
@@ -306,7 +628,9 @@ function createUXElements() {
         charCounter.className = 'char-counter';
         charCounter.setAttribute('data-testid', 'char-counter');
         charCounter.setAttribute('aria-live', 'polite');
-        charCounter.setAttribute('aria-label', 'Contador de caracteres');
+        charCounter.setAttribute('role', 'status'); // Fix: aria-label requires role
+        charCounter.setAttribute('aria-label', '0 de 2000 caracteres');
+        charCounter.textContent = '0/2.000';
         // Adiciona após o form
         if (chatForm && chatForm.parentElement) {
             chatForm.parentElement.appendChild(charCounter);
@@ -396,39 +720,180 @@ function createUXElements() {
     if (personaToggle) {
         personaToggle.addEventListener('click', openPersonaModal);
     }
+
+    // Botão de Configurações
+    if (settingsToggle) {
+        settingsToggle.addEventListener('click', openSettingsModal);
+    }
+}
+
+function openSettingsModal() {
+    const isDyslexic = document.body.classList.contains('font-dyslexic');
+    const currentFilter = getCurrentFilter();
+
+    const content = `
+        <div class="settings-grid">
+            <div class="setting-item">
+                <label for="dyslexia-toggle" class="setting-label">
+                    <span class="setting-icon">🔤</span>
+                    Fonte para Dislexia (OpenDyslexic)
+                </label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="dyslexia-toggle" ${isDyslexic ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <label for="color-filter-select" class="setting-label">
+                    <span class="setting-icon">👁️</span>
+                    Simulador de Daltonismo
+                </label>
+                <select id="color-filter-select" class="setting-select">
+                    <option value="" ${currentFilter === '' ? 'selected' : ''}>Nenhum</option>
+                    <option value="protanopia" ${currentFilter === 'protanopia' ? 'selected' : ''}>Protanopia (Vermelho)</option>
+                    <option value="deuteranopia" ${currentFilter === 'deuteranopia' ? 'selected' : ''}>Deuteranopia (Verde)</option>
+                    <option value="tritanopia" ${currentFilter === 'tritanopia' ? 'selected' : ''}>Tritanopia (Azul)</option>
+                    <option value="achromatopsia" ${currentFilter === 'achromatopsia' ? 'selected' : ''}>Acromatopsia (Monocromático)</option>
+                </select>
+            </div>
+            
+            <div class="setting-info">
+                <p><strong>Nota:</strong> O widget VLibras está ativo no canto direito da tela.</p>
+            </div>
+        </div>
+    `;
+
+    openModal('Configurações de Acessibilidade', content, {
+        hideConfirmButton: true,
+        cancelText: 'Fechar',
+        onCancel: () => {
+            // Salva preferências ao fechar
+            saveAccessibilitySettings();
+        }
+    });
+
+    // Adiciona listeners aos inputs do modal
+    setTimeout(() => {
+        const dyslexiaToggle = document.getElementById('dyslexia-toggle');
+        const filterSelect = document.getElementById('color-filter-select');
+
+        if (dyslexiaToggle) {
+            dyslexiaToggle.addEventListener('change', (e) => {
+                toggleDyslexiaFont(e.target.checked);
+            });
+        }
+
+        if (filterSelect) {
+            filterSelect.addEventListener('change', (e) => {
+                applyColorFilter(e.target.value);
+            });
+        }
+    }, 100);
+}
+
+function toggleDyslexiaFont(enable) {
+    if (enable) {
+        document.body.classList.add('font-dyslexic');
+        showToast('Fonte OpenDyslexic ativada', 'info');
+    } else {
+        document.body.classList.remove('font-dyslexic');
+        showToast('Fonte padrão restaurada', 'info');
+    }
+    localStorage.setItem('dyslexiaFont', enable);
+}
+
+function applyColorFilter(filterName) {
+    // Remove todos os filtros anteriores
+    document.body.classList.remove(
+        'filter-protanopia',
+        'filter-deuteranopia',
+        'filter-tritanopia',
+        'filter-achromatopsia'
+    );
+
+    if (filterName) {
+        document.body.classList.add(`filter-${filterName}`);
+        showToast(`Filtro ${filterName} aplicado`, 'info');
+    }
+
+    localStorage.setItem('colorFilter', filterName);
+}
+
+function getCurrentFilter() {
+    if (document.body.classList.contains('filter-protanopia')) return 'protanopia';
+    if (document.body.classList.contains('filter-deuteranopia')) return 'deuteranopia';
+    if (document.body.classList.contains('filter-tritanopia')) return 'tritanopia';
+    if (document.body.classList.contains('filter-achromatopsia')) return 'achromatopsia';
+    return '';
+}
+
+function saveAccessibilitySettings() {
+    // Já salvamos individualmente, mas pode ser usado para sync futuro
+}
+
+// Carrega configurações avançadas na inicialização
+function loadAdvancedSettings() {
+    const savedDyslexia = localStorage.getItem('dyslexiaFont');
+    if (savedDyslexia === 'true') {
+        toggleDyslexiaFont(true);
+    }
+
+    const savedFilter = localStorage.getItem('colorFilter');
+    if (savedFilter) {
+        applyColorFilter(savedFilter);
+    }
 }
 
 function openPersonaModal() {
     const content = `
-        <p class="modal-description" style="margin-bottom: 20px; color: var(--text-secondary);">
-            Teste como seu conteúdo é percebido por diferentes tecnologias e necessidades. 
-            Isso ajuda a identificar barreiras invisíveis para quem navega visualmente.
+        <p class="modal-description" style="margin-bottom: 16px; color: var(--text-secondary); line-height: 1.6;">
+            Selecione um perfil para que Ada adapte as respostas ao seu contexto de uso. 
+            Isso ajuda a receber orientações mais específicas para sua necessidade.
         </p>
+        
         <div class="persona-grid">
-            <button class="persona-btn" onclick="selectPersona('leitor-tela')">
-                <span class="persona-icon">🔈</span>
+            <button class="persona-btn" onclick="selectPersona('leitor-tela')" aria-label="Perfil: Uso com leitor de tela">
+                <span class="persona-icon" aria-hidden="true">🔈</span>
                 <span class="persona-name">Leitor de Tela</span>
-                <span class="persona-desc">Cenário de uso sem visão</span>
+                <span class="persona-desc"><strong>Uso com leitor de tela (NVDA, JAWS, VoiceOver)</strong><br>
+                Ada dará prioridade a explicações sobre ARIA, navegação por teclado e compatibilidade com leitores de tela.</span>
             </button>
-            <button class="persona-btn" onclick="selectPersona('zoom-contraste')">
-                <span class="persona-icon">🔍</span>
-                <span class="persona-name">Zoom e Contraste</span>
-                <span class="persona-desc">Cenário de baixa visão</span>
+            
+            <button class="persona-btn" onclick="selectPersona('zoom-contraste')" aria-label="Perfil: Baixa visão ou uso de ampliação">
+                <span class="persona-icon" aria-hidden="true">🔍</span>
+                <span class="persona-name">Baixa Visão</span>
+                <span class="persona-desc"><strong>Baixa visão ou uso de ampliação</strong><br>
+                Ada focará em contraste de cores, tamanho de texto, e uso de zoom sem perda de funcionalidade.</span>
             </button>
-            <button class="persona-btn" onclick="selectPersona('teclado')">
-                <span class="persona-icon">⌨️</span>
+            
+            <button class="persona-btn" onclick="selectPersona('teclado')" aria-label="Perfil: Navegação apenas por teclado">
+                <span class="persona-icon" aria-hidden="true">⌨️</span>
                 <span class="persona-name">Navegação por Teclado</span>
-                <span class="persona-desc">Cenário com limitações motoras</span>
+                <span class="persona-desc"><strong>Navegação apenas por teclado</strong><br>
+                Ada explicará como garantir que todos os elementos sejam acessíveis via Tab, Enter e setas.</span>
             </button>
-            <button class="persona-btn" onclick="selectPersona('linguagem-simples')">
-                <span class="persona-icon">🧩</span>
+            
+            <button class="persona-btn" onclick="selectPersona('linguagem-simples')" aria-label="Perfil: Preferência por linguagem simples">
+                <span class="persona-icon" aria-hidden="true">🧩</span>
                 <span class="persona-name">Linguagem Simples</span>
-                <span class="persona-desc">Cenário cognitivo/atenção</span>
+                <span class="persona-desc"><strong>Preferência por linguagem simples</strong><br>
+                Ada usará termos mais diretos e exemplos práticos, evitando jargão técnico.</span>
             </button>
+        </div>
+        
+        <div class="persona-instructions" role="note" style="margin-top: 20px; padding: 16px; background: rgba(108, 42, 221, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-color);">
+            <strong style="display: block; margin-bottom: 8px; color: var(--text-primary);">Como usar:</strong>
+            <ol style="margin: 0; padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
+                <li>Escolha o perfil que melhor descreve sua situação</li>
+                <li>Faça sua pergunta normalmente</li>
+                <li>Ada adaptará a resposta para seu contexto</li>
+                <li>Para desativar, feche este modal sem selecionar</li>
+            </ol>
         </div>
     `;
 
-    openModal('Escolha um Cenário de Acessibilidade', content, {
+    openModal('Escolha um Perfil de Acessibilidade', content, {
         hideConfirmButton: true,
         cancelText: 'Fechar'
     });
@@ -440,6 +905,13 @@ function selectPersona(persona) {
         'zoom-contraste': 'O texto cinza claro do rodapé fica ilegível quando aumento o zoom da página para 200%.',
         'teclado': 'Não consigo acessar o submenu "Configurações" usando apenas a tecla Tab; o foco pula direto para o próximo link.',
         'linguagem-simples': 'A mensagem de erro "Falha na validação do input X509" é muito técnica e não entendo o que preciso corrigir.'
+    };
+
+    const personaNames = {
+        'leitor-tela': 'Leitor de Tela',
+        'zoom-contraste': 'Baixa Visão',
+        'teclado': 'Navegação por Teclado',
+        'linguagem-simples': 'Linguagem Simples'
     };
 
     const exampleText = examples[persona] || '';
@@ -454,6 +926,9 @@ function selectPersona(persona) {
         userInput.selectionStart = userInput.selectionEnd = userInput.value.length;
     }, 150);
 
+    // Anuncia seleção para leitor de tela
+    const personaName = personaNames[persona] || persona;
+    announceToScreenReader(`Perfil ${personaName} selecionado. Exemplo carregado no campo de mensagem.`);
     showToast(`Cenário selecionado. Exemplo carregado.`, 'info');
 }
 
@@ -758,7 +1233,8 @@ function setupModalFocusTrap() {
 
     // Encontra todos os elementos focáveis dentro do modal
     const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    modalFocusableElements = Array.from(modalElement.querySelectorAll(focusableSelectors));
+    modalFocusableElements = Array.from(modalElement.querySelectorAll(focusableSelectors))
+        .filter(el => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden') && el.offsetParent !== null);
 
     if (modalFocusableElements.length === 0) return;
 
@@ -939,6 +1415,35 @@ function addMessage(role, content) {
     messages.push({ role, content, timestamp: Date.now() });
     saveMessagesToStorage();
     renderMessages();
+
+    // Feedback de Acessibilidade
+    if (content === TYPING_MESSAGE_ID) return;
+
+    if (role === 'user') {
+        playSound('SENT');
+    } else if (role === 'assistant') {
+        playSound('RECEIVED');
+
+        // TTS
+        if (isTTSEnabled) {
+            if (typeof content === 'string') {
+                // Remove markdown simples para leitura melhor
+                // Remove headers, bold, italic, code blocks markers
+                const cleanText = content
+                    .replace(/#{1,6}\s/g, '') // Headers
+                    .replace(/\*\*/g, '') // Bold
+                    .replace(/\*/g, '') // Italic
+                    .replace(/```/g, '') // Code blocks
+                    .replace(/`/g, '') // Inline code
+                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Links (mantém texto)
+
+                speak(cleanText);
+            } else if (content.erro) {
+                speak(`Erro: ${content.erro}`);
+                playSound('ERROR');
+            }
+        }
+    }
 }
 
 function clearMessages() {
@@ -1035,7 +1540,8 @@ function renderMessages() {
 function createMessageElement(message, index) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.role}`;
-    messageDiv.setAttribute('role', message.role === 'user' ? 'user' : 'assistant');
+    messageDiv.className = `message ${message.role}`;
+    // messageDiv.setAttribute('role', message.role === 'user' ? 'user' : 'assistant'); // Removed invalid role
     messageDiv.setAttribute('data-testid', `chat-mensagem-${message.role}`);
     messageDiv.setAttribute('data-message-id', index);
     messageDiv.setAttribute('data-message-role', message.role);
@@ -1116,6 +1622,7 @@ function createMessageElement(message, index) {
             // Avatar já está configurado como THINKING acima
             bubble.className += ' typing-indicator';
             bubble.setAttribute('data-testid', 'typing-indicator');
+            bubble.setAttribute('role', 'status');
             bubble.setAttribute('aria-live', 'polite');
             bubble.setAttribute('aria-label', 'Bot está pesquisando resposta');
 
@@ -1190,7 +1697,7 @@ function createExpanderSection(title, content, isExpanded = false) {
     header.setAttribute('aria-expanded', isExpanded);
     header.setAttribute('aria-controls', uniqueId);
 
-    const titleHeading = document.createElement('h3');
+    const titleHeading = document.createElement('h2');
     titleHeading.className = 'expander-title';
     // Remove formatação markdown (asteriscos) do título
     const cleanTitle = title.replace(/\*\*/g, '').trim();
@@ -1571,10 +2078,15 @@ async function sendMessage(pergunta) {
         // Adiciona resposta do assistente (aparecerá abaixo do indicador que foi removido)
         addMessage('assistant', data.resposta);
 
+        // IMPORTANTE: Reseta isLoading ANTES de retornar foco
+        // Isso garante que updateUIState() habilite o input corretamente
+        isLoading = false;
+        updateUIState();
+
         // Retorna foco ao input após resposta (WCAG 2.4.3)
         // Melhora navegação por teclado permitindo que usuário continue digitando
         setTimeout(() => {
-            if (userInput && !isLoading) {
+            if (userInput) {
                 userInput.focus();
             }
         }, 100);
@@ -1662,9 +2174,12 @@ async function sendMessage(pergunta) {
         // Garante que o indicador seja removido quando terminar (sucesso ou erro)
         hideTypingIndicator();
 
-        // SEMPRE reseta isLoading, mesmo se houver erro
-        isLoading = false;
-        updateUIState();
+        // Reseta isLoading apenas se ainda não foi resetado (caso de erro)
+        // No caso de sucesso, já foi resetado antes do setTimeout de foco
+        if (isLoading) {
+            isLoading = false;
+            updateUIState();
+        }
 
         // Log para debug
         console.log('sendMessage finalizado, isLoading:', isLoading);
@@ -1814,3 +2329,17 @@ async function handleFormSubmit(e) {
 }
 
 // Test write
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    initializeAccessibility();
+    renderMessages();
+
+    // Foca no input ao carregar
+    if (userInput) userInput.focus();
+
+    // Handler do formulário
+    const chatForm = document.getElementById('chat-form');
+    if (chatForm) {
+        chatForm.addEventListener('submit', handleFormSubmit);
+    }
+});

@@ -1,7 +1,8 @@
 # 🚀 Guia de Deploy e Produção
 
 **Data de Criação:** 2025-11-22  
-**Versão do Projeto:** 3.1.0
+**Última Atualização:** 2025-11-29
+**Versão do Projeto:** 3.16.0
 
 ---
 
@@ -343,11 +344,10 @@ sudo systemctl start chatbot-acessibilidade
 ```env
 # API Keys (OBRIGATÓRIAS)
 GOOGLE_API_KEY=sua_chave_google_api
-OPENROUTER_API_KEY=sua_chave_openrouter_api
+GOOGLE_API_KEY_SECOND=sua_segunda_chave_google_api  # Opcional: Para fallback de quota
 
 # Configurações de Fallback
 FALLBACK_ENABLED=true
-OPENROUTER_MODELS=meta-llama/llama-3.3-70b-instruct:free,google/gemini-flash-1.5:free
 
 # CORS
 CORS_ORIGINS=https://seu-dominio.com,https://www.seu-dominio.com

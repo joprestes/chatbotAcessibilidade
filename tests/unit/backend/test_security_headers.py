@@ -107,7 +107,8 @@ def test_permissions_policy_header(client):
 
     assert permissions is not None
     assert "geolocation=()" in permissions
-    assert "microphone=()" in permissions
+    # Permite microphone=(self) para funcionalidade de voz
+    assert "microphone=(self)" in permissions
 
 
 def test_security_headers_disabled():

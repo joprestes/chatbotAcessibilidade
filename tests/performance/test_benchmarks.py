@@ -107,15 +107,10 @@ def test_formatter_performance(benchmark):
     """
     from chatbot_acessibilidade.core.formatter import formatar_resposta_final
 
-    resposta_agentes = {
-        "assistente": "Resposta do assistente sobre acessibilidade...",
-        "validador": "OK - Validação técnica aprovada",
-        "revisor": "Resposta revisada e simplificada...",
-        "testador": "Sugestões de testes práticos...",
-        "aprofundador": "Materiais de estudo recomendados...",
-    }
+    # resposta_agentes removido pois agora usamos args posicionais
 
-    result = benchmark(formatar_resposta_final, resposta_agentes)
+    args = ("Resumo...", "Conceitos...", "Testes...", "Aprofundar...", "Dica...")
+    result = benchmark(formatar_resposta_final, *args)
     assert isinstance(result, dict)
 
 

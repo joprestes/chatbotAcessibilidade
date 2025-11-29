@@ -7,23 +7,14 @@ Testa aspectos avançados de acessibilidade além dos testes básicos.
 import pytest
 from playwright.sync_api import Page, expect
 
+from axe_playwright_python.sync_playwright import Axe
+
 pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
-
-# Tenta importar axe-playwright, mas não falha se não estiver disponível
-try:
-    from axe_playwright.sync_playwright import Axe
-
-    AXE_AVAILABLE = True
-except ImportError:
-    AXE_AVAILABLE = False
-    Axe = None  # type: ignore
 
 
 @pytest.fixture
 def axe():
     """Fixture para instância do Axe."""
-    if not AXE_AVAILABLE:
-        pytest.skip("axe-playwright não está instalado")
     return Axe()
 
 
@@ -125,13 +116,13 @@ def test_high_contrast_mode(page: Page, base_url: str, axe):
         page,
         options={
             "rules": {
-                "color-contrast": {"enabled": True},
+                "color-contrast": {"enabled": 1},
             }
         },
     )
 
     # Verifica violações de contraste
-    contrast_violations = [v for v in results.violations if v.id == "color-contrast"]
+    contrast_violations = [v for v in results.response["violations"] if v["id"] == "color-contrast"]
 
     assert (
         len(contrast_violations) == 0

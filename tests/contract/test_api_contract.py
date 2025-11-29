@@ -108,7 +108,7 @@ def test_chat_request_contract_missing_field():
     Objetivo: Validar validação de campos obrigatórios
     """
     # Arrange
-    invalid_request = {}
+    invalid_request: Dict[str, Any] = {}
 
     # Act & Assert
     with pytest.raises(ValidationError) as exc_info:

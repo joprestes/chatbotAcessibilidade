@@ -102,12 +102,10 @@ make test
 - ✅ Valores padrão
 - ✅ Parse de CORS origins
 - ✅ Validação de log_level
-- ✅ Parse de modelos OpenRouter
 - ✅ Validação de fallback config
 
 #### 5. `llm_provider.py` - ~95%
 - ✅ `GoogleGeminiClient` - Sucesso, erros, timeout, segurança
-- ✅ `OpenRouterClient` - Sucesso, rate limit, erros HTTP
 - ✅ `generate_with_fallback()` - Múltiplos cenários
 - ✅ Edge cases: todos falham, fallback desabilitado
 

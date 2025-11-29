@@ -8,23 +8,14 @@ Foca em critérios específicos do nível AAA que vão além do AA.
 import pytest
 from playwright.sync_api import Page, expect
 
+from axe_playwright_python.sync_playwright import Axe
+
 pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
-
-# Tenta importar axe-playwright
-try:
-    from axe_playwright.sync_playwright import Axe
-
-    AXE_AVAILABLE = True
-except ImportError:
-    AXE_AVAILABLE = False
-    Axe = None  # type: ignore
 
 
 @pytest.fixture
 def axe():
     """Fixture para instância do Axe."""
-    if not AXE_AVAILABLE:
-        pytest.skip("axe-playwright não está instalado")
     return Axe()
 
 
@@ -48,17 +39,19 @@ def test_contrast_ratio_aaa(page: Page, base_url: str, axe):
                 "values": ["wcag2aaa", "wcag146"],
             },
             "rules": {
-                "color-contrast-enhanced": {"enabled": True},
+                "color-contrast-enhanced": {"enabled": 1},
             },
         },
     )
 
     # Verifica violações de contraste AAA
-    contrast_violations = [v for v in results.violations if "contrast" in v.id.lower()]
+    contrast_violations = [
+        v for v in results.response["violations"] if "contrast" in v["id"].lower()
+    ]
 
     assert (
         len(contrast_violations) == 0
-    ), f"Violations de contraste AAA encontradas: {[v.id for v in contrast_violations]}"
+    ), f"Violations de contraste AAA encontradas: {[v['id'] for v in contrast_violations]}"
 
 
 def test_text_spacing_override(page: Page, base_url: str):
@@ -172,6 +165,10 @@ def test_no_text_images(page: Page, base_url: str):
 
         # Se não é logo nem avatar, verifica que não contém texto
         if not (is_logo or is_avatar):
+            # Ignora widget de libras (VLibras)
+            if "vlibras" in src.lower() or "vlibras" in alt.lower():
+                continue
+
             # Imagens decorativas devem ter alt vazio
             assert alt == "" or len(alt) < 50, f"Imagem {src} pode conter texto"
 

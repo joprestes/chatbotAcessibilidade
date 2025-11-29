@@ -88,7 +88,7 @@ def test_send_message_flow(page: Page, base_url: str):
     expect(user_message).to_be_visible(timeout=5000)
 
     # Verifica conteúdo da mensagem
-    assert "acessibilidade" in user_message.text_content().lower()
+    assert "acessibilidade" in (user_message.text_content() or "").lower()
 
 
 def test_typing_indicator_shows(page: Page, base_url: str):

@@ -221,7 +221,9 @@ def test_llm_dispatcher_handles_empty_response(client: TestClient):
     Fluxo: Request → LLM → Resposta vazia → Error
     """
     # Arrange
-    empty_response = {}
+    from typing import Any, Dict
+
+    empty_response: Dict[str, Any] = {}
 
     # Act
     with patch(

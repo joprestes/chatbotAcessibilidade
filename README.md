@@ -63,6 +63,7 @@
   - [🏗️ Arquitetura](#️-arquitetura)
   - [🚀 Quick Start](#-quick-start)
   - [📖 Documentação](#-documentação)
+  - [🗺️ Roadmap](#-roadmap)
   - [🧪 Testes e Qualidade](#-testes-e-qualidade)
   - [🔒 Segurança](#-segurança)
   - [🌐 Deploy](#-deploy)
@@ -122,11 +123,16 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 | **1.4.6 Contraste AAA** | Razão de contraste 7:1 em todos os textos |
 | **2.3.3 Reduced Motion** | Respeita preferência `prefers-reduced-motion` |
 | **1.4.11 High Contrast** | Suporte a `prefers-contrast: high` |
+| **1.4.10 Reflow (Zoom)** | Suporte a zoom 200% sem scroll horizontal |
 | **2.4.7 Foco Visível** | Outline visível em todos os elementos interativos |
 | **3.3.5 Ajuda Contextual** | Botão de ajuda e hints visuais |
 | **2.4.10 Headings** | Estrutura semântica com h1, h2, h3 |
+| **2.1.2 Focus Trap** | Foco preso em modais para navegação segura |
 | **2.1.1 Teclado** | Navegação completa por teclado + atalho Escape |
 | **1.1.1 Alt Text** | Descrições informativas em todas as imagens |
+| **Libras** | Widget VLibras para tradução automática |
+| **Entrada por Voz** | Ditado de perguntas (Speech-to-Text) |
+| **Leitura de Tela** | Síntese de voz para respostas (Text-to-Speech) |
 
 #### 🔧 Recursos Técnicos
 
@@ -241,10 +247,11 @@ Crie um arquivo `.env` na raiz do projeto:
 # Chave da API Google Gemini (obrigatória)
 GOOGLE_API_KEY="sua_chave_aqui"
 
-# Hugging Face (opcional - para fallback automático)
-HUGGINGFACE_API_KEY="sua_chave_huggingface"
+# Chave secundária do Google Gemini (opcional - para fallback automático de quota)
+GOOGLE_API_KEY_SECOND="sua_segunda_chave_aqui"
+
+# Configurações de Fallback
 FALLBACK_ENABLED=true
-HUGGINGFACE_MODELS=meta-llama/Llama-3.3-70B-Instruct,google/gemma-2-9b-it,mistralai/Mistral-7B-Instruct-v0.3
 
 # CORS (opcional - padrão: *)
 CORS_ORIGINS="*"
@@ -258,6 +265,37 @@ LOG_LEVEL=INFO
 ```
 
 > 💡 **Dica:** Veja `.env.example` para todas as opções disponíveis.
+
+#### 🔑 Múltiplas Chaves do Google Gemini
+
+O chatbot agora suporta **fallback automático entre múltiplas chaves do Google Gemini** para aumentar a quota disponível:
+
+**Como funciona:**
+1. **Chave Primária**: Sistema inicia usando `GOOGLE_API_KEY`
+2. **Quota Esgotada**: Quando detecta erro 429 (RESOURCE_EXHAUSTED)
+3. **Fallback Automático**: Troca automaticamente para `GOOGLE_API_KEY_SECOND`
+4. **Retry Transparente**: Tenta novamente a mesma requisição com a nova chave
+5. **Logs Claros**: "✅ Chave secundária ativada com sucesso!"
+
+**Benefícios:**
+- ✅ **Dobra a quota gratuita**: 200 req/dia → 400 req/dia
+- ✅ **Zero downtime**: Troca instantânea entre chaves
+- ✅ **Transparente**: Usuário não percebe a mudança
+- ✅ **Logs detalhados**: Rastreamento completo nos logs
+
+**Como configurar:**
+1. Crie uma segunda conta Google (ou use outra conta existente)
+2. Obtenha uma nova API key em [Google AI Studio](https://aistudio.google.com/app/apikey)
+3. Adicione `GOOGLE_API_KEY_SECOND` no `.env`
+4. Reinicie o servidor
+
+```env
+# Exemplo de configuração com duas chaves
+GOOGLE_API_KEY="AIzaSyDRTIiZzg0S5oZjPrurcLmciIZCRpPIHvI"
+GOOGLE_API_KEY_SECOND="AIzaSyC_outra_chave_diferente_aqui"
+```
+
+> ⚠️ **Importante**: Cada chave do Google Gemini (tier gratuito) tem limite de 200 requisições por dia. Com duas chaves, você terá 400 requisições/dia.
 
 #### 🔄 Sistema de Fallback Automático
 
@@ -336,6 +374,10 @@ Acesse: **http://localhost:8000**
 | [📚 API ReDoc](http://localhost:8000/redoc) | ReDoc (quando servidor rodando) |
 
 ---
+
+### 🗺️ Roadmap
+
+Confira nosso planejamento estratégico de funcionalidades futuras, incluindo análise de imagens e auditoria de URLs, em nosso [Roadmap Oficial](docs/project/ROADMAP.md).
 
 ### 🧪 Testes e Qualidade
 

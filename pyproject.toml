@@ -101,6 +101,8 @@ addopts = [
     "--disable-warnings",
     "--base-url=http://localhost:8000",
 ]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 # Relatórios HTML são gerados apenas quando explicitamente solicitados via comando
 # Para gerar relatório HTML: pytest --html=tests/reports/html/report.html --self-contained-html
 markers = [

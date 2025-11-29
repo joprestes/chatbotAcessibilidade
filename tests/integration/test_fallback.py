@@ -5,7 +5,7 @@ Testa sistema de fallback automático e retry de requisições.
 """
 
 import pytest
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from pathlib import Path
 import sys
@@ -27,47 +27,6 @@ def client():
 
 
 @pytest.mark.asyncio
-async def test_automatic_fallback_on_gemini_failure():
-    """
-    Testa fallback automático quando Google Gemini falha.
-    """
-    from chatbot_acessibilidade.core.llm_provider import (
-        GoogleGeminiClient,
-        HuggingFaceClient,
-        generate_with_fallback,
-    )
-    from chatbot_acessibilidade.core.exceptions import APIError
-
-    # Mock de falha do Gemini
-    mock_gemini = MagicMock(spec=GoogleGeminiClient)
-    mock_gemini.generate = AsyncMock(side_effect=APIError("Google Gemini quota exceeded"))
-
-    # Mock de sucesso do HuggingFace
-    mock_huggingface = MagicMock(spec=HuggingFaceClient)
-    mock_huggingface.generate = AsyncMock(return_value="Resposta do HuggingFace")
-
-    # Mock de settings para habilitar fallback
-    with patch("chatbot_acessibilidade.core.llm_provider.settings") as mock_settings:
-        mock_settings.fallback_enabled = True
-
-        # Configura mocks para retornar valores corretos
-        mock_huggingface.get_provider_name = MagicMock(return_value="HuggingFace")
-
-        # Testa fallback diretamente
-        resposta, provedor = await generate_with_fallback(
-            primary_client=mock_gemini,
-            prompt="Teste de fallback",
-            fallback_clients=[mock_huggingface],
-        )
-
-        # Verifica que fallback foi usado
-        assert "HuggingFace" in provedor or provedor == "HuggingFace"
-        assert resposta == "Resposta do HuggingFace"
-        assert mock_gemini.generate.called
-        assert mock_huggingface.generate.called
-
-
-@pytest.mark.asyncio
 async def test_retry_on_temporary_error():
     """
     Testa retry automático em erros temporários.
@@ -85,21 +44,22 @@ async def test_retry_on_temporary_error():
 
     agent = agentes["assistente"]
 
-    # Mock de generate_with_fallback que simula retry
+    # Mock de GoogleGeminiClient.generate que simula retry
     call_count = 0
 
-    async def mock_fallback(primary_client, prompt, fallback_clients=None, fallback_models=None):
+    async def mock_generate(self, prompt):
         nonlocal call_count
         call_count += 1
         # Simula que após algumas tentativas, funciona
         if call_count < 2:
-            from chatbot_acessibilidade.core.exceptions import APIError
+            from google.api_core import exceptions as google_exceptions
 
-            raise APIError("Temporary error")
-        return ("Resposta após retry", "Google Gemini")
+            # Simula erro que causa retry (503 ou ResourceExhausted)
+            raise google_exceptions.ResourceExhausted("Temporary error")
+        return "Resposta após retry"
 
     with patch(
-        "chatbot_acessibilidade.agents.dispatcher.generate_with_fallback", new=mock_fallback
+        "chatbot_acessibilidade.core.llm_provider.GoogleGeminiClient.generate", new=mock_generate
     ):
         # Executa agente
         try:

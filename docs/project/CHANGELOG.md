@@ -2,6 +2,39 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.16.0] - 2025-11-29
+
+### Adicionado
+- **Google API Fallback (Chave Secundária)**:
+  - Implementado suporte a `GOOGLE_API_KEY_SECOND` para dobrar a quota disponível.
+  - Fallback automático e transparente quando a chave primária atinge o limite (erro 429).
+  - **Graceful Shutdown**: Exibição de mensagem amigável de "Sistema em Manutenção" quando todas as chaves atingem o limite, informando retorno às 06:00 a.m.
+  - Zero downtime para o usuário final enquanto houver quota.
+  - **Roadmap do Projeto**: Criação do documento `docs/project/ROADMAP.md` definindo as próximas fases de evolução (Visão, Auditoria, PWA).
+
+### Corrigido
+- **Focus Trap em Modal (WCAG 2.1.2)**:
+  - Corrigido bug onde o foco escapava do modal ao navegar com Tab.
+  - Implementado filtro correto em `app.js` para ignorar elementos invisíveis/desabilitados.
+  - Adicionado `tabindex="-1"` ao container do modal em `index.html` para foco programático.
+  - Validado com teste automatizado `test_focus_trap_in_modal` e verificação manual.
+
+- **Estabilidade de Testes (Event Loop)**:
+  - Corrigido erro `RuntimeError: Cannot close a running event loop` durante teardown de testes.
+  - Ajustada fixture `event_loop` em `tests/conftest.py` para gerenciar ciclo de vida corretamente com `pytest-asyncio`.
+  - Eliminados conflitos entre plugins de teste, garantindo execução limpa da suíte completa.
+
+- **Acessibilidade e Inclusão (Documentação)**:
+  - **Zoom 200% (Reflow)**: Documentado suporte completo a zoom sem perda de funcionalidade (WCAG 1.4.10).
+  - **VLibras**: Widget de tradução para Libras integrado e documentado.
+  - **Voz e Leitura**: Suporte a ditado (Speech-to-Text) e leitura de resposta (Text-to-Speech) documentados.
+
+### Melhorado
+- **Qualidade de Código**:
+  - Removidos imports não utilizados e ordenados conforme PEP8 em arquivos de teste.
+  - Corrigido erro de tipagem no `Mypy` em `llm_provider.py` (atributo `status_code`).
+  - Limpeza de arquivos de evidência temporários e caches.
+
 ## [3.15.0] - 2025-11-28
 
 ### Adicionado

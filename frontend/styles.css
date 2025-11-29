@@ -1,4 +1,9 @@
 /* ========================================= */
+/* Fontes Externas */
+/* ========================================= */
+@import url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0/open-dyslexic.min.css');
+
+/* ========================================= */
 /* Variáveis CSS - Paleta "Lavanda Inclusiva" */
 /* ========================================= */
 :root {
@@ -21,7 +26,7 @@
     /* Magenta para foco */
     --accent-deep: #4C1D95;
     /* Roxo profundo */
-    --error-color: #DC2626;
+    --error-color: #B91C1C;
     --success-color: #16A34A;
     --shadow: rgba(124, 58, 237, 0.15);
     /* Sombra roxa suave */
@@ -115,6 +120,30 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Fonte para Dislexia */
+body.font-dyslexic {
+    font-family: 'OpenDyslexic', sans-serif !important;
+    line-height: 2 !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Filtros de Daltonismo */
+body.filter-protanopia {
+    filter: url('#protanopia');
+}
+
+body.filter-deuteranopia {
+    filter: url('#deuteranopia');
+}
+
+body.filter-tritanopia {
+    filter: url('#tritanopia');
+}
+
+body.filter-achromatopsia {
+    filter: url('#achromatopsia');
+}
+
 /* ========================================= */
 /* Acessibilidade - Screen Reader Only */
 /* ========================================= */
@@ -140,6 +169,8 @@ header.glass-header {
     position: sticky;
     top: 0;
     z-index: 100;
+    background-color: #7c3aed;
+    /* Fallback for contrast */
     background: linear-gradient(135deg, rgba(124, 58, 237, 0.9) 0%, rgba(196, 181, 253, 0.9) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -218,6 +249,8 @@ header.glass-header {
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     line-height: 1.2;
+    /* background-color removed */
+    /* Fallback for contrast */
 }
 
 .ada-header-status {
@@ -320,6 +353,23 @@ header.glass-header {
     .header-controls {
         gap: 10px;
     }
+}
+
+.accessibility-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.divider-vertical {
+    width: 1px;
+    height: 24px;
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 0 8px;
+}
+
+[data-theme="dark"] .divider-vertical {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ========================================= */
@@ -463,6 +513,45 @@ header.glass-header {
 [data-theme="dark"] .icon-button-small:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--accent-color);
+}
+
+/* Voice Controls */
+.voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 8px;
+    padding-right: 8px;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .voice-controls {
+    border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Animação do Microfone Ativo */
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    }
+}
+
+.icon-button-small.mic-active {
+    color: var(--error-color);
+    animation: pulse-red 1.5s infinite;
+}
+
+.icon-button-small.tts-active {
+    color: var(--success-color);
+    background-color: rgba(22, 163, 74, 0.1);
 }
 
 /* .clear-chat-button agora usa .icon-button - estilos removidos para evitar conflito */
@@ -1498,34 +1587,45 @@ main {
 /* ========================================= */
 /* Mensagens de Erro */
 /* ========================================= */
-.message.error .message-bubble {
-    color: white;
+.message-bubble.error,
+.message .message-bubble.error,
+.message.assistant .message-bubble.error,
+.message-bubble.error * {
+    color: #FFFFFF !important;
     border: none;
     padding: 16px 20px;
     animation: slideInError 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    /* Melhora legibilidade em fundos escuros */
 }
 
-.message.error.error-timeout .message-bubble {
+.message-bubble.error .message-timestamp {
+    color: #FFFFFF !important;
+    /* Garante contraste no timestamp (4.5:1+) */
+    opacity: 1 !important;
+}
+
+.message-bubble.error.error-timeout {
     background-color: #f59e0b;
 }
 
-.message.error.error-offline .message-bubble {
+.message-bubble.error.error-offline {
     background-color: #6b7280;
 }
 
-.message.error.error-rate-limit .message-bubble {
-    background-color: #ef4444;
+.message-bubble.error.error-rate-limit {
+    background-color: #DC2626;
 }
 
-.message.error.error-server-error .message-bubble {
-    background-color: #dc2626;
+.message-bubble.error.error-server-error {
+    background-color: #B91C1C;
 }
 
-.message.error.error-network-error .message-bubble {
+.message-bubble.error.error-network-error {
     background-color: #3b82f6;
 }
 
-.message.error.error-generic .message-bubble {
+.message-bubble.error.error-generic {
     background-color: var(--error-color);
 }
 
@@ -1697,7 +1797,7 @@ main {
     font-size: 16px;
     font-family: 'Atkinson Hyperlegible', inherit;
     border: none;
-    background: transparent;
+    background: var(--bg-primary);
     color: var(--text-primary);
     resize: none;
     min-height: 44px;
@@ -1728,17 +1828,17 @@ main {
 .char-counter {
     font-size: 14px;
     /* Aumentado de 12px para 14px */
-    font-weight: 500;
-    /* Adicionado peso para melhor visibilidade */
-    color: var(--text-primary);
-    /* Melhor contraste - WCAG AA */
+    font-weight: 600;
+    /* Aumentado para 600 - melhor visibilidade AAA */
+    color: #3B0764;
+    /* Roxo muito escuro para AAA 7:1 */
     text-align: right;
     margin-top: 6px;
     /* Aumentado de 4px para 6px */
     padding: 0 8px;
     /* Aumentado de 4px para 8px */
-    opacity: 0.9;
-    /* Aumentado de 0.8 para 0.9 - mais visível */
+    opacity: 1;
+    /* Removida opacity para AAA */
 }
 
 @media (min-width: 768px) {
@@ -1804,7 +1904,10 @@ main {
 /* Hint de Ajuda */
 .input-hint {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: #3B0764;
+    /* Roxo muito escuro para AAA 7:1 */
+    font-weight: 600;
+    /* Peso aumentado para melhor legibilidade */
     padding: 4px 8px;
     margin-top: 4px;
     background: rgba(124, 58, 237, 0.05);
@@ -2794,6 +2897,39 @@ footer a:focus {
 
 [data-theme="dark"] [data-tooltip]::after {
     background: #1E1B4B;
-    border-color: var(--accent-color);
-    color: #FFFFFF;
+    border-color: var(--border-color);
+}
+
+/* ========================================= */
+/* Modo de Alto Contraste Forçado (WCAG 1.4.11) */
+/* ========================================= */
+@media (forced-colors: active) {
+
+    /* Garante que cores do sistema sejam usadas */
+    * {
+        color: CanvasText !important;
+        background-color: Canvas !important;
+        border-color: CanvasText !important;
+    }
+
+    /* Links e botões usam LinkText */
+    a,
+    button,
+    .chip,
+    .icon-button {
+        color: LinkText !important;
+    }
+
+    /* Foco visível */
+    *:focus-visible {
+        outline: 3px solid Highlight !important;
+        outline-offset: 2px !important;
+    }
+
+    /* Bordas visíveis */
+    .chat-container,
+    .input-container,
+    header {
+        border: 1px solid CanvasText !important;
+    }
 }

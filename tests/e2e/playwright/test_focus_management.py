@@ -8,7 +8,7 @@ garantindo acessibilidade e boa experiência do usuário.
 import pytest
 from playwright.sync_api import Page, expect
 
-pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
+pytestmark = [pytest.mark.e2e, pytest.mark.playwright]
 
 
 def test_focus_returns_to_input_after_send(page: Page, base_url: str, server_running: bool):
@@ -42,26 +42,8 @@ def test_focus_returns_to_input_after_send(page: Page, base_url: str, server_run
     page.wait_for_load_state("networkidle", timeout=10000)
 
     # Verifica que foco retornou ao input
-    # Nota: Se este teste falhar, pode ser um bug no frontend que precisa ser corrigido
-    focused_after = page.evaluate("() => document.activeElement.id")
-
-    # Se foco não retornou, documenta o estado atual para debug
-    if focused_after != "user-input":
-        current_focus_info = page.evaluate(
-            """() => {
-            const el = document.activeElement;
-            return {
-                id: el.id,
-                tagName: el.tagName,
-                className: el.className
-            };
-        }"""
-        )
-        pytest.skip(
-            f"Foco não retornou ao input (bug do frontend). "
-            f"Foco atual: {current_focus_info}. "
-            f"Este teste deve passar quando o frontend for corrigido."
-        )
+    # Usa expect com retry automático para lidar com o setTimeout do frontend
+    expect(input_field).to_be_focused(timeout=5000)
 
 
 def test_focus_after_search_toggle(page: Page, base_url: str):
@@ -169,18 +151,45 @@ def test_focus_trap_in_modal(page: Page, base_url: str):
     page.wait_for_load_state("networkidle")
 
     # Verifica se há modais VISÍVEIS (não apenas presentes no DOM)
-    modals = page.locator("[role='dialog'][aria-hidden='false'], .modal:visible, [aria-modal='true']:visible")
+    modals = page.locator(
+        "[role='dialog'][aria-hidden='false'], .modal:visible, [aria-modal='true']:visible"
+    )
     modal_count = modals.count()
 
     if modal_count == 0:
-        pytest.skip("Não há modais visíveis no projeto atualmente. Modal existe mas precisa ser aberto via JavaScript (window.openModal)")
+        # Tenta abrir o modal de configurações para testar
+        settings_btn = page.locator("#settings-toggle")
+        if settings_btn.is_visible():
+            settings_btn.click()
+            page.wait_for_selector(
+                "#accessible-modal[aria-hidden='false']", state="visible", timeout=2000
+            )
+            # Recalcula modais
+            modals = page.locator(
+                "[role='dialog'][aria-hidden='false'], .modal:visible, [aria-modal='true']:visible"
+            )
+            modal_count = modals.count()
+
+    if modal_count == 0:
+        pytest.skip("Não há modais visíveis no projeto atualmente e não foi possível abrir um.")
     else:
         # Se houver modais visíveis, testa que foco fica preso
         first_modal = modals.first
-        first_modal.focus()
+
+        # Aguarda o foco entrar no modal (pode demorar devido ao setTimeout do app.js)
+        # Usa loop manual para evitar erro de CSP com wait_for_function
+        import time
+
+        for _ in range(20):  # Tenta por 2 segundos
+            is_focused = page.evaluate(
+                "() => document.getElementById('accessible-modal').contains(document.activeElement)"
+            )
+            if is_focused:
+                break
+            time.sleep(0.1)
 
         # Pressiona Tab várias vezes
-        for _ in range(10):
+        for i in range(10):
             page.keyboard.press("Tab")
 
             # Verifica que foco ainda está dentro do modal

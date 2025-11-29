@@ -4,7 +4,7 @@ Fixtures para simulação de erros em testes E2E
 
 import pytest
 from playwright.sync_api import Page, Route
-from typing import Generator, Optional
+from typing import Generator, Optional, Callable
 import json
 
 
@@ -88,7 +88,7 @@ def mock_malformed_response(page: Page, base_url: str) -> Generator[None, None, 
 
 
 @pytest.fixture
-def mock_api_response(page: Page, base_url: str) -> Generator[callable, None, None]:
+def mock_api_response(page: Page, base_url: str) -> Generator[Callable, None, None]:
     """
     Fixture que retorna função para mockar respostas da API.
     """

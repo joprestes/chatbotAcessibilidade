@@ -7,8 +7,7 @@ from pathlib import Path
 # Configura variáveis de ambiente para testes ANTES de importar qualquer módulo
 # Isso garante que Settings() possa ser inicializado corretamente
 os.environ.setdefault("GOOGLE_API_KEY", "test_key_for_pytest")
-os.environ.setdefault("OPENROUTER_API_KEY", "")
-os.environ.setdefault("FALLBACK_ENABLED", "false")
+
 # Desabilita rate limiting durante testes para evitar falhas por 429
 os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
@@ -22,8 +21,32 @@ except ImportError:
 warnings.filterwarnings("ignore", category=FutureWarning, module="google.api_core")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="google.genai")
 
+import asyncio  # noqa: E402
+import pytest  # noqa: E402
+import nest_asyncio  # noqa: E402
+
+# Aplica nest_asyncio para permitir loops aninhados (necessário para testes com pytest-asyncio + playwright)
+nest_asyncio.apply()
+
 # Configura plugins do pytest
-pytest_plugins = ("pytest_asyncio", "pytest_playwright")
+# pytest_plugins = ("pytest_asyncio", "pytest_playwright")
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """
+    Cria uma instância do event loop para toda a sessão de testes.
+    Isso resolve conflitos entre pytest-asyncio e pytest-playwright.
+    """
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+    yield loop
+    # Não fechamos o loop explicitamente para evitar conflitos entre pytest-asyncio e playwright
+    # O garbage collector ou o finalizador do pytest lidarão com isso
+    pass
+
 
 # Adiciona src ao path para imports
 src_path = Path(__file__).parent.parent / "src"

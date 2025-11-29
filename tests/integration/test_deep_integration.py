@@ -42,7 +42,6 @@ async def test_chat_flow_deep_integration_success(client):
         "chatbot_acessibilidade.pipeline.orquestrador.get_agent_response",
         side_effect=mock_get_agent_response,
     ) as mock_agent:
-
         # Executa a requisição
         response = client.post("/api/chat", json={"pergunta": "Como testar contraste?"})
 

@@ -3,7 +3,7 @@ Testes para o módulo dispatcher.py
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 
 from google.adk.agents import Agent
 
@@ -31,24 +31,31 @@ def mock_evento():
     return evento
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_sucesso_com_fallback(mock_fallback):
-    """Testa get_agent_response com sucesso usando fallback"""
-    mock_fallback.return_value = ("Resposta de teste", "Google Gemini")
+async def test_get_agent_response_sucesso_com_fallback(mock_client_class):
+    """Testa get_agent_response com sucesso"""
+    # Setup mock instance
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(return_value="Resposta de teste")
+    mock_client.get_provider_name.return_value = "Google Gemini"
+    mock_client_class.return_value = mock_client
 
     resultado = await get_agent_response("assistente", "Teste", "prefixo")
 
     assert resultado == "Resposta de teste"
-    mock_fallback.assert_called_once()
+    mock_client.generate.assert_called_once()
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_com_erro_timeout(mock_fallback):
+async def test_get_agent_response_com_erro_timeout(mock_client_class):
     """Testa get_agent_response quando há timeout"""
-
-    mock_fallback.side_effect = APIError("Timeout: A requisição demorou mais de 60 segundos")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(
+        side_effect=APIError("Timeout: A requisição demorou mais de 60 segundos")
+    )
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:
         await get_agent_response("assistente", "Teste", "prefixo")
@@ -56,12 +63,13 @@ async def test_get_agent_response_com_erro_timeout(mock_fallback):
     assert "timeout" in str(exc_info.value).lower() or "demorou" in str(exc_info.value).lower()
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_com_erro_quota(mock_fallback):
+async def test_get_agent_response_com_erro_quota(mock_client_class):
     """Testa get_agent_response quando há erro de quota"""
-
-    mock_fallback.side_effect = APIError("quota esgotada")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=APIError("quota esgotada"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:
         await get_agent_response("assistente", "Teste", "prefixo")
@@ -80,109 +88,20 @@ async def test_get_agent_response_agente_inexistente():
     assert resultado.startswith("Erro")
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher._get_huggingface_client")
-@patch("chatbot_acessibilidade.agents.dispatcher.settings")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_inicializa_huggingface_sucesso(
-    mock_settings, mock_get_huggingface
-):
-    """Testa inicialização do HuggingFace quando fallback está habilitado (linha 42-49)"""
-    from chatbot_acessibilidade.agents.dispatcher import get_agent_response
-    from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
-
-    mock_settings.fallback_enabled = True
-    mock_settings.huggingface_api_key = "test_key"
-    mock_huggingface_client = MagicMock(spec=HuggingFaceClient)
-    mock_get_huggingface.return_value = mock_huggingface_client
-
-    with patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback") as mock_fallback:
-        mock_fallback.return_value = ("Resposta teste", "HuggingFace")
-
-        resultado = await get_agent_response("assistente", "Teste", "prefixo")
-
-        assert resultado == "Resposta teste"
-        mock_get_huggingface.assert_called_once()
-
-
-@patch("chatbot_acessibilidade.agents.dispatcher._get_huggingface_client")
-@patch("chatbot_acessibilidade.agents.dispatcher.settings")
-@pytest.mark.asyncio
-async def test_get_agent_response_huggingface_falha_inicializacao(
-    mock_settings, mock_get_huggingface
-):
-    """Testa quando HuggingFace falha na inicialização (linha 46-48)"""
-    from chatbot_acessibilidade.agents.dispatcher import get_agent_response
-
-    mock_settings.fallback_enabled = True
-    mock_settings.huggingface_api_key = "test_key"
-    mock_get_huggingface.return_value = None  # Falha na inicialização
-
-    with patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback") as mock_fallback:
-        mock_fallback.return_value = ("Resposta teste", "Google Gemini")
-
-        resultado = await get_agent_response("assistente", "Teste", "prefixo")
-
-        assert resultado == "Resposta teste"
-        # Deve tentar inicializar, mas continuar sem fallback se falhar
-        mock_get_huggingface.assert_called_once()
-
-
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
-@pytest.mark.asyncio
-async def test_get_agent_response_erro_google_api_call_503(mock_fallback):
+async def test_get_agent_response_erro_google_api_call_503(mock_client_class):
     """Testa get_agent_response quando há erro 503 (sobrecarga) - linha 58-66"""
     # Mock erro 503 (sobrecarga) - deve ser APIError
-    mock_fallback.side_effect = APIError("API sobrecarregada 503")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=APIError("API sobrecarregada 503"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:
         await get_agent_response("assistente", "Teste", "prefixo")
 
     # Deve propagar o erro
     assert "sobrecarregada" in str(exc_info.value).lower() or "erro" in str(exc_info.value).lower()
-
-
-@patch("chatbot_acessibilidade.agents.dispatcher.HuggingFaceClient")
-@patch("chatbot_acessibilidade.agents.dispatcher.settings")
-@pytest.mark.asyncio
-async def test_get_huggingface_client_excecao_na_inicializacao(
-    mock_settings, mock_huggingface_class
-):
-    """Testa _get_huggingface_client quando HuggingFaceClient levanta exceção (linha 46-48)"""
-    from chatbot_acessibilidade.agents.dispatcher import _get_huggingface_client
-
-    mock_settings.fallback_enabled = True
-    mock_settings.huggingface_api_key = "test_key"
-    mock_huggingface_class.side_effect = ValueError("Erro ao inicializar")
-
-    resultado = _get_huggingface_client()
-
-    assert resultado is None
-    mock_huggingface_class.assert_called_once()
-
-
-@patch("chatbot_acessibilidade.agents.dispatcher.HuggingFaceClient")
-@patch("chatbot_acessibilidade.agents.dispatcher.settings")
-def test_get_huggingface_client_ja_inicializado(mock_settings, mock_huggingface_class):
-    """Testa _get_huggingface_client quando já está inicializado (linha 49)"""
-    from chatbot_acessibilidade.agents.dispatcher import _get_huggingface_client
-
-    mock_settings.fallback_enabled = True
-    mock_settings.huggingface_api_key = "test_key"
-
-    # Simula que já foi inicializado
-    from chatbot_acessibilidade.agents import dispatcher
-
-    mock_existing_client = MagicMock()
-    dispatcher._huggingface_client = mock_existing_client
-
-    resultado = _get_huggingface_client()
-
-    assert resultado == mock_existing_client
-    # Não deve chamar HuggingFaceClient novamente
-    mock_huggingface_class.assert_not_called()
-
-    # Limpa para não afetar outros testes
-    dispatcher._huggingface_client = None
 
 
 def test_should_retry_resource_exhausted():
@@ -223,11 +142,13 @@ def test_should_retry_outra_excecao():
     assert _should_retry(exception) is False
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_erro_todos_provedores(mock_fallback):
+async def test_get_agent_response_erro_todos_provedores(mock_client_class):
     """Testa get_agent_response quando todos os provedores falham"""
-    mock_fallback.side_effect = APIError("todos os provedores falharam")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=APIError("todos os provedores falharam"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:
         await get_agent_response("assistente", "Teste", "prefixo")
@@ -238,37 +159,15 @@ async def test_get_agent_response_erro_todos_provedores(mock_fallback):
     )
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_erro_inesperado(mock_fallback):
+async def test_get_agent_response_erro_inesperado(mock_client_class):
     """Testa get_agent_response quando ocorre erro inesperado"""
     from chatbot_acessibilidade.core.exceptions import AgentError
 
-    mock_fallback.side_effect = Exception("Erro inesperado")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=Exception("Erro inesperado"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(AgentError):
         await get_agent_response("assistente", "Teste", "prefixo")
-
-
-@patch("chatbot_acessibilidade.agents.dispatcher._get_huggingface_client")
-@patch("chatbot_acessibilidade.agents.dispatcher.settings")
-@pytest.mark.asyncio
-async def test_get_agent_response_com_huggingface_client(mock_settings, mock_get_huggingface):
-    """Testa get_agent_response quando HuggingFace está disponível"""
-    from chatbot_acessibilidade.agents.dispatcher import get_agent_response
-    from chatbot_acessibilidade.core.llm_provider import HuggingFaceClient
-
-    mock_settings.fallback_enabled = True
-    mock_settings.huggingface_api_key = "test_key"
-    mock_huggingface_client = MagicMock(spec=HuggingFaceClient)
-    mock_get_huggingface.return_value = mock_huggingface_client
-
-    with patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback") as mock_fallback:
-        mock_fallback.return_value = ("Resposta teste", "HuggingFace")
-
-        resultado = await get_agent_response("assistente", "Teste", "prefixo")
-
-        assert resultado == "Resposta teste"
-        # Verifica que fallback_clients foi passado
-        call_args = mock_fallback.call_args
-        assert call_args is not None

@@ -18,7 +18,10 @@
 </head>
 
 <body>
-    <a href="#user-input" class="skip-link">Pular para o chat</a>
+    <a href="#user-input" class="skip-link">Pular para o campo de mensagem</a>
+
+    <!-- Live Region para anúncios do leitor de tela -->
+    <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <div class="app-wrapper">
         <!-- Conteúdo Principal -->
@@ -35,203 +38,252 @@
                             </div>
                         </div>
                     </div>
-                    <div class="header-controls">
-                        <button id="search-toggle" class="icon-button" data-testid="btn-buscar"
-                            aria-label="Buscar no histórico" aria-expanded="false" title="Buscar mensagens">
+                    <div class="accessibility-controls">
+                        <button id="font-increase" class="icon-button" data-testid="btn-aumentar-fonte"
+                            aria-label="Aumentar tamanho do texto" title="Aumentar texto">
+                            <span aria-hidden="true" style="font-size: 1.2em; font-weight: bold;">A+</span>
+                        </button>
+                        <button id="font-decrease" class="icon-button" data-testid="btn-diminuir-fonte"
+                            aria-label="Diminuir tamanho do texto" title="Diminuir texto">
+                            <span aria-hidden="true" style="font-size: 0.8em; font-weight: bold;">A-</span>
+                        </button>
+                        <button id="sound-toggle" class="icon-button" data-testid="btn-som"
+                            aria-label="Sons: ativar ou desativar bipes de feedback" aria-pressed="true"
+                            title="Sons de feedback">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.35-4.35"></path>
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                             </svg>
                         </button>
-                        <button id="clear-chat-button" class="icon-button" data-testid="btn-limpar-chat"
-                            aria-label="Limpar histórico do chat" title="Limpar conversa">
+                        <button id="settings-toggle" class="icon-button" data-testid="btn-settings"
+                            aria-label="Configurações de Acessibilidade" title="Mais opções">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M3 6h18"></path>
-                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                            </svg>
-                        </button>
-                        <button id="theme-toggle" class="icon-button" data-testid="btn-toggle-tema"
-                            aria-label="Alternar para modo escuro" title="Mudar tema">
-                            <svg id="theme-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                aria-hidden="true">
-                                <path class="theme-icon-moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
                                 </path>
-                                <!-- Ícone do sol (será adicionado dinamicamente via JS) -->
                             </svg>
                         </button>
                     </div>
-                </div>
-                <!-- Campo de busca (oculto por padrão) -->
-                <div id="search-wrapper" class="search-wrapper hidden" data-testid="search-wrapper">
-                    <input type="text" id="search-input" class="search-input" placeholder="Buscar no histórico..."
-                        data-testid="search-input" aria-label="Buscar mensagens no histórico">
-                </div>
-            </header>
-
-            <main role="main" id="main-content">
-                <div id="chat-container" class="chat-container glass-chat" role="log" aria-live="polite"
-                    aria-label="Histórico de mensagens">
-                    <!-- Card de Introdução (aparece quando chat vazio) -->
-                    <div id="intro-card" class="intro-card" data-testid="intro-card">
-                        <div class="intro-card-content">
-                            <img src="/assets/ada-states/ada-greeting.png" alt="Ada" class="intro-card-avatar"
-                                data-testid="intro-avatar">
-                            <div class="intro-card-text">
-                                <h2>Olá! Eu sou a Ada 👋</h2>
-                                <p>Seu assistente de acessibilidade digital. Estou aqui para ajudar você a entender
-                                    WCAG, ARIA, testes de acessibilidade e muito mais!</p>
-                                <p><strong>Comece fazendo uma pergunta ou escolha uma sugestão abaixo:</strong></p>
-                            </div>
-                        </div>
-                        <!-- Sugestões dentro do card de introdução -->
-                        <div id="suggestion-chips-empty" class="suggestion-chips-empty"
-                            data-testid="suggestion-chips-empty">
-                            <button class="chip" onclick="fillInput('Explique o critério 1.4.3 da WCAG')"
-                                aria-label="Perguntar sobre critério de contraste" data-testid="chip-contraste">
-                                <span aria-hidden="true">🎨</span> Explique WCAG 1.4.3
-                            </button>
-                            <button class="chip" onclick="fillInput('Quais são as roles ARIA para abas?')"
-                                aria-label="Perguntar sobre roles ARIA" data-testid="chip-aria">
-                                <span aria-hidden="true">🏷️</span> Roles ARIA para Abas
-                            </button>
-                            <button class="chip" onclick="fillInput('Como tornar um carrossel acessível?')"
-                                aria-label="Perguntar sobre carrossel acessível" data-testid="chip-carrossel">
-                                <span aria-hidden="true">🎠</span> Carrossel Acessível
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            <footer class="input-area-wrapper">
-                <form id="chat-form" class="chat-form" data-testid="form-chat">
-                    <div class="input-container floating-pill">
-                        <label for="user-input" class="sr-only">Digite sua pergunta</label>
-
-                        <!-- Botão de Ajuda Contextual (WCAG 3.3.5) -->
-                        <button type="button" class="help-button" aria-label="Ver exemplos de perguntas"
-                            data-testid="btn-ajuda" data-tooltip="Clique para ver exemplos de perguntas">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" aria-hidden="true">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
-                        </button>
-
-                        <!-- Botão de Modo Código (Novo) -->
-                        <button type="button" id="code-mode-toggle" class="icon-button-small"
-                            aria-label="Ativar Modo de Refatoração de Código" data-testid="btn-code-mode"
-                            data-tooltip="Ativa o modo para colar código">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" aria-hidden="true">
-                                <polyline points="16 18 22 12 16 6"></polyline>
-                                <polyline points="8 6 2 12 8 18"></polyline>
-                            </svg>
-                        </button>
-
-                        <!-- Botão de Personas (Novo) -->
-                        <button type="button" id="persona-toggle" class="icon-button-small"
-                            aria-label="Simular Experiência de Usuário com Personas" data-testid="btn-persona"
-                            data-tooltip="Escolha um perfil de usuário para simular">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" aria-hidden="true">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                        </button>
-
-                        <!-- Botão de Expandir Input (Novo) -->
-                        <button type="button" id="expand-input-toggle" class="icon-button-small"
-                            aria-label="Expandir área de texto" data-testid="btn-expand"
-                            data-tooltip="Aumentar área de digitação para facilitar leitura">
-                            <!-- Ícone Expandir -->
-                            <svg id="icon-expand" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <polyline points="15 3 21 3 21 9"></polyline>
-                                <polyline points="9 21 3 21 3 15"></polyline>
-                                <line x1="21" y1="3" x2="14" y2="10"></line>
-                                <line x1="3" y1="21" x2="10" y2="14"></line>
-                            </svg>
-                            <!-- Ícone Colapsar (Oculto inicialmente) -->
-                            <svg id="icon-collapse" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
-                                style="display: none;">
-                                <polyline points="4 14 10 14 10 20"></polyline>
-                                <polyline points="20 10 14 10 14 4"></polyline>
-                                <line x1="14" y1="10" x2="21" y2="3"></line>
-                                <line x1="3" y1="21" x2="10" y2="14"></line>
-                            </svg>
-                        </button>
-
-                        <button type="button" id="cancel-button" class="cancel-button hidden" data-testid="btn-cancelar"
-                            aria-label="Cancelar resposta" data-tooltip="Parar a geração da resposta">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <rect x="6" y="6" width="12" height="12"></rect>
-                            </svg>
-                        </button>
-
-                        <textarea id="user-input" name="pergunta" data-testid="input-pergunta"
-                            placeholder="Pergunte sobre WCAG, ARIA ou testes..." autocomplete="off" rows="1"
-                            aria-label="Campo de texto para sua pergunta" aria-describedby="input-hint"></textarea>
-
-                        <button type="submit" id="send-button" class="send-button" data-testid="btn-enviar"
-                            aria-label="Enviar mensagem" data-tooltip="Enviar sua pergunta">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <line x1="22" y1="2" x2="11" y2="13"></line>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Hint de Ajuda (WCAG 3.3.5) -->
-                    <div id="input-hint" class="input-hint">
-                        <strong>Dica:</strong> Pergunte sobre WCAG, ARIA, testes de acessibilidade, etc.
-                    </div>
-                </form>
-            </footer>
-        </div>
-
-        <!-- Toast Container -->
-        <div id="toast-container" class="toast-container" role="region" aria-live="assertive" aria-label="Notificações">
-        </div>
-
-        <!-- Modal Acessível (WCAG 2.4.3) -->
-        <div id="accessible-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title"
-            aria-hidden="true" hidden>
-            <div class="modal-container">
-                <div class="modal-header">
-                    <h2 id="modal-title" class="modal-title">Título do Modal</h2>
-                    <button type="button" class="modal-close" aria-label="Fechar modal" data-testid="modal-close">
+                    <div class="divider-vertical"></div>
+                    <button id="search-toggle" class="icon-button" data-testid="btn-buscar"
+                        aria-label="Buscar mensagens anteriores" aria-expanded="false" title="Buscar mensagens">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </button>
+                    <button id="clear-chat-button" class="icon-button" data-testid="btn-limpar-chat"
+                        aria-label="Apagar todas as mensagens do chat" title="Limpar conversa">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                    <button id="theme-toggle" class="icon-button" data-testid="btn-toggle-tema"
+                        aria-label="Mudar tema: claro ou escuro" title="Mudar tema">
+                        <svg id="theme-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path class="theme-icon-moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z">
+                            </path>
+                            <!-- Ícone do sol (será adicionado dinamicamente via JS) -->
                         </svg>
                     </button>
                 </div>
-                <div class="modal-body" id="modal-content">
-                    <!-- Conteúdo dinâmico do modal -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="modal-button modal-button-secondary"
-                        data-action="cancel">Cancelar</button>
-                    <button type="button" class="modal-button modal-button-primary"
-                        data-action="confirm">Confirmar</button>
+        </div>
+        <!-- Campo de busca (oculto por padrão) -->
+        <div id="search-wrapper" class="search-wrapper hidden" data-testid="search-wrapper">
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar no histórico..."
+                data-testid="search-input" aria-label="Buscar mensagens no histórico">
+        </div>
+        </header>
+
+        <main role="main" id="main-content">
+            <div id="chat-container" class="chat-container glass-chat" role="log" aria-live="polite">
+                <!-- Card de Introdução (aparece quando chat vazio) -->
+                <div id="intro-card" class="intro-card" data-testid="intro-card">
+                    <div class="intro-card-content">
+                        <img src="/assets/ada-states/ada-greeting.png" alt="Ada" class="intro-card-avatar"
+                            data-testid="intro-avatar">
+                        <div class="intro-card-text">
+                            <h2>Olá! Eu sou a Ada 👋</h2>
+                            <p>Seu assistente de acessibilidade digital. Estou aqui para ajudar você a entender
+                                WCAG, ARIA, testes de acessibilidade e muito mais!</p>
+                            <p><strong>Comece fazendo uma pergunta ou escolha uma sugestão abaixo:</strong></p>
+                        </div>
+                    </div>
+                    <!-- Sugestões dentro do card de introdução -->
+                    <div id="suggestion-chips-empty" class="suggestion-chips-empty"
+                        data-testid="suggestion-chips-empty">
+                        <button class="chip" onclick="fillInput('Explique o critério 1.4.3 da WCAG')"
+                            aria-label="Perguntar sobre critério de contraste" data-testid="chip-contraste">
+                            <span aria-hidden="true">🎨</span> Explique WCAG 1.4.3
+                        </button>
+                        <button class="chip" onclick="fillInput('Quais são as roles ARIA para abas?')"
+                            aria-label="Perguntar sobre roles ARIA" data-testid="chip-aria">
+                            <span aria-hidden="true">🏷️</span> Roles ARIA para Abas
+                        </button>
+                        <button class="chip" onclick="fillInput('Como tornar um carrossel acessível?')"
+                            aria-label="Perguntar sobre carrossel acessível" data-testid="chip-carrossel">
+                            <span aria-hidden="true">🎠</span> Carrossel Acessível
+                        </button>
+                    </div>
                 </div>
             </div>
+        </main>
+
+        <footer class="input-area-wrapper">
+            <form id="chat-form" class="chat-form" data-testid="form-chat">
+                <div class="input-container floating-pill">
+                    <label for="user-input" class="sr-only">Digite sua pergunta</label>
+
+                    <!-- Botão de Ajuda Contextual (WCAG 3.3.5) -->
+                    <button type="button" class="help-button"
+                        aria-label="Ajuda: ver exemplos de perguntas sobre acessibilidade" data-testid="btn-ajuda"
+                        data-tooltip="Ver exemplos de perguntas">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
+
+                    <!-- Botão de Modo Código (Novo) -->
+                    <button type="button" id="code-mode-toggle" class="icon-button-small"
+                        aria-label="Modo código: enviar código para análise de acessibilidade"
+                        data-testid="btn-code-mode" data-tooltip="Analisar código">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </button>
+
+                    <!-- Botão de Personas (Novo) -->
+                    <button type="button" id="persona-toggle" class="icon-button-small"
+                        aria-label="Escolher perfil de acessibilidade: leitor de tela, baixa visão ou daltonismo"
+                        data-testid="btn-persona" data-tooltip="Escolher perfil">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </button>
+
+                    <!-- Botão de Expandir Input (Novo) -->
+                    <button type="button" id="expand-input-toggle" class="icon-button-small"
+                        aria-label="Aumentar altura da caixa de texto" data-testid="btn-expand"
+                        data-tooltip="Expandir caixa de texto">
+                        <!-- Ícone Expandir -->
+                        <svg id="icon-expand" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <polyline points="9 21 3 21 3 15"></polyline>
+                            <line x1="21" y1="3" x2="14" y2="10"></line>
+                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                        </svg>
+                        <!-- Ícone Colapsar (Oculto inicialmente) -->
+                        <svg id="icon-collapse" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: none;">
+                            <polyline points="4 14 10 14 10 20"></polyline>
+                            <polyline points="20 10 14 10 14 4"></polyline>
+                            <line x1="14" y1="10" x2="21" y2="3"></line>
+                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                        </svg>
+                    </button>
+
+                    <button type="button" id="cancel-button" class="cancel-button hidden" data-testid="btn-cancelar"
+                        aria-label="Cancelar resposta" data-tooltip="Parar a geração da resposta">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="6" y="6" width="12" height="12"></rect>
+                        </svg>
+                    </button>
+
+                    <!-- Botões de Voz (STT/TTS) -->
+                    <div class="voice-controls">
+                        <button type="button" id="mic-button" class="icon-button-small" aria-label="Falar para digitar"
+                            data-testid="btn-mic" data-tooltip="Ditado por voz">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </button>
+                        <button type="button" id="tts-toggle" class="icon-button-small"
+                            aria-label="Ouvir respostas em voz alta" aria-pressed="false" data-testid="btn-tts"
+                            data-tooltip="Leitura de respostas">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <textarea id="user-input" name="pergunta" data-testid="input-pergunta"
+                        placeholder="Pergunte sobre WCAG, ARIA ou testes..." autocomplete="off" rows="1"
+                        aria-label="Campo de texto para sua pergunta" aria-describedby="input-hint"></textarea>
+
+                    <button type="submit" id="send-button" class="send-button" data-testid="btn-enviar"
+                        aria-label="Enviar mensagem" data-tooltip="Enviar sua pergunta">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Hint de Ajuda (WCAG 3.3.5) -->
+                <div id="input-hint" class="input-hint">
+                    <strong>Dica:</strong> Pergunte sobre WCAG, ARIA, testes de acessibilidade, etc.
+                </div>
+            </form>
+        </footer>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container" role="region" aria-live="assertive">
+    </div>
+
+    <!-- Modal Acessível (WCAG 2.4.3) -->
+    <div id="accessible-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title"
+        aria-hidden="true" hidden tabindex="-1">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title">Título do Modal</h2>
+                <button type="button" class="modal-close" aria-label="Fechar modal" data-testid="modal-close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Conteúdo dinâmico do modal -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-button modal-button-secondary" data-action="cancel">Cancelar</button>
+                <button type="button" class="modal-button modal-button-primary" data-action="confirm">Confirmar</button>
+            </div>
         </div>
+    </div>
     </div>
 
     <script src="/static/app.js"></script>
@@ -245,6 +297,50 @@
             }
         }
     </script>
+    <!-- VLibras Widget -->
+    <aside aria-label="Ferramenta de tradução para Libras">
+        <div vw class="enabled">
+            <div vw-access-button class="active"></div>
+            <div vw-plugin-wrapper>
+                <div class="vw-plugin-top-wrapper"></div>
+            </div>
+        </div>
+    </aside>
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+    <script>
+        new window.VLibras.Widget('https://vlibras.gov.br/app');
+    </script>
+
+    <!-- SVG Filters for Color Blindness -->
+    <svg style="display: none">
+        <defs>
+            <filter id="protanopia">
+                <feColorMatrix type="matrix" values="0.567, 0.433, 0, 0, 0
+                                                     0.558, 0.442, 0, 0, 0
+                                                     0, 0.242, 0.758, 0, 0
+                                                     0, 0, 0, 1, 0" />
+            </filter>
+            <filter id="deuteranopia">
+                <feColorMatrix type="matrix" values="0.625, 0.375, 0, 0, 0
+                                                     0.7, 0.3, 0, 0, 0
+                                                     0, 0.3, 0.7, 0, 0
+                                                     0, 0, 0, 1, 0" />
+            </filter>
+            <filter id="tritanopia">
+                <feColorMatrix type="matrix" values="0.95, 0.05, 0, 0, 0
+                                                     0, 0.433, 0.567, 0, 0
+                                                     0, 0.475, 0.525, 0, 0
+                                                     0, 0, 0, 1, 0" />
+            </filter>
+            <filter id="achromatopsia">
+                <feColorMatrix type="matrix" values="0.299, 0.587, 0.114, 0, 0
+                                                     0.299, 0.587, 0.114, 0, 0
+                                                     0.299, 0.587, 0.114, 0, 0
+                                                     0, 0, 0, 1, 0" />
+            </filter>
+        </defs>
+    </svg>
+
 </body>
 
 </html>

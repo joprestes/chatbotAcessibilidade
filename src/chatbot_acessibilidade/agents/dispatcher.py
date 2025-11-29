@@ -16,14 +16,9 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from chatbot_acessibilidade.agents.factory import criar_agentes
 from chatbot_acessibilidade.config import settings
 from chatbot_acessibilidade.core.exceptions import APIError, AgentError
+from chatbot_acessibilidade.core.llm_provider import GoogleGeminiClient
 from chatbot_acessibilidade.core.constants import ErrorMessages, MAX_RETRY_ATTEMPTS, LogMessages
-from chatbot_acessibilidade.core.llm_provider import (
-    GoogleGeminiClient,
-    HuggingFaceClient,
-    generate_with_fallback,
-)
 
-# Configuração de logging
 logger = logging.getLogger(__name__)
 
 # =======================
@@ -34,20 +29,16 @@ AGENTES = criar_agentes()
 # =======================
 # Inicialização de clientes LLM (lazy loading)
 # =======================
-_huggingface_client: Optional[HuggingFaceClient] = None
+# Cache global do cliente
+_gemini_client: Optional[GoogleGeminiClient] = None
 
 
-def _get_huggingface_client() -> Optional[HuggingFaceClient]:
-    """Inicializa o cliente Hugging Face de forma lazy"""
-    global _huggingface_client
-    if _huggingface_client is None and settings.fallback_enabled and settings.huggingface_api_key:
-        try:
-            logger.info("Inicializando cliente Hugging Face")
-            _huggingface_client = HuggingFaceClient()
-        except Exception as e:
-            logger.warning(f"Não foi possível inicializar Hugging Face: {e}")
-            return None
-    return _huggingface_client
+def _get_gemini_client(agent: Agent) -> GoogleGeminiClient:
+    """Retorna o cliente Gemini (singleton)"""
+    global _gemini_client
+    if _gemini_client is None:
+        _gemini_client = GoogleGeminiClient(agent)
+    return _gemini_client
 
 
 # =======================
@@ -105,27 +96,13 @@ async def rodar_agente(agent: Agent, prompt: str, user_id="user", session_prefix
     """
     logger.debug(f"Executando agente '{agent.name}' com prompt: {prompt[:50]}...")
 
-    # Cria cliente primário (Google Gemini)
+    # Cria cliente primário (Google Gemini com fallback automático entre chaves)
     primary_client = GoogleGeminiClient(agent)
 
-    # Prepara clientes de fallback (Hugging Face)
-    fallback_clients = []
-    fallback_models = []
-
-    if settings.fallback_enabled:
-        huggingface_client = _get_huggingface_client()
-        if huggingface_client:
-            fallback_clients.append(huggingface_client)
-            fallback_models = settings.huggingface_models_list
-
     try:
-        # Usa o sistema de fallback automático
-        resposta, provedor_usado = await generate_with_fallback(
-            primary_client=primary_client,
-            prompt=prompt,
-            fallback_clients=fallback_clients if fallback_clients else None,
-            fallback_models=fallback_models if fallback_models else None,
-        )
+        # Usa apenas Google Gemini (com fallback automático entre chaves)
+        resposta = await primary_client.generate(prompt)
+        provedor_usado = primary_client.get_provider_name()
 
         logger.info(f"Agente '{agent.name}' executado com sucesso usando {provedor_usado}")
         return str(resposta)
