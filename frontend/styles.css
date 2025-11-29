@@ -1828,17 +1828,17 @@ main {
 .char-counter {
     font-size: 14px;
     /* Aumentado de 12px para 14px */
-    font-weight: 500;
-    /* Adicionado peso para melhor visibilidade */
-    color: var(--text-primary);
-    /* Melhor contraste - WCAG AA */
+    font-weight: 600;
+    /* Aumentado para 600 - melhor visibilidade AAA */
+    color: #3B0764;
+    /* Roxo muito escuro para AAA 7:1 */
     text-align: right;
     margin-top: 6px;
     /* Aumentado de 4px para 6px */
     padding: 0 8px;
     /* Aumentado de 4px para 8px */
-    opacity: 0.9;
-    /* Aumentado de 0.8 para 0.9 - mais visível */
+    opacity: 1;
+    /* Removida opacity para AAA */
 }
 
 @media (min-width: 768px) {
@@ -1904,7 +1904,10 @@ main {
 /* Hint de Ajuda */
 .input-hint {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: #3B0764;
+    /* Roxo muito escuro para AAA 7:1 */
+    font-weight: 600;
+    /* Peso aumentado para melhor legibilidade */
     padding: 4px 8px;
     margin-top: 4px;
     background: rgba(124, 58, 237, 0.05);
@@ -2894,6 +2897,39 @@ footer a:focus {
 
 [data-theme="dark"] [data-tooltip]::after {
     background: #1E1B4B;
-    border-color: var(--accent-color);
-    color: #FFFFFF;
+    border-color: var(--border-color);
+}
+
+/* ========================================= */
+/* Modo de Alto Contraste Forçado (WCAG 1.4.11) */
+/* ========================================= */
+@media (forced-colors: active) {
+
+    /* Garante que cores do sistema sejam usadas */
+    * {
+        color: CanvasText !important;
+        background-color: Canvas !important;
+        border-color: CanvasText !important;
+    }
+
+    /* Links e botões usam LinkText */
+    a,
+    button,
+    .chip,
+    .icon-button {
+        color: LinkText !important;
+    }
+
+    /* Foco visível */
+    *:focus-visible {
+        outline: 3px solid Highlight !important;
+        outline-offset: 2px !important;
+    }
+
+    /* Bordas visíveis */
+    .chat-container,
+    .input-container,
+    header {
+        border: 1px solid CanvasText !important;
+    }
 }
