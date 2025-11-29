@@ -7,7 +7,6 @@ import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional, List
-import httpx
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -92,24 +91,56 @@ class GoogleGeminiClient(LLMClient):
         """
         self.agent = agent
         self._genai_client: Optional[genai.Client] = None
+        self._current_api_key: str = ""
+        self._using_secondary_key: bool = False
 
     def _get_genai_client(self) -> genai.Client:
         """Inicializa o cliente Gemini de forma lazy"""
         if self._genai_client is None:
             logger.info("Inicializando cliente Gemini")
-            # Usa a API key das configurações
+            # Usa a API key primária das configurações
             api_key = settings.google_api_key
             if not api_key:
                 logger.error(LogMessages.CONFIG_MISSING_API_KEY)
                 raise ValueError("GOOGLE_API_KEY não configurada")
-            logger.debug("Inicializando genai.Client...")
+            
+            self._current_api_key = api_key
+            self._using_secondary_key = False
+            
+            logger.debug("Inicializando genai.Client com chave primária...")
             try:
                 self._genai_client = genai.Client(api_key=api_key)
-                logger.info("genai.Client inicializado com sucesso")
+                logger.info("genai.Client inicializado com sucesso (chave primária)")
             except Exception as e:
                 logger.error(LogMessages.CONFIG_GENAI_INIT_ERROR.format(error=e))
                 raise
         return self._genai_client
+    
+    def _switch_to_secondary_key(self) -> bool:
+        """
+        Tenta trocar para a chave secundária.
+        
+        Returns:
+            True se conseguiu trocar, False se não há chave secundária
+        """
+        if not settings.google_api_key_second:
+            logger.warning("Chave secundária não configurada, não é possível fazer fallback")
+            return False
+        
+        if self._using_secondary_key:
+            logger.warning("Já está usando a chave secundária, não há mais fallback disponível")
+            return False
+        
+        logger.info("Trocando para chave secundária do Google Gemini...")
+        try:
+            self._genai_client = genai.Client(api_key=settings.google_api_key_second)
+            self._current_api_key = settings.google_api_key_second
+            self._using_secondary_key = True
+            logger.info("✅ Chave secundária ativada com sucesso!")
+            return True
+        except Exception as e:
+            logger.error(f"Erro ao trocar para chave secundária: {e}")
+            return False
 
     async def generate(self, prompt: str, model: Optional[str] = None) -> str:
         """Gera resposta usando Google Gemini"""
@@ -192,30 +223,155 @@ class GoogleGeminiClient(LLMClient):
             raise APIError(
                 ErrorMessages.TIMEOUT_GEMINI.format(timeout=settings.api_timeout_seconds)
             )
-        except google_exceptions.ResourceExhausted:
+        except google_exceptions.ResourceExhausted as e:
             logger.error(LogMessages.API_ERROR_GEMINI_RATE_LIMIT)
+            # Re-raise como QuotaExhaustedError para acionar fallback
             raise QuotaExhaustedError(
                 ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini")
-            )
+            ) from e
         except google_exceptions.PermissionDenied:
             logger.error(LogMessages.API_ERROR_GEMINI_AUTH)
             raise APIError(ErrorMessages.API_ERROR_SERVER_CONFIG)
         except google_exceptions.GoogleAPICallError as e:
-            error_str = str(e).lower()
-            if "503" in error_str or "overloaded" in error_str:
-                logger.warning(f"API sobrecarregada no Gemini: {e}")
+            # Verifica se é erro de quota (429)
+            if e.status_code == 429 or "RESOURCE_EXHAUSTED" in str(e):
+                logger.error("Quota esgotada detectada em GoogleAPICallError")
+                
+                # Tenta trocar para chave secundária
+                if self._switch_to_secondary_key():
+                    logger.info("Tentando novamente com chave secundária...")
+                    # Reinicializa a sessão com a nova chave
+                    session_service = InMemorySessionService()
+                    runner = Runner(
+                        agent=self.agent,
+                        app_name="agents", # Changed from "chatbot_acessibilidade" to "agents" for consistency
+                        session_service=session_service,
+                    )
+                    try:
+                        # Re-run the generation logic with the new key
+                        await session_service.create_session(
+                            user_id="user", session_id=session_id, app_name=app_name
+                        )
+                        content = types.Content(role="user", parts=[types.Part(text=prompt)])
+                        final_response_content_retry = None
+
+                        async def coletar_resposta_retry():
+                            nonlocal final_response_content_retry
+                            async for evento in runner.run_async(
+                                user_id="user", session_id=session_id, new_message=content
+                            ):
+                                if evento.is_final_response():
+                                    final_response_content_retry = evento.content
+                                    break
+                        
+                        await asyncio.wait_for(coletar_resposta_retry(), timeout=settings.api_timeout_seconds)
+
+                        if not final_response_content_retry or not final_response_content_retry.parts:
+                            raise APIError("Resposta vazia do Gemini após retry com chave secundária")
+                        
+                        primeira_parte_retry = final_response_content_retry.parts[0]
+                        if (
+                            hasattr(primeira_parte_retry, "finish_reason")
+                            and primeira_parte_retry.finish_reason == types.FinishReason.SAFETY
+                        ):
+                            raise APIError("Pergunta bloqueada por segurança no Gemini após retry")
+
+                        resultado_retry = "".join(
+                            (parte.text or "") + "\n"
+                            for parte in final_response_content_retry.parts
+                            if getattr(parte, "text", None) is not None
+                        )
+                        logger.debug("Google Gemini executado com sucesso com chave secundária")
+                        return str(resultado_retry.strip())
+
+                    except Exception as retry_error:
+                        logger.error(f"Erro mesmo com chave secundária: {retry_error}")
+                        raise QuotaExhaustedError(
+                            ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini (ambas as chaves)")
+                        )
+                else:
+                    # Não há chave secundária ou já está usando
+                    raise QuotaExhaustedError(
+                        ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini")
+                    )
+            elif e.status_code == 503:
+                logger.warning("Modelo indisponível (503)")
                 raise ModelUnavailableError(ErrorMessages.MODEL_UNAVAILABLE_GEMINI)
-            logger.error(LogMessages.API_ERROR_GEMINI_COMMUNICATION.format(error=e))
-            raise APIError(ErrorMessages.API_ERROR_COMMUNICATION)
+            else:
+                logger.error(f"Erro na API do Google: {e}")
+                raise APIError(f"Erro na API do Google: {str(e)}")
         except APIError:
             # Re-raise APIError para que seja propagado corretamente
             raise
+        except QuotaExhaustedError:
+            # Re-raise para que o fallback externo funcione
+            raise
+        except ModelUnavailableError:
+            # Re-raise para que o fallback externo funcione
+            raise
         except Exception as e:
+            error_str = str(e).lower()
             logger.error(f"Erro inesperado no Gemini: {e}", exc_info=True)
-            # Loga o erro completo para debug
-            import traceback
+            
+            # Verifica se é erro de quota em Exception genérica
+            if "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str:
+                logger.error("Quota esgotada detectada em Exception genérica")
+                
+                # Tenta trocar para chave secundária
+                if self._switch_to_secondary_key():
+                    logger.info("Tentando novamente com chave secundária...")
+                    session_service = InMemorySessionService()
+                    runner = Runner(
+                        agent=self.agent,
+                        app_name="agents", # Changed from "chatbot_acessibilidade" to "agents" for consistency
+                        session_service=session_service,
+                    )
+                    try:
+                        # Re-run the generation logic with the new key
+                        await session_service.create_session(
+                            user_id="user", session_id=session_id, app_name=app_name
+                        )
+                        content = types.Content(role="user", parts=[types.Part(text=prompt)])
+                        final_response_content_retry = None
 
-            logger.error(f"Traceback completo: {traceback.format_exc()}")
+                        async def coletar_resposta_retry():
+                            nonlocal final_response_content_retry
+                            async for evento in runner.run_async(
+                                user_id="user", session_id=session_id, new_message=content
+                            ):
+                                if evento.is_final_response():
+                                    final_response_content_retry = evento.content
+                                    break
+                        
+                        await asyncio.wait_for(coletar_resposta_retry(), timeout=settings.api_timeout_seconds)
+
+                        if not final_response_content_retry or not final_response_content_retry.parts:
+                            raise APIError("Resposta vazia do Gemini após retry com chave secundária")
+                        
+                        primeira_parte_retry = final_response_content_retry.parts[0]
+                        if (
+                            hasattr(primeira_parte_retry, "finish_reason")
+                            and primeira_parte_retry.finish_reason == types.FinishReason.SAFETY
+                        ):
+                            raise APIError("Pergunta bloqueada por segurança no Gemini após retry")
+
+                        resultado_retry = "".join(
+                            (parte.text or "") + "\n"
+                            for parte in final_response_content_retry.parts
+                            if getattr(parte, "text", None) is not None
+                        )
+                        logger.debug("Google Gemini executado com sucesso com chave secundária")
+                        return str(resultado_retry.strip())
+                    except Exception as retry_error:
+                        logger.error(f"Erro mesmo com chave secundária: {retry_error}")
+                        raise QuotaExhaustedError(
+                            ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini (ambas as chaves)")
+                        )
+                else:
+                    raise QuotaExhaustedError(
+                        ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini")
+                    )
+            
             raise AgentError(f"Erro: Ocorreu uma falha inesperada. Detalhes: {str(e)}")
 
     def should_fallback(self, exception: Exception) -> bool:
@@ -236,116 +392,95 @@ class GoogleGeminiClient(LLMClient):
         return "Google Gemini"
 
 
-class HuggingFaceClient(LLMClient):
-    """Cliente para Hugging Face Inference API"""
-
-    BASE_URL = "https://api-inference.huggingface.co/models"
+class FireworksAIClient(LLMClient):
+    """Cliente para Fireworks AI usando API compatível com OpenAI"""
 
     def __init__(self):
-        """Inicializa o cliente Hugging Face"""
+        """Inicializa o cliente Fireworks AI"""
         if not settings.huggingface_api_key:
-            raise ValueError("HUGGINGFACE_API_KEY não configurada")
+            raise ValueError("HUGGINGFACE_API_KEY não configurada (usada para Fireworks)")
         self.api_key = settings.huggingface_api_key
         self.timeout = settings.huggingface_timeout_seconds
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client = None
 
-    def _get_client(self) -> httpx.AsyncClient:
-        """Inicializa o cliente HTTP de forma lazy"""
+    def _get_client(self):
+        """Inicializa o cliente OpenAI apontando para Fireworks"""
         if self._client is None:
-            self._client = httpx.AsyncClient(
-                timeout=httpx.Timeout(self.timeout, connect=10.0),
-                headers=(
-                    {
-                        "Authorization": f"Bearer {self.api_key}",
-                    }
-                    if self.api_key
-                    else {}
-                ),
+            from openai import OpenAI
+            self._client = OpenAI(
+                api_key=self.api_key,
+                base_url="https://api.fireworks.ai/inference/v1",
+                timeout=self.timeout
             )
         return self._client
 
     async def generate(self, prompt: str, model: Optional[str] = None) -> str:
         """
-        Gera resposta usando Hugging Face.
+        Gera resposta usando Fireworks AI.
 
         Args:
             prompt: Texto do prompt
-            model: Nome do modelo Hugging Face (obrigatório)
+            model: Nome do modelo Fireworks (obrigatório)
 
         Returns:
             Resposta gerada como string
         """
         if not model:
-            raise ValueError("Modelo deve ser especificado para Hugging Face")
+            raise ValueError("Modelo deve ser especificado para Fireworks AI")
 
-        logger.debug(f"Usando Hugging Face com modelo '{model}' para gerar resposta")
+        logger.debug(f"Usando Fireworks AI com modelo '{model}' para gerar resposta")
 
         client = self._get_client()
 
-        payload = {
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.7,
-            "max_tokens": HUGGINGFACE_MAX_TOKENS,
-        }
-
         try:
+            # Usa chat.completions (formato OpenAI)
             response = await asyncio.wait_for(
-                client.post(f"{self.BASE_URL}/{model}", json=payload), timeout=self.timeout
+                asyncio.to_thread(
+                    client.chat.completions.create,
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=HUGGINGFACE_MAX_TOKENS,
+                    temperature=0.7,
+                ),
+                timeout=self.timeout
             )
-            response.raise_for_status()
 
-            data = response.json()
+            # Extrai a resposta do formato OpenAI
+            if not response.choices or len(response.choices) == 0:
+                raise APIError("Resposta inválida do Fireworks AI: sem choices")
 
-            # Extrai a resposta
-            if "choices" not in data or not data["choices"]:
-                raise APIError("Resposta inválida do Hugging Face: sem choices")
+            content = response.choices[0].message.content
+            if not content:
+                raise APIError("Resposta inválida do Fireworks AI: content vazio")
 
-            choice = data["choices"][0]
-            if "message" not in choice or "content" not in choice["message"]:
-                raise APIError("Resposta inválida do Hugging Face: sem content")
-
-            content = choice["message"]["content"]
-            if not isinstance(content, str):
-                raise APIError("Resposta inválida do Hugging Face: content não é string")
-            logger.debug(f"Hugging Face modelo '{model}' executado com sucesso")
+            logger.debug(f"Fireworks AI modelo '{model}' executado com sucesso")
             return str(content.strip())
 
         except asyncio.TimeoutError:
-            logger.error(f"Timeout ao executar Hugging Face modelo '{model}' após {self.timeout}s")
+            logger.error(f"Timeout ao executar Fireworks AI modelo '{model}' após {self.timeout}s")
             raise APIError(
-                f"Timeout: A requisição ao Hugging Face demorou mais de {self.timeout} segundos."
+                f"Timeout: A requisição ao Fireworks AI demorou mais de {self.timeout} segundos."
             )
-        except httpx.HTTPStatusError as e:
-            status_code = e.response.status_code
-            if status_code == 429:
-                logger.error(LogMessages.API_ERROR_HUGGINGFACE_RATE_LIMIT.format(model=model))
-                raise QuotaExhaustedError(
-                    ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider=f"modelo {model}")
-                )
-            elif status_code == 503:
-                logger.warning(f"Modelo '{model}' indisponível no Hugging Face")
-                raise ModelUnavailableError(
-                    ErrorMessages.MODEL_UNAVAILABLE_HUGGINGFACE.format(model=model)
-                )
-            elif status_code == 401 or status_code == 403:
-                logger.error(LogMessages.API_ERROR_HUGGINGFACE_AUTH)
-                raise APIError(ErrorMessages.API_ERROR_HUGGINGFACE_INVALID_KEY)
-            else:
-                logger.error(
-                    LogMessages.API_ERROR_HUGGINGFACE_HTTP.format(status_code=status_code, error=e)
-                )
-                raise APIError(
-                    ErrorMessages.API_ERROR_HUGGINGFACE_COMMUNICATION.format(
-                        status_code=status_code
-                    )
-                )
-        except httpx.RequestError as e:
-            logger.error(LogMessages.API_ERROR_HUGGINGFACE_REQUEST.format(error=e))
-            raise APIError(ErrorMessages.API_ERROR_HUGGINGFACE_CONNECTION)
         except Exception as e:
-            logger.error(LogMessages.API_ERROR_HUGGINGFACE_GENERIC.format(error=e), exc_info=True)
-            raise APIError(ErrorMessages.API_ERROR_HUGGINGFACE_GENERIC)
+            error_str = str(e).lower()
+            
+            # Verifica erros específicos
+            if "429" in error_str or "rate limit" in error_str:
+                logger.error(f"Rate limit no Fireworks AI modelo '{model}'")
+                raise QuotaExhaustedError(
+                    ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider=f"Fireworks AI modelo {model}")
+                )
+            elif "503" in error_str or "unavailable" in error_str or "loading" in error_str:
+                logger.warning(f"Modelo '{model}' indisponível no Fireworks AI")
+                raise ModelUnavailableError(
+                    f"Modelo {model} temporariamente indisponível no Fireworks AI"
+                )
+            elif "401" in error_str or "403" in error_str or "unauthorized" in error_str:
+                logger.error("Erro de autenticação no Fireworks AI")
+                raise APIError("API key inválida ou sem permissão no Fireworks AI")
+            else:
+                logger.error(f"Erro ao chamar Fireworks AI: {e}", exc_info=True)
+                raise APIError(f"Erro ao chamar Fireworks AI: {str(e)}")
 
     def should_fallback(self, exception: Exception) -> bool:
         """Determina se deve acionar fallback para outro modelo"""
@@ -356,7 +491,7 @@ class HuggingFaceClient(LLMClient):
         return False
 
     def get_provider_name(self) -> str:
-        return "HuggingFace"
+        return "Fireworks AI"
 
 
 async def generate_with_fallback(

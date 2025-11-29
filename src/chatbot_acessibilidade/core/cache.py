@@ -6,7 +6,7 @@ import hashlib
 import logging
 from typing import Optional, Dict, Any, List, Tuple
 from difflib import SequenceMatcher
-from cachetools import TTLCache  # type: ignore[import-untyped]
+from cachetools import TTLCache
 
 from chatbot_acessibilidade.config import settings
 from chatbot_acessibilidade.core.constants import (
@@ -52,8 +52,8 @@ def get_cache_key(pergunta: str) -> str:
     Returns:
         Hash MD5 da pergunta normalizada
     """
-    # Normaliza a pergunta (lowercase, strip, remove espaços extras)
-    pergunta_normalizada = " ".join(pergunta.lower().strip().split())
+    # Normaliza a pergunta (casefold, strip, remove espaços extras)
+    pergunta_normalizada = " ".join(pergunta.casefold().strip().split())
     return hashlib.md5(pergunta_normalizada.encode("utf-8")).hexdigest()
 
 

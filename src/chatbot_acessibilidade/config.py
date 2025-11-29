@@ -10,8 +10,14 @@ from pydantic import Field, field_validator, model_validator
 class Settings(BaseSettings):
     """Configurações da aplicação"""
 
-    # API Google
-    google_api_key: str = Field(..., description="Chave da API do Google Gemini")
+    # API Google - Chave primária (obrigatória)
+    google_api_key: str = Field(..., description="Chave da API do Google Gemini (primária)")
+    
+    # API Google - Chave secundária (opcional, para fallback)
+    google_api_key_second: str = Field(
+        default="", 
+        description="Chave da API do Google Gemini (secundária, opcional para fallback)"
+    )
 
     # Hugging Face (opcional, para fallback)
     huggingface_api_key: str = Field(
