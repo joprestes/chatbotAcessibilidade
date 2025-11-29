@@ -1595,6 +1595,14 @@ main {
     border: none;
     padding: 16px 20px;
     animation: slideInError 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    /* Melhora legibilidade em fundos escuros */
+}
+
+.message-bubble.error .message-timestamp {
+    color: #FFFFFF !important;
+    /* Garante contraste no timestamp (4.5:1+) */
+    opacity: 1 !important;
 }
 
 .message-bubble.error.error-timeout {

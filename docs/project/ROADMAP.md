@@ -24,6 +24,21 @@ Este documento descreve o planejamento estratégico de funcionalidades para o pr
   - **Descrição**: A Ada fornece código pronto (React/Vue/HTML) de componentes comuns (Modais, Tabs) 100% acessíveis.
   - **Tecnologia**: Base de conhecimento vetorial (RAG) com exemplos curados.
 
+## 🤖 Fase 2: Evolução dos Agentes (IA Especialista)
+*Foco: Aprofundar a especialização técnica e empatia dos agentes.*
+
+- [ ] **Agente Assistente 2.0**
+  - Validação automática de contraste (cálculo de razão).
+  - Templates de Loading States (ARIA live regions).
+  - Seção de "Armadilhas Comuns" nas respostas.
+
+- [ ] **Novos Agentes Especialistas**
+  - **Design System Agent**: Sugestão de tokens (cores, espaçamento, tipografia) acessíveis.
+  - **Metrics Agent**: Scorecard quantitativo de acessibilidade e impacto estimado.
+
+- [ ] **Orquestração Inteligente**
+  - Modos de execução: Rápido (Assistente+Validador), Padrão e Profundo (Todos + Métricas).
+
 ## 🛠️ Fase 3: Ferramentas de Produtividade & Técnica
 *Foco: Melhorar a experiência de uso e alcance da ferramenta.*
 

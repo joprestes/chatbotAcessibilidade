@@ -18,7 +18,7 @@
 </head>
 
 <body>
-    <a href="#user-input" class="skip-link" tabindex="1">Pular para o campo de mensagem</a>
+    <a href="#user-input" class="skip-link">Pular para o campo de mensagem</a>
 
     <!-- Live Region para anúncios do leitor de tela -->
     <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -144,7 +144,7 @@
                     <label for="user-input" class="sr-only">Digite sua pergunta</label>
 
                     <!-- Botão de Ajuda Contextual (WCAG 3.3.5) -->
-                    <button type="button" class="help-button" tabindex="6"
+                    <button type="button" class="help-button"
                         aria-label="Ajuda: ver exemplos de perguntas sobre acessibilidade" data-testid="btn-ajuda"
                         data-tooltip="Ver exemplos de perguntas">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -157,7 +157,7 @@
                     </button>
 
                     <!-- Botão de Modo Código (Novo) -->
-                    <button type="button" id="code-mode-toggle" class="icon-button-small" tabindex="9"
+                    <button type="button" id="code-mode-toggle" class="icon-button-small"
                         aria-label="Modo código: enviar código para análise de acessibilidade"
                         data-testid="btn-code-mode" data-tooltip="Analisar código">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -169,7 +169,7 @@
                     </button>
 
                     <!-- Botão de Personas (Novo) -->
-                    <button type="button" id="persona-toggle" class="icon-button-small" tabindex="7"
+                    <button type="button" id="persona-toggle" class="icon-button-small"
                         aria-label="Escolher perfil de acessibilidade: leitor de tela, baixa visão ou daltonismo"
                         data-testid="btn-persona" data-tooltip="Escolher perfil">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -181,7 +181,7 @@
                     </button>
 
                     <!-- Botão de Expandir Input (Novo) -->
-                    <button type="button" id="expand-input-toggle" class="icon-button-small" tabindex="8"
+                    <button type="button" id="expand-input-toggle" class="icon-button-small"
                         aria-label="Aumentar altura da caixa de texto" data-testid="btn-expand"
                         data-tooltip="Expandir caixa de texto">
                         <!-- Ícone Expandir -->
@@ -214,8 +214,8 @@
 
                     <!-- Botões de Voz (STT/TTS) -->
                     <div class="voice-controls">
-                        <button type="button" id="mic-button" class="icon-button-small" tabindex="4"
-                            aria-label="Falar para digitar" data-testid="btn-mic" data-tooltip="Ditado por voz">
+                        <button type="button" id="mic-button" class="icon-button-small" aria-label="Falar para digitar"
+                            data-testid="btn-mic" data-tooltip="Ditado por voz">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -224,7 +224,7 @@
                                 <line x1="8" y1="23" x2="16" y2="23"></line>
                             </svg>
                         </button>
-                        <button type="button" id="tts-toggle" class="icon-button-small" tabindex="5"
+                        <button type="button" id="tts-toggle" class="icon-button-small"
                             aria-label="Ouvir respostas em voz alta" aria-pressed="false" data-testid="btn-tts"
                             data-tooltip="Leitura de respostas">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -235,11 +235,11 @@
                         </button>
                     </div>
 
-                    <textarea id="user-input" name="pergunta" data-testid="input-pergunta" tabindex="2"
+                    <textarea id="user-input" name="pergunta" data-testid="input-pergunta"
                         placeholder="Pergunte sobre WCAG, ARIA ou testes..." autocomplete="off" rows="1"
                         aria-label="Campo de texto para sua pergunta" aria-describedby="input-hint"></textarea>
 
-                    <button type="submit" id="send-button" class="send-button" data-testid="btn-enviar" tabindex="3"
+                    <button type="submit" id="send-button" class="send-button" data-testid="btn-enviar"
                         aria-label="Enviar mensagem" data-tooltip="Enviar sua pergunta">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -298,12 +298,14 @@
         }
     </script>
     <!-- VLibras Widget -->
-    <div vw class="enabled">
-        <div vw-access-button class="active"></div>
-        <div vw-plugin-wrapper>
-            <div class="vw-plugin-top-wrapper"></div>
+    <aside aria-label="Ferramenta de tradução para Libras">
+        <div vw class="enabled">
+            <div vw-access-button class="active"></div>
+            <div vw-plugin-wrapper>
+                <div class="vw-plugin-top-wrapper"></div>
+            </div>
         </div>
-    </div>
+    </aside>
     <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
     <script>
         new window.VLibras.Widget('https://vlibras.gov.br/app');
