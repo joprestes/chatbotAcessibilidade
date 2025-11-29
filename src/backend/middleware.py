@@ -36,10 +36,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             # Política restritiva mas funcional para o frontend
             csp_policy = (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline'; "
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "script-src 'self' 'unsafe-inline' https://vlibras.gov.br https://cdn.jsdelivr.net; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
                 "img-src 'self' data: https:; "
-                "font-src 'self' data: https://fonts.gstatic.com; "
+                "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
                 "connect-src 'self'; "
                 "frame-ancestors 'none'; "
                 "base-uri 'self'; "
@@ -64,10 +64,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
         # Permissions-Policy (antigo Feature-Policy)
-        # Desabilita features desnecessárias
+        # Permite microphone para reconhecimento de voz
         response.headers["Permissions-Policy"] = (
             "geolocation=(), "
-            "microphone=(), "
+            "microphone=(self), "
             "camera=(), "
             "payment=(), "
             "usb=(), "
