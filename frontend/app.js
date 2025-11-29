@@ -1384,6 +1384,9 @@ function setupEventListeners() {
     // Foco automático no input
     userInput.focus();
 
+    // Inicializa VLibras
+    initVLibras();
+
     window.setupDone = true;
     console.log('Finished setupEventListeners');
 }
@@ -1946,6 +1949,33 @@ function getErrorType(error) {
     } else {
         return 'generic';
     }
+}
+
+/**
+ * Inicializa o widget VLibras carregando o script dinamicamente
+ * Isso evita problemas de carregamento e garante que o DOM esteja pronto
+ */
+function initVLibras() {
+    // Verifica se já existe para evitar duplicidade
+    if (document.getElementById('vlibras-script')) return;
+
+    const script = document.createElement('script');
+    script.id = 'vlibras-script';
+    script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js';
+    script.async = true;
+
+    script.onload = () => {
+        if (window.VLibras && window.VLibras.Widget) {
+            new window.VLibras.Widget('https://vlibras.gov.br/app');
+            console.log('VLibras widget initialized successfully');
+        }
+    };
+
+    script.onerror = () => {
+        console.warn('Falha ao carregar widget VLibras');
+    };
+
+    document.body.appendChild(script);
 }
 
 // =========================================
