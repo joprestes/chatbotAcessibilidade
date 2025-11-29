@@ -103,10 +103,10 @@ class GoogleGeminiClient(LLMClient):
             if not api_key:
                 logger.error(LogMessages.CONFIG_MISSING_API_KEY)
                 raise ValueError("GOOGLE_API_KEY não configurada")
-            
+
             self._current_api_key = api_key
             self._using_secondary_key = False
-            
+
             logger.debug("Inicializando genai.Client com chave primária...")
             try:
                 self._genai_client = genai.Client(api_key=api_key)
@@ -115,22 +115,22 @@ class GoogleGeminiClient(LLMClient):
                 logger.error(LogMessages.CONFIG_GENAI_INIT_ERROR.format(error=e))
                 raise
         return self._genai_client
-    
+
     def _switch_to_secondary_key(self) -> bool:
         """
         Tenta trocar para a chave secundária.
-        
+
         Returns:
             True se conseguiu trocar, False se não há chave secundária
         """
         if not settings.google_api_key_second:
             logger.warning("Chave secundária não configurada, não é possível fazer fallback")
             return False
-        
+
         if self._using_secondary_key:
             logger.warning("Já está usando a chave secundária, não há mais fallback disponível")
             return False
-        
+
         logger.info("Trocando para chave secundária do Google Gemini...")
         try:
             self._genai_client = genai.Client(api_key=settings.google_api_key_second)
@@ -142,6 +142,54 @@ class GoogleGeminiClient(LLMClient):
             logger.error(f"Erro ao trocar para chave secundária: {e}")
             return False
 
+        # Garante que o cliente está inicializado
+        self._get_genai_client()
+
+    async def _execute_runner_with_retry(self, prompt: str, session_id: str, app_name: str) -> str:
+        """Executa o runner com lógica de retry para coletar resposta"""
+        session_service = InMemorySessionService()
+        runner = Runner(agent=self.agent, app_name=app_name, session_service=session_service)
+
+        await session_service.create_session(
+            user_id="user", session_id=session_id, app_name=app_name
+        )
+        content = types.Content(role="user", parts=[types.Part(text=prompt)])
+        final_response_content = None
+
+        async def coletar_resposta():
+            nonlocal final_response_content
+            async for evento in runner.run_async(
+                user_id="user", session_id=session_id, new_message=content
+            ):
+                if evento.is_final_response():
+                    final_response_content = evento.content
+                    break
+
+        # Coleta a resposta final com timeout
+        await asyncio.wait_for(coletar_resposta(), timeout=settings.api_timeout_seconds)
+
+        # Verifica se a resposta recebida é válida
+        if not final_response_content or not final_response_content.parts:
+            logger.warning("Resposta vazia do Gemini")
+            raise APIError(ErrorMessages.API_ERROR_EMPTY_RESPONSE)
+
+        # Verifica se foi bloqueado por segurança
+        primeira_parte = final_response_content.parts[0]
+        if (
+            hasattr(primeira_parte, "finish_reason")
+            and primeira_parte.finish_reason == types.FinishReason.SAFETY
+        ):
+            logger.warning("Pergunta bloqueada por segurança no Gemini")
+            raise APIError(ErrorMessages.API_ERROR_SAFETY_BLOCK)
+
+        # Constrói o resultado
+        resultado = "".join(
+            (parte.text or "") + "\n"
+            for parte in final_response_content.parts
+            if getattr(parte, "text", None) is not None
+        )
+        return str(resultado.strip())
+
     async def generate(self, prompt: str, model: Optional[str] = None) -> str:
         """Gera resposta usando Google Gemini"""
         logger.debug("Usando Google Gemini para gerar resposta")
@@ -149,229 +197,78 @@ class GoogleGeminiClient(LLMClient):
         # Garante que o cliente está inicializado
         self._get_genai_client()
 
-        session_service = InMemorySessionService()
-        # O app_name deve ser "agents" quando o agente é carregado do pacote google.adk.agents
-        # Isso evita o erro "App name mismatch detected"
-        app_name = "agents"
-        runner = Runner(agent=self.agent, app_name=app_name, session_service=session_service)
         import os
 
         session_id = f"gemini_{os.urandom(4).hex()}"
+        app_name = "agents"
 
         try:
-            await session_service.create_session(
-                user_id="user", session_id=session_id, app_name=app_name
-            )
-            content = types.Content(role="user", parts=[types.Part(text=prompt)])
-
-            final_response_content = None
-
-            async def coletar_resposta():
-                nonlocal final_response_content
-                try:
-                    async for evento in runner.run_async(
-                        user_id="user", session_id=session_id, new_message=content
-                    ):
-                        if evento.is_final_response():
-                            final_response_content = evento.content
-                            break
-                except google_exceptions.ResourceExhausted:
-                    # Re-raise para ser capturado no bloco externo
-                    raise
-                except google_exceptions.PermissionDenied:
-                    # Re-raise para ser capturado no bloco externo
-                    raise
-                except google_exceptions.GoogleAPICallError:
-                    # Re-raise para ser capturado no bloco externo
-                    raise
-
-            # Coleta a resposta final com timeout
-            try:
-                await asyncio.wait_for(coletar_resposta(), timeout=settings.api_timeout_seconds)
-            except asyncio.TimeoutError:
-                logger.error(
-                    LogMessages.TIMEOUT_GEMINI.format(timeout=settings.api_timeout_seconds)
-                )
-                raise APIError(
-                    ErrorMessages.TIMEOUT_GEMINI.format(timeout=settings.api_timeout_seconds)
-                )
-
-            # Verifica se a resposta recebida é válida
-            if not final_response_content or not final_response_content.parts:
-                logger.warning("Resposta vazia do Gemini")
-                raise APIError(ErrorMessages.API_ERROR_EMPTY_RESPONSE)
-
-            # Verifica se foi bloqueado por segurança
-            primeira_parte = final_response_content.parts[0]
-            if (
-                hasattr(primeira_parte, "finish_reason")
-                and primeira_parte.finish_reason == types.FinishReason.SAFETY
-            ):
-                logger.warning("Pergunta bloqueada por segurança no Gemini")
-                raise APIError(ErrorMessages.API_ERROR_SAFETY_BLOCK)
-
-            # Constrói o resultado
-            resultado = "".join(
-                (parte.text or "") + "\n"
-                for parte in final_response_content.parts
-                if getattr(parte, "text", None) is not None
-            )
-            logger.debug("Google Gemini executado com sucesso")
-            return str(resultado.strip())
+            return await self._execute_runner_with_retry(prompt, session_id, app_name)
 
         except asyncio.TimeoutError:
             raise APIError(
                 ErrorMessages.TIMEOUT_GEMINI.format(timeout=settings.api_timeout_seconds)
             )
-        except google_exceptions.ResourceExhausted as e:
-            logger.error(LogMessages.API_ERROR_GEMINI_RATE_LIMIT)
-            # Re-raise como QuotaExhaustedError para acionar fallback
-            raise QuotaExhaustedError(
-                ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini")
-            ) from e
-        except google_exceptions.PermissionDenied:
-            logger.error(LogMessages.API_ERROR_GEMINI_AUTH)
-            raise APIError(ErrorMessages.API_ERROR_SERVER_CONFIG)
-        except google_exceptions.GoogleAPICallError as e:
-            # Verifica se é erro de quota (429)
-            if e.status_code == 429 or "RESOURCE_EXHAUSTED" in str(e):
-                logger.error("Quota esgotada detectada em GoogleAPICallError")
-                
+        except (google_exceptions.ResourceExhausted, google_exceptions.GoogleAPICallError) as e:
+            # Verifica se é erro de quota (429 ou ResourceExhausted)
+            is_quota_error = isinstance(e, google_exceptions.ResourceExhausted)
+            if not is_quota_error and isinstance(e, google_exceptions.GoogleAPICallError):
+                error_code = getattr(e, "code", None)
+                if error_code == 429 or "RESOURCE_EXHAUSTED" in str(e):
+                    is_quota_error = True
+
+            if is_quota_error:
+                logger.error(LogMessages.API_ERROR_GEMINI_RATE_LIMIT)
+
                 # Tenta trocar para chave secundária
                 if self._switch_to_secondary_key():
                     logger.info("Tentando novamente com chave secundária...")
-                    # Reinicializa a sessão com a nova chave
-                    session_service = InMemorySessionService()
-                    runner = Runner(
-                        agent=self.agent,
-                        app_name="agents", # Changed from "chatbot_acessibilidade" to "agents" for consistency
-                        session_service=session_service,
-                    )
                     try:
-                        # Re-run the generation logic with the new key
-                        await session_service.create_session(
-                            user_id="user", session_id=session_id, app_name=app_name
-                        )
-                        content = types.Content(role="user", parts=[types.Part(text=prompt)])
-                        final_response_content_retry = None
-
-                        async def coletar_resposta_retry():
-                            nonlocal final_response_content_retry
-                            async for evento in runner.run_async(
-                                user_id="user", session_id=session_id, new_message=content
-                            ):
-                                if evento.is_final_response():
-                                    final_response_content_retry = evento.content
-                                    break
-                        
-                        await asyncio.wait_for(coletar_resposta_retry(), timeout=settings.api_timeout_seconds)
-
-                        if not final_response_content_retry or not final_response_content_retry.parts:
-                            raise APIError("Resposta vazia do Gemini após retry com chave secundária")
-                        
-                        primeira_parte_retry = final_response_content_retry.parts[0]
-                        if (
-                            hasattr(primeira_parte_retry, "finish_reason")
-                            and primeira_parte_retry.finish_reason == types.FinishReason.SAFETY
-                        ):
-                            raise APIError("Pergunta bloqueada por segurança no Gemini após retry")
-
-                        resultado_retry = "".join(
-                            (parte.text or "") + "\n"
-                            for parte in final_response_content_retry.parts
-                            if getattr(parte, "text", None) is not None
-                        )
-                        logger.debug("Google Gemini executado com sucesso com chave secundária")
-                        return str(resultado_retry.strip())
-
+                        # Reinicializa cliente com nova chave (feito no switch) e tenta novamente
+                        return await self._execute_runner_with_retry(prompt, session_id, app_name)
                     except Exception as retry_error:
                         logger.error(f"Erro mesmo com chave secundária: {retry_error}")
-                        raise QuotaExhaustedError(
-                            ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini (ambas as chaves)")
-                        )
+                        # Se falhar novamente, retorna mensagem de manutenção
+                        return str(ErrorMessages.MAINTENANCE_MESSAGE)
                 else:
-                    # Não há chave secundária ou já está usando
-                    raise QuotaExhaustedError(
-                        ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini")
-                    )
-            elif e.status_code == 503:
+                    # Se não tem chave secundária ou já usou, retorna mensagem de manutenção
+                    return str(ErrorMessages.MAINTENANCE_MESSAGE)
+
+            # Outros erros de API
+            if isinstance(e, google_exceptions.PermissionDenied):
+                logger.error(LogMessages.API_ERROR_GEMINI_AUTH)
+                raise APIError(ErrorMessages.API_ERROR_SERVER_CONFIG)
+
+            error_code = getattr(e, "code", None)
+            if error_code == 503:
                 logger.warning("Modelo indisponível (503)")
                 raise ModelUnavailableError(ErrorMessages.MODEL_UNAVAILABLE_GEMINI)
-            else:
-                logger.error(f"Erro na API do Google: {e}")
-                raise APIError(f"Erro na API do Google: {str(e)}")
+
+            logger.error(f"Erro na API do Google: {e}")
+            raise APIError(f"Erro na API do Google: {str(e)}")
+
         except APIError:
             # Re-raise APIError para que seja propagado corretamente
-            raise
-        except QuotaExhaustedError:
-            # Re-raise para que o fallback externo funcione
-            raise
-        except ModelUnavailableError:
-            # Re-raise para que o fallback externo funcione
             raise
         except Exception as e:
             error_str = str(e).lower()
             logger.error(f"Erro inesperado no Gemini: {e}", exc_info=True)
-            
+
             # Verifica se é erro de quota em Exception genérica
             if "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str:
                 logger.error("Quota esgotada detectada em Exception genérica")
-                
+
                 # Tenta trocar para chave secundária
                 if self._switch_to_secondary_key():
                     logger.info("Tentando novamente com chave secundária...")
-                    session_service = InMemorySessionService()
-                    runner = Runner(
-                        agent=self.agent,
-                        app_name="agents", # Changed from "chatbot_acessibilidade" to "agents" for consistency
-                        session_service=session_service,
-                    )
                     try:
-                        # Re-run the generation logic with the new key
-                        await session_service.create_session(
-                            user_id="user", session_id=session_id, app_name=app_name
-                        )
-                        content = types.Content(role="user", parts=[types.Part(text=prompt)])
-                        final_response_content_retry = None
-
-                        async def coletar_resposta_retry():
-                            nonlocal final_response_content_retry
-                            async for evento in runner.run_async(
-                                user_id="user", session_id=session_id, new_message=content
-                            ):
-                                if evento.is_final_response():
-                                    final_response_content_retry = evento.content
-                                    break
-                        
-                        await asyncio.wait_for(coletar_resposta_retry(), timeout=settings.api_timeout_seconds)
-
-                        if not final_response_content_retry or not final_response_content_retry.parts:
-                            raise APIError("Resposta vazia do Gemini após retry com chave secundária")
-                        
-                        primeira_parte_retry = final_response_content_retry.parts[0]
-                        if (
-                            hasattr(primeira_parte_retry, "finish_reason")
-                            and primeira_parte_retry.finish_reason == types.FinishReason.SAFETY
-                        ):
-                            raise APIError("Pergunta bloqueada por segurança no Gemini após retry")
-
-                        resultado_retry = "".join(
-                            (parte.text or "") + "\n"
-                            for parte in final_response_content_retry.parts
-                            if getattr(parte, "text", None) is not None
-                        )
-                        logger.debug("Google Gemini executado com sucesso com chave secundária")
-                        return str(resultado_retry.strip())
+                        return await self._execute_runner_with_retry(prompt, session_id, app_name)
                     except Exception as retry_error:
                         logger.error(f"Erro mesmo com chave secundária: {retry_error}")
-                        raise QuotaExhaustedError(
-                            ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini (ambas as chaves)")
-                        )
+                        return str(ErrorMessages.MAINTENANCE_MESSAGE)
                 else:
-                    raise QuotaExhaustedError(
-                        ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini")
-                    )
-            
+                    return str(ErrorMessages.MAINTENANCE_MESSAGE)
+
             raise AgentError(f"Erro: Ocorreu uma falha inesperada. Detalhes: {str(e)}")
 
     def should_fallback(self, exception: Exception) -> bool:
@@ -407,10 +304,11 @@ class FireworksAIClient(LLMClient):
         """Inicializa o cliente OpenAI apontando para Fireworks"""
         if self._client is None:
             from openai import OpenAI
+
             self._client = OpenAI(
                 api_key=self.api_key,
                 base_url="https://api.fireworks.ai/inference/v1",
-                timeout=self.timeout
+                timeout=self.timeout,
             )
         return self._client
 
@@ -442,7 +340,7 @@ class FireworksAIClient(LLMClient):
                     max_tokens=HUGGINGFACE_MAX_TOKENS,
                     temperature=0.7,
                 ),
-                timeout=self.timeout
+                timeout=self.timeout,
             )
 
             # Extrai a resposta do formato OpenAI
@@ -463,12 +361,14 @@ class FireworksAIClient(LLMClient):
             )
         except Exception as e:
             error_str = str(e).lower()
-            
+
             # Verifica erros específicos
             if "429" in error_str or "rate limit" in error_str:
                 logger.error(f"Rate limit no Fireworks AI modelo '{model}'")
                 raise QuotaExhaustedError(
-                    ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider=f"Fireworks AI modelo {model}")
+                    ErrorMessages.RATE_LIMIT_EXCEEDED.format(
+                        provider=f"Fireworks AI modelo {model}"
+                    )
                 )
             elif "503" in error_str or "unavailable" in error_str or "loading" in error_str:
                 logger.warning(f"Modelo '{model}' indisponível no Fireworks AI")

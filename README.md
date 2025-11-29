@@ -63,6 +63,7 @@
   - [🏗️ Arquitetura](#️-arquitetura)
   - [🚀 Quick Start](#-quick-start)
   - [📖 Documentação](#-documentação)
+  - [🗺️ Roadmap](#-roadmap)
   - [🧪 Testes e Qualidade](#-testes-e-qualidade)
   - [🔒 Segurança](#-segurança)
   - [🌐 Deploy](#-deploy)
@@ -122,11 +123,16 @@ Utilizando a **API Gemini 2.0 Flash** da Google (via Google ADK) com **fallback 
 | **1.4.6 Contraste AAA** | Razão de contraste 7:1 em todos os textos |
 | **2.3.3 Reduced Motion** | Respeita preferência `prefers-reduced-motion` |
 | **1.4.11 High Contrast** | Suporte a `prefers-contrast: high` |
+| **1.4.10 Reflow (Zoom)** | Suporte a zoom 200% sem scroll horizontal |
 | **2.4.7 Foco Visível** | Outline visível em todos os elementos interativos |
 | **3.3.5 Ajuda Contextual** | Botão de ajuda e hints visuais |
 | **2.4.10 Headings** | Estrutura semântica com h1, h2, h3 |
+| **2.1.2 Focus Trap** | Foco preso em modais para navegação segura |
 | **2.1.1 Teclado** | Navegação completa por teclado + atalho Escape |
 | **1.1.1 Alt Text** | Descrições informativas em todas as imagens |
+| **Libras** | Widget VLibras para tradução automática |
+| **Entrada por Voz** | Ditado de perguntas (Speech-to-Text) |
+| **Leitura de Tela** | Síntese de voz para respostas (Text-to-Speech) |
 
 #### 🔧 Recursos Técnicos
 
@@ -244,10 +250,8 @@ GOOGLE_API_KEY="sua_chave_aqui"
 # Chave secundária do Google Gemini (opcional - para fallback automático de quota)
 GOOGLE_API_KEY_SECOND="sua_segunda_chave_aqui"
 
-# Hugging Face (opcional - para fallback automático)
-HUGGINGFACE_API_KEY="sua_chave_huggingface"
+# Configurações de Fallback
 FALLBACK_ENABLED=true
-HUGGINGFACE_MODELS=meta-llama/Llama-3.3-70B-Instruct,google/gemma-2-9b-it,mistralai/Mistral-7B-Instruct-v0.3
 
 # CORS (opcional - padrão: *)
 CORS_ORIGINS="*"
@@ -370,6 +374,10 @@ Acesse: **http://localhost:8000**
 | [📚 API ReDoc](http://localhost:8000/redoc) | ReDoc (quando servidor rodando) |
 
 ---
+
+### 🗺️ Roadmap
+
+Confira nosso planejamento estratégico de funcionalidades futuras, incluindo análise de imagens e auditoria de URLs, em nosso [Roadmap Oficial](docs/project/ROADMAP.md).
 
 ### 🧪 Testes e Qualidade
 

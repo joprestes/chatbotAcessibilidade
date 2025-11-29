@@ -109,13 +109,7 @@ def test_formatter_performance(benchmark):
 
     # resposta_agentes removido pois agora usamos args posicionais
 
-    args = (
-        "Resumo...",
-        "Conceitos...",
-        "Testes...",
-        "Aprofundar...",
-        "Dica..."
-    )
+    args = ("Resumo...", "Conceitos...", "Testes...", "Aprofundar...", "Dica...")
     result = benchmark(formatar_resposta_final, *args)
     assert isinstance(result, dict)
 

@@ -307,40 +307,38 @@ class PipelineOrquestrador:
             try:
                 # Remove o comando
                 resto = pergunta.replace("/simular", "", 1).strip()
-                
+
                 # Tenta extrair a persona (primeira palavra)
                 partes = resto.split(" ", 1)
                 if len(partes) < 2:
-                    return {"erro": "Formato inválido. Use: /simular [persona] [contexto]. Ex: /simular cega Como faço login?"}
-                
+                    return {
+                        "erro": "Formato inválido. Use: /simular [persona] [contexto]. Ex: /simular cega Como faço login?"
+                    }
+
                 persona_raw = partes[0].lower()
                 contexto = partes[1]
 
                 # Mapeamento de comandos inclusivos para personas internas
                 mapa_personas = {
                     "leitor-tela": "Cega",
-                    "cega": "Cega", # Mantém compatibilidade
+                    "cega": "Cega",  # Mantém compatibilidade
                     "zoom-contraste": "Baixa Visão",
                     "baixa_visao": "Baixa Visão",
                     "teclado": "Motora",
                     "motora": "Motora",
                     "linguagem-simples": "Cognitiva",
-                    "cognitiva": "Cognitiva"
+                    "cognitiva": "Cognitiva",
                 }
-                
+
                 persona_nome = mapa_personas.get(persona_raw, persona_raw)
 
                 # Executa o agente de persona
                 prompt_persona = f"Persona: {persona_nome}\nContexto: {contexto}"
-                resposta_persona = await get_agent_response(
-                    "persona", 
-                    prompt_persona, 
-                    "persona"
-                )
+                resposta_persona = await get_agent_response("persona", prompt_persona, "persona")
 
                 return {
                     "🎭 **Análise de Cenário**": f"**Persona:** {persona_nome.capitalize()}\n\n{resposta_persona}",
-                    "ℹ️ **Nota**": "Esta é uma simulação baseada em padrões comuns. Pessoas reais podem ter experiências diferentes."
+                    "ℹ️ **Nota**": "Esta é uma simulação baseada em padrões comuns. Pessoas reais podem ter experiências diferentes.",
                 }
 
             except Exception as e:
@@ -354,13 +352,15 @@ class PipelineOrquestrador:
                 # Remove o comando e pega o código
                 codigo = pergunta.replace("/refatorar", "", 1).strip()
                 if not codigo:
-                    return {"erro": "Por favor, forneça o código que deseja refatorar após o comando."}
+                    return {
+                        "erro": "Por favor, forneça o código que deseja refatorar após o comando."
+                    }
 
                 # Executa o agente refatorador
                 resposta_json = await get_agent_response(
-                    "refatorador", 
-                    f"Analise e refatore o seguinte código:\n\n{codigo}", 
-                    "refatorador"
+                    "refatorador",
+                    f"Analise e refatore o seguinte código:\n\n{codigo}",
+                    "refatorador",
                 )
 
                 # Tenta fazer o parse do JSON
@@ -368,19 +368,19 @@ class PipelineOrquestrador:
                     # O agente pode retornar markdown de código json, removemos se necessário
                     resposta_limpa = resposta_json.replace("```json", "").replace("```", "").strip()
                     dados = json.loads(resposta_limpa)
-                    
+
                     # Formata para o frontend (chaves amigáveis)
                     return {
                         "💻 **Código Refatorado**": f"```{dados.get('language', 'html')}\n{dados.get('code', '')}\n```",
-                        "📝 **Explicação**": dados.get('explanation', ''),
-                        "✅ **Critérios WCAG**": "\n".join([f"- {c}" for c in dados.get('wcag_criteria', [])])
+                        "📝 **Explicação**": dados.get("explanation", ""),
+                        "✅ **Critérios WCAG**": "\n".join(
+                            [f"- {c}" for c in dados.get("wcag_criteria", [])]
+                        ),
                     }
                 except json.JSONDecodeError:
                     logger.error(f"Erro ao decodificar JSON do refatorador: {resposta_json}")
                     # Fallback: retorna o texto cru se não for JSON válido
-                    return {
-                        "⚠️ **Resultado (Formato Bruto)**": resposta_json
-                    }
+                    return {"⚠️ **Resultado (Formato Bruto)**": resposta_json}
 
             except Exception as e:
                 logger.error(f"Erro no processo de refatoração: {e}")

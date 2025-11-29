@@ -66,22 +66,49 @@ function clearMessages() {
 
 **Teste**: `test_focus_after_clear_chat()` em `test_focus_management.py`
 
-#### 4. Após Fechamento de Modais (Futuro)
-
-**Padrão Recomendado:**
+#### 4. Focus Trap em Modais (Implementado)
+**Padrão Implementado:**
 ```javascript
-function closeModal() {
-    // ... código de fechamento ...
-    
-    // Retorna foco para o elemento que abriu o modal
-    // ou para o primeiro elemento focável da página
-    previousFocusedElement?.focus() || firstFocusableElement.focus();
+// frontend/app.js - setupModalFocusTrap()
+function setupModalFocusTrap() {
+    // Filtra elementos focáveis visíveis
+    const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    // Loop de foco
+    modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            if (e.shiftKey) { // Shift + Tab
+                if (document.activeElement === firstElement) {
+                    lastElement.focus();
+                    e.preventDefault();
+                }
+            } else { // Tab
+                if (document.activeElement === lastElement) {
+                    firstElement.focus();
+                    e.preventDefault();
+                }
+            }
+        }
+    });
 }
 ```
 
-**Status**: Não há modais no projeto atual, mas este padrão deve ser seguido se modais forem adicionados.
+**Justificativa**: Garante que o usuário não "escape" do modal acidentalmente, mantendo o contexto de navegação (WCAG 2.1.2).
 
-**Justificativa**: Retornar o foco para o elemento que abriu o modal mantém o contexto do usuário.
+**Teste**: `test_focus_trap_in_modal()` em `test_focus_management.py`
+
+### Zoom e Reflow (WCAG 1.4.10)
+
+O layout deve suportar zoom de até 200% sem perda de funcionalidade ou necessidade de rolagem horizontal.
+
+**Padrão Implementado:**
+- Uso de unidades relativas (`rem`, `em`, `%`) em vez de pixels fixos.
+- Layouts flexíveis com CSS Grid/Flexbox.
+- Media queries para ajuste de layout em telas menores ou com zoom alto.
+
+**Teste**: `test_screen_zoom_200_percent()` em `test_accessibility_advanced.py`
 
 ### Navegação por Teclado
 

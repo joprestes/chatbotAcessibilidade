@@ -124,6 +124,11 @@ async def test_generate_with_fallback_continue_linhas_435_439(
             return "Custom Fallback 2"
 
     primary_client = GoogleGeminiClient(mock_agent)
+    # Mockamos o generate para lançar exceção diretamente, ignorando a lógica interna de manutenção
+    # Isso força o generate_with_fallback a iterar sobre os clientes de fallback
+    primary_client.generate = AsyncMock(side_effect=QuotaExhaustedError("Forced error"))
+    primary_client.should_fallback = MagicMock(return_value=True)
+
     fallback_client1 = CustomFallbackClient1()
     fallback_client2 = CustomFallbackClient2()
 

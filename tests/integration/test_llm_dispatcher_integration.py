@@ -222,6 +222,7 @@ def test_llm_dispatcher_handles_empty_response(client: TestClient):
     """
     # Arrange
     from typing import Any, Dict
+
     empty_response: Dict[str, Any] = {}
 
     # Act

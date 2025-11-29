@@ -156,10 +156,11 @@ def test_server_error_500(page: Page, base_url: str):
 def test_manual_cancellation(page: Page, base_url: str):
     """
     Testa cancelamento manual de requisição.
-    
+
     Usa interceptação de rota para garantir que a requisição demore o suficiente
     para que o botão de cancelar possa ser clicado.
     """
+
     # Intercepta a rota do chat para simular delay
     def handle_route(route):
         # Delay de 5 segundos para dar tempo de cancelar
@@ -212,7 +213,7 @@ def test_malformed_response(page: Page, base_url: str):
             headers={"Content-Type": "application/json"},
             body="{invalid json}",
         )
-    
+
     page.route("**/api/chat", handle_route)
 
     # Preenche input

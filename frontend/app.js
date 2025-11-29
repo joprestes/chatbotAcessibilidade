@@ -1233,7 +1233,8 @@ function setupModalFocusTrap() {
 
     // Encontra todos os elementos focáveis dentro do modal
     const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    modalFocusableElements = Array.from(modalElement.querySelectorAll(focusableSelectors));
+    modalFocusableElements = Array.from(modalElement.querySelectorAll(focusableSelectors))
+        .filter(el => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden') && el.offsetParent !== null);
 
     if (modalFocusableElements.length === 0) return;
 

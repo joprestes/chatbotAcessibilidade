@@ -8,10 +8,9 @@ import pytest
 from playwright.sync_api import Page
 import json
 
-pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
-
-# Import axe-playwright (biblioteca está instalada)
 from axe_playwright_python.sync_playwright import Axe
+
+pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
 
 
 @pytest.fixture
@@ -41,7 +40,9 @@ def test_homepage_accessibility(page: Page, base_url: str, axe):
     assert len(violations) == 0, f"Violations encontradas: {[v['id'] for v in violations]}"
 
     # Verifica se há incompletudes críticas
-    incomplete = [r for r in results.response["incomplete"] if r["impact"] in ["critical", "serious"]]
+    incomplete = [
+        r for r in results.response["incomplete"] if r["impact"] in ["critical", "serious"]
+    ]
     if len(incomplete) > 0:
         print(f"\nINCOMPLETE CRITICAL FOUND: {json.dumps(incomplete, indent=2)}")
     assert len(incomplete) == 0, f"Incompletudes críticas: {[i['id'] for i in incomplete]}"
@@ -102,9 +103,9 @@ def test_keyboard_navigation_complete(page: Page, base_url: str):
             focused_elements.append(focused_info.get("tagName", "unknown"))
 
     # Verifica que pelo menos alguns elementos receberam foco
-    assert (
-        len(focused_elements) > 0
-    ), "Nenhum elemento focável encontrado durante navegação por teclado"
+    assert len(focused_elements) > 0, (
+        "Nenhum elemento focável encontrado durante navegação por teclado"
+    )
 
 
 def test_skip_links(page: Page, base_url: str):

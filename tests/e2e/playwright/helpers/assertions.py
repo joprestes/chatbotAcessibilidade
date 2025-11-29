@@ -25,9 +25,9 @@ def assert_message_contains(page: Page, text: str, role: str = "user", timeout: 
     expect(message).to_be_visible(timeout=timeout)
 
     content = message.text_content()
-    assert (
-        text.lower() in (content or "").lower()
-    ), f"Esperado '{text}' na mensagem {role}, mas recebeu: {content}"
+    assert text.lower() in (content or "").lower(), (
+        f"Esperado '{text}' na mensagem {role}, mas recebeu: {content}"
+    )
 
 
 def assert_url_contains(page: Page, expected: str):
@@ -59,9 +59,9 @@ def assert_element_count(page: Page, selector: str, count: int):
     """
     elements = page.locator(selector)
     actual_count = elements.count()
-    assert (
-        actual_count == count
-    ), f"Esperado {count} elementos '{selector}', mas encontrou {actual_count}"
+    assert actual_count == count, (
+        f"Esperado {count} elementos '{selector}', mas encontrou {actual_count}"
+    )
 
 
 def assert_element_visible(page: Page, selector: str, timeout: int = 5000):
@@ -110,9 +110,9 @@ def assert_text_equals(page: Page, selector: str, expected_text: str):
     """
     element = page.locator(selector)
     actual_text = element.text_content() or ""
-    assert (
-        actual_text == expected_text
-    ), f"Esperado texto '{expected_text}', mas recebeu: '{actual_text}'"
+    assert actual_text == expected_text, (
+        f"Esperado texto '{expected_text}', mas recebeu: '{actual_text}'"
+    )
 
 
 def assert_attribute_equals(page: Page, selector: str, attribute: str, expected_value: str):
@@ -131,7 +131,7 @@ def assert_attribute_equals(page: Page, selector: str, attribute: str, expected_
     element = page.locator(selector)
     actual_value = element.get_attribute(attribute)
     assert actual_value == expected_value, (
-        f"Esperado atributo '{attribute}' = '{expected_value}', " f"mas recebeu: '{actual_value}'"
+        f"Esperado atributo '{attribute}' = '{expected_value}', mas recebeu: '{actual_value}'"
     )
 
 
@@ -149,9 +149,9 @@ def assert_input_value(page: Page, selector: str, expected_value: str):
     """
     element = page.locator(selector)
     actual_value = element.input_value()
-    assert (
-        actual_value == expected_value
-    ), f"Esperado valor do input '{expected_value}', mas recebeu: '{actual_value}'"
+    assert actual_value == expected_value, (
+        f"Esperado valor do input '{expected_value}', mas recebeu: '{actual_value}'"
+    )
 
 
 def assert_element_enabled(page: Page, selector: str):
@@ -196,6 +196,6 @@ def assert_focus_on_element(page: Page, expected_id: str):
         AssertionError: Se elemento não tiver foco
     """
     focused_id = page.evaluate("() => document.activeElement.id")
-    assert (
-        focused_id == expected_id
-    ), f"Esperado foco em '{expected_id}', mas foco está em: '{focused_id}'"
+    assert focused_id == expected_id, (
+        f"Esperado foco em '{expected_id}', mas foco está em: '{focused_id}'"
+    )

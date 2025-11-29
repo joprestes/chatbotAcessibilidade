@@ -32,6 +32,7 @@ nest_asyncio.apply()
 # Configura plugins do pytest
 # pytest_plugins = ("pytest_asyncio", "pytest_playwright")
 
+
 @pytest.fixture(scope="session")
 def event_loop():
     """
@@ -43,7 +44,10 @@ def event_loop():
     except RuntimeError:
         loop = asyncio.new_event_loop()
     yield loop
-    loop.close()
+    # Não fechamos o loop explicitamente para evitar conflitos entre pytest-asyncio e playwright
+    # O garbage collector ou o finalizador do pytest lidarão com isso
+    pass
+
 
 # Adiciona src ao path para imports
 src_path = Path(__file__).parent.parent / "src"

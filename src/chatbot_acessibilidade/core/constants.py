@@ -104,6 +104,12 @@ class ErrorMessages:
         "Todos os provedores e modelos disponíveis falharam. Por favor, tente novamente mais tarde."
     )
     FALLBACK_DISABLED = "Erro no provedor primário e fallback desabilitado: {error}"
+    MAINTENANCE_MESSAGE = (
+        "⚠️ **Sistema em Manutenção** ⚠️\n\n"
+        "Nossos servidores atingiram a capacidade máxima diária. "
+        "A Ada voltará a operar normalmente a partir das 06:00 a.m.\n\n"
+        "*Atenciosamente, Ada Manutenção*"
+    )
 
     # Agent Errors
     AGENT_ERROR_GENERIC = "Erro: Ocorreu uma falha inesperada. Detalhes: {details}"

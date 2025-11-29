@@ -132,9 +132,9 @@ def test_keyboard_navigation_focus_visible(page: Page, base_url: str):
             focused_elements.append(focused_info)
             # Verifica que elemento é visível
             element_id = focused_info["id"]
-            assert focused_info[
-                "isVisible"
-            ], f"Elemento {element_id} deve ser visível quando focado"
+            assert focused_info["isVisible"], (
+                f"Elemento {element_id} deve ser visível quando focado"
+            )
 
     # Verifica que pelo menos alguns elementos receberam foco
     assert len(focused_elements) > 0, "Deve haver elementos focáveis na página"
@@ -151,18 +151,45 @@ def test_focus_trap_in_modal(page: Page, base_url: str):
     page.wait_for_load_state("networkidle")
 
     # Verifica se há modais VISÍVEIS (não apenas presentes no DOM)
-    modals = page.locator("[role='dialog'][aria-hidden='false'], .modal:visible, [aria-modal='true']:visible")
+    modals = page.locator(
+        "[role='dialog'][aria-hidden='false'], .modal:visible, [aria-modal='true']:visible"
+    )
     modal_count = modals.count()
 
     if modal_count == 0:
-        pytest.skip("Não há modais visíveis no projeto atualmente. Modal existe mas precisa ser aberto via JavaScript (window.openModal)")
+        # Tenta abrir o modal de configurações para testar
+        settings_btn = page.locator("#settings-toggle")
+        if settings_btn.is_visible():
+            settings_btn.click()
+            page.wait_for_selector(
+                "#accessible-modal[aria-hidden='false']", state="visible", timeout=2000
+            )
+            # Recalcula modais
+            modals = page.locator(
+                "[role='dialog'][aria-hidden='false'], .modal:visible, [aria-modal='true']:visible"
+            )
+            modal_count = modals.count()
+
+    if modal_count == 0:
+        pytest.skip("Não há modais visíveis no projeto atualmente e não foi possível abrir um.")
     else:
         # Se houver modais visíveis, testa que foco fica preso
         first_modal = modals.first
-        first_modal.focus()
+
+        # Aguarda o foco entrar no modal (pode demorar devido ao setTimeout do app.js)
+        # Usa loop manual para evitar erro de CSP com wait_for_function
+        import time
+
+        for _ in range(20):  # Tenta por 2 segundos
+            is_focused = page.evaluate(
+                "() => document.getElementById('accessible-modal').contains(document.activeElement)"
+            )
+            if is_focused:
+                break
+            time.sleep(0.1)
 
         # Pressiona Tab várias vezes
-        for _ in range(10):
+        for i in range(10):
             page.keyboard.press("Tab")
 
             # Verifica que foco ainda está dentro do modal
@@ -212,6 +239,6 @@ def test_skip_link_focus(page: Page, base_url: str):
         # Verifica que foco mudou para o elemento alvo
         focused_after = page.evaluate("() => document.activeElement.id")
         expected_targets = ["user-input", "main-content"]
-        assert (
-            focused_after in expected_targets
-        ), f"Foco deve ir para elemento alvo do skip link, mas foi para: {focused_after}"
+        assert focused_after in expected_targets, (
+            f"Foco deve ir para elemento alvo do skip link, mas foi para: {focused_after}"
+        )

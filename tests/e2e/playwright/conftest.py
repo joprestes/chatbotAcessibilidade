@@ -133,15 +133,15 @@ def server_running(base_url: str) -> bool:
     for i in range(max_retries):
         try:
             response = httpx.get(f"{base_url}/api/health", timeout=2.0)
-            print(f"DEBUG: Tentativa {i+1} - Status: {response.status_code}")
+            print(f"DEBUG: Tentativa {i + 1} - Status: {response.status_code}")
             if response.status_code == 200:
                 return True
         except Exception as e:
-            print(f"DEBUG: Tentativa {i+1} - Erro: {e}")
+            print(f"DEBUG: Tentativa {i + 1} - Erro: {e}")
             if i < max_retries - 1:
                 time.sleep(1)  # Espera 1 segundo antes de tentar novamente
             continue
-    
+
     print("DEBUG: Falha ao conectar no servidor após retries")
     return False
 

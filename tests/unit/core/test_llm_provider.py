@@ -90,10 +90,10 @@ async def test_google_gemini_client_quota_exhausted(
 
     client = GoogleGeminiClient(mock_agent)
 
-    with pytest.raises(QuotaExhaustedError):
-        await client.generate("Teste")
+    from chatbot_acessibilidade.core.constants import ErrorMessages
 
-    assert client.should_fallback(QuotaExhaustedError("test")) is True
+    resultado = await client.generate("Teste")
+    assert resultado == ErrorMessages.MAINTENANCE_MESSAGE
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
@@ -160,6 +160,9 @@ async def test_generate_with_fallback_generic_fallback_success(
         mock_settings.api_timeout_seconds = 60  # Adiciona timeout para Gemini
 
         primary_client = GoogleGeminiClient(mock_agent)
+        # Força erro para testar fallback externo
+        primary_client.generate = AsyncMock(side_effect=QuotaExhaustedError("Forced error"))
+        primary_client.should_fallback = MagicMock(return_value=True)
 
         resposta, provedor = await generate_with_fallback(
             primary_client=primary_client,
@@ -300,15 +303,24 @@ async def test_generate_with_fallback_todos_falham(
         mock_fallback_client.generate = AsyncMock(side_effect=QuotaExhaustedError("test"))
         mock_fallback_client.should_fallback.return_value = True
 
-        with pytest.raises(APIError) as exc_info:
-            await generate_with_fallback(
-                primary_client=primary_client,
-                prompt="Teste",
-                fallback_clients=[mock_fallback_client],
-                fallback_models=["test-model"],
-            )
+        from chatbot_acessibilidade.core.constants import ErrorMessages
 
-        assert "todos" in str(exc_info.value).lower() or "falharam" in str(exc_info.value).lower()
+        # Agora deve retornar a mensagem de manutenção em vez de lançar erro
+        # Pois o client interno captura o erro e retorna a mensagem
+        # E o generate_with_fallback propaga isso ou tenta outros fallbacks
+
+        # Se o primary_client já retorna a mensagem de manutenção (que é uma string válida),
+        # o generate_with_fallback vai considerar como sucesso do primário.
+
+        resposta, provedor = await generate_with_fallback(
+            primary_client=primary_client,
+            prompt="Teste",
+            fallback_clients=[mock_fallback_client],
+            fallback_models=["test-model"],
+        )
+
+        # O primary client retorna a mensagem de manutenção
+        assert resposta == ErrorMessages.MAINTENANCE_MESSAGE
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
@@ -336,17 +348,16 @@ async def test_generate_with_fallback_desabilitado(
 
     primary_client = GoogleGeminiClient(mock_agent)
 
-    with pytest.raises(APIError) as exc_info:
-        await generate_with_fallback(
-            primary_client=primary_client,
-            prompt="Teste",
-            fallback_clients=None,
-            fallback_models=None,
-        )
+    from chatbot_acessibilidade.core.constants import ErrorMessages
 
-        assert (
-            "desabilitado" in str(exc_info.value).lower() or "erro" in str(exc_info.value).lower()
-        )
+    resposta, provedor = await generate_with_fallback(
+        primary_client=primary_client,
+        prompt="Teste",
+        fallback_clients=None,
+        fallback_models=None,
+    )
+
+    assert resposta == ErrorMessages.MAINTENANCE_MESSAGE
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
@@ -387,6 +398,8 @@ async def test_generate_with_fallback_continue_apos_erro(
         mock_settings.api_timeout_seconds = 60
 
         primary_client = GoogleGeminiClient(mock_agent)
+        # Força erro para testar fallback externo
+        primary_client.generate = AsyncMock(side_effect=QuotaExhaustedError("Forced error"))
         # Mock should_fallback do primary para permitir fallback
         primary_client.should_fallback = MagicMock(return_value=True)
 

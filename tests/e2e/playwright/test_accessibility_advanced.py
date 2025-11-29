@@ -7,10 +7,9 @@ Testa aspectos avançados de acessibilidade além dos testes básicos.
 import pytest
 from playwright.sync_api import Page, expect
 
-pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
-
-# Import axe-playwright (biblioteca está instalada)
 from axe_playwright_python.sync_playwright import Axe
+
+pytestmark = [pytest.mark.e2e, pytest.mark.playwright, pytest.mark.accessibility]
 
 
 @pytest.fixture
@@ -125,9 +124,9 @@ def test_high_contrast_mode(page: Page, base_url: str, axe):
     # Verifica violações de contraste
     contrast_violations = [v for v in results.violations if v.id == "color-contrast"]
 
-    assert (
-        len(contrast_violations) == 0
-    ), f"Violations de contraste encontradas: {contrast_violations}"
+    assert len(contrast_violations) == 0, (
+        f"Violations de contraste encontradas: {contrast_violations}"
+    )
 
 
 def test_screen_zoom_200_percent(page: Page, base_url: str):

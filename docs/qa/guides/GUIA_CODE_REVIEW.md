@@ -38,7 +38,7 @@ Este documento define as regras, padrões e convenções que devem ser seguidos 
 
     *   Adicione dependências de produção em `requirements.txt`.
     *   Sempre congele as versões (`pip freeze`) após adicionar novas libs.
-    *   Documente dependências opcionais (ex: OpenRouter) no README.
+    *   Documente dependências opcionais no README.
 
 ## 3. Qualidade de Código
 
@@ -105,7 +105,7 @@ Os hooks são executados automaticamente antes de cada commit:
 
 *   **Cobertura**: A meta é manter a cobertura de código acima de **95%**. A cobertura atual é de **95.60%** e deve ser mantida.
 
-*   **Isolamento**: Testes unitários não devem depender de serviços externos (APIs reais do Google Gemini ou OpenRouter). Use `unittest.mock` ou `pytest-mock` para mockar chamadas externas.
+*   **Isolamento**: Testes unitários não devem depender de serviços externos (APIs reais do Google Gemini). Use `unittest.mock` ou `pytest-mock` para mockar chamadas externas.
 
 *   **Regra**: Teste a lógica de negócio, parsers e formatadores isoladamente, **mockando chamadas de IA**.
 
@@ -271,7 +271,7 @@ Os hooks são executados automaticamente antes de cada commit:
 
 *   **Multi-Agent System**: O projeto usa um sistema de múltiplos agentes (Assistant, Validator, Reviewer, Tester, Aprofundador). Mantenha a separação de responsabilidades.
 
-*   **LLM Providers**: O projeto suporta múltiplos provedores de LLM (Google Gemini como primário, OpenRouter como fallback). Novos provedores devem seguir o padrão `LLMClient` em `core/llm_provider.py`.
+*   **LLM Providers**: O projeto suporta múltiplos provedores de LLM (Google Gemini como primário, Chave Secundária como fallback). Novos provedores devem seguir o padrão `LLMClient` em `core/llm_provider.py`.
 
 *   **Fallback Mechanism**: O sistema de fallback automático deve ser mantido e testado. Não remova sem substituir por alternativa.
 
@@ -519,7 +519,7 @@ Antes de abrir um Pull Request, verifique **TODOS** os itens:
 
 *   **Google Gemini API**: Use o Google ADK (Agent Development Kit) para interação com Gemini. Não use a API REST diretamente.
 
-*   **OpenRouter**: Configure modelos gratuitos como fallback. Documente quais modelos estão sendo usados.
+*   **Fallback**: Configure chaves secundárias como fallback. Documente quais chaves estão sendo usadas.
 
 *   **Streamlit**: Mantido como alternativa. Não remova sem consenso da equipe.
 

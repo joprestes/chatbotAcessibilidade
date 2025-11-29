@@ -34,7 +34,12 @@ class BasePage:
         self.page.goto(url)
         self.page.wait_for_load_state("networkidle")
 
-    def wait_for_element(self, selector: str, timeout: int = 5000, state: Literal["attached", "detached", "hidden", "visible"] = "visible"):
+    def wait_for_element(
+        self,
+        selector: str,
+        timeout: int = 5000,
+        state: Literal["attached", "detached", "hidden", "visible"] = "visible",
+    ):
         """
         Aguarda elemento estar em determinado estado.
 
