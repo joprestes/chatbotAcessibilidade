@@ -18,8 +18,6 @@ class Settings(BaseSettings):
         default="", description="Chave da API do Google Gemini (secundária, opcional para fallback)"
     )
 
-
-
     # CORS
     cors_origins: str = Field(
         default="*",
@@ -101,12 +99,6 @@ class Settings(BaseSettings):
         if v_upper not in valid_levels:
             raise ValueError(f"log_level deve ser um de: {', '.join(valid_levels)}")
         return v_upper
-
-
-
-
-
-
 
 
 # Instância global de configurações

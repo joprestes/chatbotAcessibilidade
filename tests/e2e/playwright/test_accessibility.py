@@ -43,10 +43,11 @@ def test_homepage_accessibility(page: Page, base_url: str, axe):
     incomplete = [
         r for r in results.response["incomplete"] if r["impact"] in ["critical", "serious"]
     ]
-    
+
     # Filtra falso positivo conhecido: gradiente no header (contraste verificado manualmente > 4.5:1)
     incomplete = [
-        i for i in incomplete 
+        i
+        for i in incomplete
         if not (i["id"] == "color-contrast" and "background gradient" in str(i["nodes"]))
     ]
 
@@ -79,10 +80,11 @@ def test_chat_interface_accessibility(page: Page, base_url: str, axe):
     incomplete = [
         r for r in results.response["incomplete"] if r["impact"] in ["critical", "serious"]
     ]
-    
+
     # Filtra falso positivo conhecido: gradiente no header
     incomplete = [
-        i for i in incomplete 
+        i
+        for i in incomplete
         if not (i["id"] == "color-contrast" and "background gradient" in str(i["nodes"]))
     ]
 
@@ -125,9 +127,9 @@ def test_keyboard_navigation_complete(page: Page, base_url: str):
             focused_elements.append(focused_info.get("tagName", "unknown"))
 
     # Verifica que pelo menos alguns elementos receberam foco
-    assert len(focused_elements) > 0, (
-        "Nenhum elemento focável encontrado durante navegação por teclado"
-    )
+    assert (
+        len(focused_elements) > 0
+    ), "Nenhum elemento focável encontrado durante navegação por teclado"
 
 
 def test_skip_links(page: Page, base_url: str):

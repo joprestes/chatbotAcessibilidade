@@ -36,7 +36,6 @@ class LLMProvider(Enum):
     GOOGLE_GEMINI = "google_gemini"
 
 
-
 class LLMClient(ABC):
     """Interface base para clientes de LLM"""
 
@@ -286,9 +285,3 @@ class GoogleGeminiClient(LLMClient):
 
     def get_provider_name(self) -> str:
         return "Google Gemini"
-
-
-
-
-
-

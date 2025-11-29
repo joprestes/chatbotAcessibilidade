@@ -71,7 +71,6 @@ class ErrorMessages:
     )
     TIMEOUT_GEMINI = "Timeout: A requisição demorou mais de {timeout}s para responder."
 
-
     # Quota/Rate Limit
     QUOTA_EXHAUSTED = "Limite de uso atingido. Tente novamente mais tarde."
     RATE_LIMIT_EXCEEDED = "Rate limit excedido no {provider}"
@@ -87,10 +86,8 @@ class ErrorMessages:
     API_ERROR_SERVER_CONFIG = "Erro: Houve um problema com a configuração do servidor."
     API_ERROR_COMMUNICATION = "Erro: Ocorreu um problema de comunicação com a API."
 
-
     # Model Unavailable
     MODEL_UNAVAILABLE_GEMINI = "API do Google sobrecarregada"
-
 
     # Fallback
     ALL_PROVIDERS_FAILED = (
@@ -134,13 +131,11 @@ class LogMessages:
     # Timeout
     TIMEOUT_GEMINI = "Timeout ao executar Gemini após {timeout}s"
 
-
     # API Errors
     API_ERROR_GEMINI_RATE_LIMIT = "Rate limit excedido no Gemini"
     API_ERROR_GEMINI_AUTH = "Erro de autenticação no Gemini"
     API_ERROR_GEMINI_COMMUNICATION = "Erro de API do Google: {error}"
     API_ERROR_GEMINI_GENERIC = "Erro inesperado no Gemini: {error}"
-
 
     # Validation
     VALIDATION_SUSPICIOUS_PATTERN = "Padrão suspeito detectado na pergunta: {reason}"

@@ -52,7 +52,9 @@ async def test_get_agent_response_sucesso_com_fallback(mock_client_class):
 async def test_get_agent_response_com_erro_timeout(mock_client_class):
     """Testa get_agent_response quando há timeout"""
     mock_client = MagicMock()
-    mock_client.generate = AsyncMock(side_effect=APIError("Timeout: A requisição demorou mais de 60 segundos"))
+    mock_client.generate = AsyncMock(
+        side_effect=APIError("Timeout: A requisição demorou mais de 60 segundos")
+    )
     mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:

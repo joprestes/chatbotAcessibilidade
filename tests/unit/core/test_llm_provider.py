@@ -16,7 +16,6 @@ from chatbot_acessibilidade.core.exceptions import (
 )
 from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
-
 )
 
 pytestmark = pytest.mark.unit
@@ -94,12 +93,6 @@ async def test_google_gemini_client_quota_exhausted(
 
     resultado = await client.generate("Teste")
     assert resultado == ErrorMessages.MAINTENANCE_MESSAGE
-
-
-
-
-
-
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.genai.Client")
@@ -189,16 +182,6 @@ async def test_google_gemini_client_should_fallback(
 
     # Erros que não devem acionar fallback
     assert client.should_fallback(Exception("teste genérico")) is False
-
-
-
-
-
-
-
-
-
-
 
 
 @patch("chatbot_acessibilidade.core.llm_provider.genai.Client")

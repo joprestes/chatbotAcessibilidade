@@ -110,6 +110,3 @@ def test_settings_validate_log_level_invalido():
     ):
         with pytest.raises(ValidationError):
             Settings()
-
-
-

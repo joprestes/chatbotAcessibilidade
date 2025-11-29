@@ -12,7 +12,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from chatbot_acessibilidade.core.exceptions import APIError
 from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
-
 )
 
 pytestmark = pytest.mark.unit
@@ -63,6 +62,3 @@ async def test_google_gemini_client_timeout_linha_191(
 
     # Verifica que o erro é de timeout (linha 191-193)
     assert "timeout" in str(exc_info.value).lower() or "demorou mais" in str(exc_info.value).lower()
-
-
-

@@ -26,9 +26,6 @@ def client():
     return TestClient(app)
 
 
-
-
-
 @pytest.mark.asyncio
 async def test_retry_on_temporary_error():
     """

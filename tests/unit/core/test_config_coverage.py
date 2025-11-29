@@ -17,9 +17,6 @@ if str(src_path) not in sys.path:
 pytestmark = pytest.mark.unit
 
 
-
-
-
 def test_config_linhas_150_153_sem_google_api_key():
     """
     Testa linhas 150-153: quando PYTEST_CURRENT_TEST está definido
@@ -61,13 +58,8 @@ def test_config_linhas_150_153_sem_google_api_key():
         ):
             del os.environ["GOOGLE_API_KEY"]
 
-
-
         # Recarrega o módulo novamente para restaurar estado
         import importlib
         import chatbot_acessibilidade.config
 
         importlib.reload(chatbot_acessibilidade.config)
-
-
-

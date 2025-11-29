@@ -44,8 +44,6 @@ class TestTimeouts:
         assert DEFAULT_API_TIMEOUT_SECONDS > 0
         assert DEFAULT_API_TIMEOUT_SECONDS == 60
 
-
-
     def test_frontend_timeout(self):
         """Verifica que FRONTEND_REQUEST_TIMEOUT_MS é um valor válido"""
         assert isinstance(FRONTEND_REQUEST_TIMEOUT_MS, int)
@@ -127,9 +125,6 @@ class TestCompression:
         assert COMPRESSION_MIN_SIZE_BYTES == 500
 
 
-
-
-
 class TestRetry:
     """Testes para constantes de retry"""
 
@@ -188,16 +183,10 @@ class TestErrorMessages:
         msg = ErrorMessages.TIMEOUT_GEMINI.format(timeout=60)
         assert "60" in msg
 
-
-
     def test_rate_limit_exceeded_format(self):
         """Verifica que RATE_LIMIT_EXCEEDED aceita formatação"""
         msg = ErrorMessages.RATE_LIMIT_EXCEEDED.format(provider="Google Gemini")
         assert "Google Gemini" in msg
-
-
-
-
 
     def test_agent_error_initial_format(self):
         """Verifica que AGENT_ERROR_INITIAL aceita formatação"""
@@ -213,8 +202,6 @@ class TestErrorMessages:
         """Verifica que VALIDATION_ERROR_GENERIC aceita formatação"""
         msg = ErrorMessages.VALIDATION_ERROR_GENERIC.format(error="test error")
         assert "test error" in msg
-
-
 
 
 class TestLogMessages:
@@ -251,8 +238,6 @@ class TestLogMessages:
         msg = LogMessages.TIMEOUT_GEMINI.format(timeout=60)
         assert "60" in msg
 
-
-
     def test_cache_initialized_format(self):
         """Verifica que CACHE_INITIALIZED aceita formatação"""
         msg = LogMessages.CACHE_INITIALIZED.format(max_size=100, ttl=3600)
@@ -278,8 +263,6 @@ class TestLogMessages:
         """Verifica que API_ERROR_GEMINI_COMMUNICATION aceita formatação"""
         msg = LogMessages.API_ERROR_GEMINI_COMMUNICATION.format(error="test")
         assert "test" in msg
-
-
 
 
 class TestFrontendConstants:
