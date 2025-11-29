@@ -420,13 +420,32 @@ make test-benchmark          # Benchmarks de performance
 make test-load-ui            # Testes de carga (Locust)
 make test-property           # Property-based tests
 make test-mutation           # Mutation testing
+make test-contract           # Testes de contrato de APIs externas
 make allure-serve            # Relatórios visuais
 
 # Qualidade de código
 make lint                    # Ruff
 make type-check              # MyPy
+make format                  # Black
+make pre-commit              # 🆕 Validação completa pré-commit
 make check                   # Todas as verificações
 ```
+
+#### ✅ Validação Pré-Commit
+
+Antes de fazer qualquer commit, execute:
+
+```bash
+make pre-commit
+```
+
+**O que verifica:**
+1. ✅ Formatação (black --check)
+2. ✅ Linting (ruff check)
+3. ✅ Testes unitários (302 testes)
+4. ✅ Cobertura de testes (>95%)
+
+Se tudo passar, você pode fazer o commit com segurança! 🎉
 
 #### 📊 Métricas de Qualidade
 
@@ -436,13 +455,15 @@ make check                   # Todas as verificações
 - ✅ **0 erros** de type checking (MyPy)
 - ✅ **Cache**: 2.7μs (367x mais rápido que meta!)
 
-#### 📚 Documentação de Testes
+#### 📚 Documentação de Testes e QA
 
 - [📋 INDICE_TESTES.md](docs/qa/guides/INDICE_GERAL_TESTES.md) - Índice completo
 - [🧪 GUIA DO DESENVOLVEDOR](docs/qa/guides/GUIA_DESENVOLVEDOR_TESTES.md) - Estratégia geral
 - [🔥 RELATORIO_CARGA.md](docs/qa/reports/RELATORIO_CARGA_BASELINE.md) - Locust + Benchmarks
 - [🧬 GUIA_MUTATION.md](docs/qa/reports/GUIA_MUTATION.md) - mutmut
 - [📊 GUIA_ALLURE.md](docs/qa/reports/GUIA_ALLURE.md) - Relatórios visuais
+- [🐛 KNOWN_ISSUES.md](docs/qa/KNOWN_ISSUES.md) - 🆕 Problemas conhecidos e soluções
+- [🧹 CODE_REMOVAL_CHECKLIST.md](docs/qa/CODE_REMOVAL_CHECKLIST.md) - 🆕 Checklist de remoção de código
 
 ---
 

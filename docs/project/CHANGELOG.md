@@ -2,6 +2,37 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.17.0] - 2025-11-29
+
+### Adicionado
+- **Documentação de QA e Processos**:
+  - `docs/qa/KNOWN_ISSUES.md`: Documentação centralizada de quirks e problemas conhecidos de bibliotecas externas
+    - Problemas do axe-playwright-python (serialização de booleanos, API do AxeResults)
+    - Soluções para violações de contraste WCAG AAA
+    - Problemas do pytest-asyncio (event loop teardown)
+  - `docs/qa/CODE_REMOVAL_CHECKLIST.md`: Processo estruturado em 8 fases para remoção segura de código
+    - Checklist completo com comandos práticos
+    - Sinais de alerta e ações corretivas
+    - Exemplo de remoção bem-sucedida (FireworksAIClient)
+  - `tests/contract/test_external_apis.py`: Testes de contrato para validar APIs de bibliotecas externas
+    - Valida contrato do axe-playwright-python (response structure, workaround de inteiros)
+    - Valida contrato do google-generativeai (Client, exceptions)
+    - Valida contrato do playwright (evaluate, emulate_media)
+    - Detecta mudanças de API automaticamente
+
+- **Comando Pre-Commit**:
+  - `make pre-commit`: Comando para validação completa antes de commits
+    - Verifica formatação (black --check)
+    - Verifica linting (ruff check)
+    - Executa testes unitários
+    - Verifica cobertura de testes (>95%)
+    - Fornece feedback claro sobre o que falhou
+
+### Melhorado
+- **Processo de Desenvolvimento**: Documentação completa de processos para evitar problemas recorrentes
+- **Qualidade de Código**: Cobertura mantida em 97.70% (acima da meta de 95%)
+- **Prevenção de Problemas**: Testes de contrato detectam breaking changes em bibliotecas
+
 ## [3.16.0] - 2025-11-29
 
 ### Adicionado
