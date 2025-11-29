@@ -540,8 +540,8 @@ async def generate_with_fallback(
 
         # Tenta cada cliente de fallback com seus modelos
         for client in fallback_clients:
-            if isinstance(client, HuggingFaceClient) and fallback_models:
-                # Para Hugging Face, tenta cada modelo
+            # Para clientes de fallback, tenta com modelos específicos se fornecidos
+            if fallback_models:
                 for model in fallback_models:
                     try:
                         logger.info(

@@ -21,7 +21,6 @@ from chatbot_acessibilidade.core.llm_provider import (
     GoogleGeminiClient,
     generate_with_fallback,
 )
-from chatbot_acessibilidade.config import settings
 
 logger = logging.getLogger(__name__)
 
