@@ -847,7 +847,7 @@ function loadAdvancedSettings() {
 
 function openPersonaModal() {
     const content = `
-        <p class="modal-description" style="margin-bottom: 16px; color: var(--text-secondary); line-height: 1.6;">
+        <p class="modal-description" id="persona-modal-desc" tabindex="0" style="margin-bottom: 16px; color: var(--text-secondary); line-height: 1.6;">
             Selecione um perfil para que Ada adapte as respostas ao seu contexto de uso. 
             Isso ajuda a receber orientações mais específicas para sua necessidade.
         </p>
@@ -882,7 +882,7 @@ function openPersonaModal() {
             </button>
         </div>
         
-        <div class="persona-instructions" role="note" style="margin-top: 20px; padding: 16px; background: rgba(108, 42, 221, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-color);">
+        <div class="persona-instructions" role="note" tabindex="0" aria-label="Instruções de como usar" style="margin-top: 20px; padding: 16px; background: rgba(108, 42, 221, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-color);">
             <strong style="display: block; margin-bottom: 8px; color: var(--text-primary);">Como usar:</strong>
             <ol style="margin: 0; padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
                 <li>Escolha o perfil que melhor descreve sua situação</li>
