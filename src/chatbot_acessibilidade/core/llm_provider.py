@@ -22,7 +22,6 @@ from chatbot_acessibilidade.core.exceptions import (
     ModelUnavailableError,
 )
 from chatbot_acessibilidade.core.constants import (
-    HUGGINGFACE_MAX_TOKENS,
     ErrorMessages,
     LogMessages,
 )
@@ -289,109 +288,7 @@ class GoogleGeminiClient(LLMClient):
         return "Google Gemini"
 
 
-class FireworksAIClient(LLMClient):
-    """Cliente para Fireworks AI usando API compatível com OpenAI"""
 
-    def __init__(self):
-        """Inicializa o cliente Fireworks AI"""
-        if not settings.huggingface_api_key:
-            raise ValueError("HUGGINGFACE_API_KEY não configurada (usada para Fireworks)")
-        self.api_key = settings.huggingface_api_key
-        self.timeout = settings.huggingface_timeout_seconds
-        self._client = None
-
-    def _get_client(self):
-        """Inicializa o cliente OpenAI apontando para Fireworks"""
-        if self._client is None:
-            from openai import OpenAI
-
-            self._client = OpenAI(
-                api_key=self.api_key,
-                base_url="https://api.fireworks.ai/inference/v1",
-                timeout=self.timeout,
-            )
-        return self._client
-
-    async def generate(self, prompt: str, model: Optional[str] = None) -> str:
-        """
-        Gera resposta usando Fireworks AI.
-
-        Args:
-            prompt: Texto do prompt
-            model: Nome do modelo Fireworks (obrigatório)
-
-        Returns:
-            Resposta gerada como string
-        """
-        if not model:
-            raise ValueError("Modelo deve ser especificado para Fireworks AI")
-
-        logger.debug(f"Usando Fireworks AI com modelo '{model}' para gerar resposta")
-
-        client = self._get_client()
-
-        try:
-            # Usa chat.completions (formato OpenAI)
-            response = await asyncio.wait_for(
-                asyncio.to_thread(
-                    client.chat.completions.create,
-                    model=model,
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=HUGGINGFACE_MAX_TOKENS,
-                    temperature=0.7,
-                ),
-                timeout=self.timeout,
-            )
-
-            # Extrai a resposta do formato OpenAI
-            if not response.choices or len(response.choices) == 0:
-                raise APIError("Resposta inválida do Fireworks AI: sem choices")
-
-            content = response.choices[0].message.content
-            if not content:
-                raise APIError("Resposta inválida do Fireworks AI: content vazio")
-
-            logger.debug(f"Fireworks AI modelo '{model}' executado com sucesso")
-            return str(content.strip())
-
-        except asyncio.TimeoutError:
-            logger.error(f"Timeout ao executar Fireworks AI modelo '{model}' após {self.timeout}s")
-            raise APIError(
-                f"Timeout: A requisição ao Fireworks AI demorou mais de {self.timeout} segundos."
-            )
-        except Exception as e:
-            error_str = str(e).lower()
-
-            # Verifica erros específicos
-            if "429" in error_str or "rate limit" in error_str:
-                logger.error(f"Rate limit no Fireworks AI modelo '{model}'")
-                raise QuotaExhaustedError(
-                    ErrorMessages.RATE_LIMIT_EXCEEDED.format(
-                        provider=f"Fireworks AI modelo {model}"
-                    )
-                )
-            elif "503" in error_str or "unavailable" in error_str or "loading" in error_str:
-                logger.warning(f"Modelo '{model}' indisponível no Fireworks AI")
-                raise ModelUnavailableError(
-                    f"Modelo {model} temporariamente indisponível no Fireworks AI"
-                )
-            elif "401" in error_str or "403" in error_str or "unauthorized" in error_str:
-                logger.error("Erro de autenticação no Fireworks AI")
-                raise APIError("API key inválida ou sem permissão no Fireworks AI")
-            else:
-                logger.error(f"Erro ao chamar Fireworks AI: {e}", exc_info=True)
-                raise APIError(f"Erro ao chamar Fireworks AI: {str(e)}")
-
-    def should_fallback(self, exception: Exception) -> bool:
-        """Determina se deve acionar fallback para outro modelo"""
-        if isinstance(exception, QuotaExhaustedError):
-            return True
-        if isinstance(exception, ModelUnavailableError):
-            return True
-        return False
-
-    def get_provider_name(self) -> str:
-        return "Fireworks AI"
 
 
 async def generate_with_fallback(
