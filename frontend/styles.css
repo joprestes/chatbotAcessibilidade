@@ -26,7 +26,7 @@
     /* Magenta para foco */
     --accent-deep: #4C1D95;
     /* Roxo profundo */
-    --error-color: #DC2626;
+    --error-color: #B91C1C;
     --success-color: #16A34A;
     --shadow: rgba(124, 58, 237, 0.15);
     /* Sombra roxa suave */
@@ -169,6 +169,8 @@ header.glass-header {
     position: sticky;
     top: 0;
     z-index: 100;
+    background-color: #7c3aed;
+    /* Fallback for contrast */
     background: linear-gradient(135deg, rgba(124, 58, 237, 0.9) 0%, rgba(196, 181, 253, 0.9) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -247,6 +249,8 @@ header.glass-header {
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     line-height: 1.2;
+    /* background-color removed */
+    /* Fallback for contrast */
 }
 
 .ada-header-status {
@@ -1583,34 +1587,37 @@ main {
 /* ========================================= */
 /* Mensagens de Erro */
 /* ========================================= */
-.message.error .message-bubble {
-    color: white;
+.message-bubble.error,
+.message .message-bubble.error,
+.message.assistant .message-bubble.error,
+.message-bubble.error * {
+    color: #FFFFFF !important;
     border: none;
     padding: 16px 20px;
     animation: slideInError 0.3s ease;
 }
 
-.message.error.error-timeout .message-bubble {
+.message-bubble.error.error-timeout {
     background-color: #f59e0b;
 }
 
-.message.error.error-offline .message-bubble {
+.message-bubble.error.error-offline {
     background-color: #6b7280;
 }
 
-.message.error.error-rate-limit .message-bubble {
-    background-color: #ef4444;
+.message-bubble.error.error-rate-limit {
+    background-color: #DC2626;
 }
 
-.message.error.error-server-error .message-bubble {
-    background-color: #dc2626;
+.message-bubble.error.error-server-error {
+    background-color: #B91C1C;
 }
 
-.message.error.error-network-error .message-bubble {
+.message-bubble.error.error-network-error {
     background-color: #3b82f6;
 }
 
-.message.error.error-generic .message-bubble {
+.message-bubble.error.error-generic {
     background-color: var(--error-color);
 }
 
@@ -1782,7 +1789,7 @@ main {
     font-size: 16px;
     font-family: 'Atkinson Hyperlegible', inherit;
     border: none;
-    background: transparent;
+    background: var(--bg-primary);
     color: var(--text-primary);
     resize: none;
     min-height: 44px;

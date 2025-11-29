@@ -18,7 +18,10 @@
 </head>
 
 <body>
-    <a href="#user-input" class="skip-link">Pular para o chat</a>
+    <a href="#user-input" class="skip-link" tabindex="1">Pular para o campo de mensagem</a>
+
+    <!-- Live Region para anúncios do leitor de tela -->
+    <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <div class="app-wrapper">
         <!-- Conteúdo Principal -->
@@ -37,15 +40,16 @@
                     </div>
                     <div class="accessibility-controls">
                         <button id="font-increase" class="icon-button" data-testid="btn-aumentar-fonte"
-                            aria-label="Aumentar tamanho da fonte" title="Aumentar fonte">
+                            aria-label="Aumentar tamanho do texto" title="Aumentar texto">
                             <span aria-hidden="true" style="font-size: 1.2em; font-weight: bold;">A+</span>
                         </button>
                         <button id="font-decrease" class="icon-button" data-testid="btn-diminuir-fonte"
-                            aria-label="Diminuir tamanho da fonte" title="Diminuir fonte">
+                            aria-label="Diminuir tamanho do texto" title="Diminuir texto">
                             <span aria-hidden="true" style="font-size: 0.8em; font-weight: bold;">A-</span>
                         </button>
                         <button id="sound-toggle" class="icon-button" data-testid="btn-som"
-                            aria-label="Ativar sons da interface" aria-pressed="true" title="Sons da interface">
+                            aria-label="Sons: ativar ou desativar bipes de feedback" aria-pressed="true"
+                            title="Sons de feedback">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -65,7 +69,7 @@
                     </div>
                     <div class="divider-vertical"></div>
                     <button id="search-toggle" class="icon-button" data-testid="btn-buscar"
-                        aria-label="Buscar no histórico" aria-expanded="false" title="Buscar mensagens">
+                        aria-label="Buscar mensagens anteriores" aria-expanded="false" title="Buscar mensagens">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="11" cy="11" r="8"></circle>
@@ -73,7 +77,7 @@
                         </svg>
                     </button>
                     <button id="clear-chat-button" class="icon-button" data-testid="btn-limpar-chat"
-                        aria-label="Limpar histórico do chat" title="Limpar conversa">
+                        aria-label="Apagar todas as mensagens do chat" title="Limpar conversa">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M3 6h18"></path>
@@ -82,7 +86,7 @@
                         </svg>
                     </button>
                     <button id="theme-toggle" class="icon-button" data-testid="btn-toggle-tema"
-                        aria-label="Alternar para modo escuro" title="Mudar tema">
+                        aria-label="Mudar tema: claro ou escuro" title="Mudar tema">
                         <svg id="theme-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                             aria-hidden="true">
@@ -101,8 +105,7 @@
         </header>
 
         <main role="main" id="main-content">
-            <div id="chat-container" class="chat-container glass-chat" role="log" aria-live="polite"
-                aria-label="Histórico de mensagens">
+            <div id="chat-container" class="chat-container glass-chat" role="log" aria-live="polite">
                 <!-- Card de Introdução (aparece quando chat vazio) -->
                 <div id="intro-card" class="intro-card" data-testid="intro-card">
                     <div class="intro-card-content">
@@ -141,8 +144,9 @@
                     <label for="user-input" class="sr-only">Digite sua pergunta</label>
 
                     <!-- Botão de Ajuda Contextual (WCAG 3.3.5) -->
-                    <button type="button" class="help-button" aria-label="Ver exemplos de perguntas"
-                        data-testid="btn-ajuda" data-tooltip="Clique para ver exemplos de perguntas">
+                    <button type="button" class="help-button" tabindex="6"
+                        aria-label="Ajuda: ver exemplos de perguntas sobre acessibilidade" data-testid="btn-ajuda"
+                        data-tooltip="Ver exemplos de perguntas">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                             aria-hidden="true">
@@ -153,9 +157,9 @@
                     </button>
 
                     <!-- Botão de Modo Código (Novo) -->
-                    <button type="button" id="code-mode-toggle" class="icon-button-small"
-                        aria-label="Ativar Modo de Refatoração de Código" data-testid="btn-code-mode"
-                        data-tooltip="Ativa o modo para colar código">
+                    <button type="button" id="code-mode-toggle" class="icon-button-small" tabindex="9"
+                        aria-label="Modo código: enviar código para análise de acessibilidade"
+                        data-testid="btn-code-mode" data-tooltip="Analisar código">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                             aria-hidden="true">
@@ -165,9 +169,9 @@
                     </button>
 
                     <!-- Botão de Personas (Novo) -->
-                    <button type="button" id="persona-toggle" class="icon-button-small"
-                        aria-label="Simular Experiência de Usuário com Personas" data-testid="btn-persona"
-                        data-tooltip="Escolha um perfil de usuário para simular">
+                    <button type="button" id="persona-toggle" class="icon-button-small" tabindex="7"
+                        aria-label="Escolher perfil de acessibilidade: leitor de tela, baixa visão ou daltonismo"
+                        data-testid="btn-persona" data-tooltip="Escolher perfil">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                             aria-hidden="true">
@@ -177,9 +181,9 @@
                     </button>
 
                     <!-- Botão de Expandir Input (Novo) -->
-                    <button type="button" id="expand-input-toggle" class="icon-button-small"
-                        aria-label="Expandir área de texto" data-testid="btn-expand"
-                        data-tooltip="Aumentar área de digitação para facilitar leitura">
+                    <button type="button" id="expand-input-toggle" class="icon-button-small" tabindex="8"
+                        aria-label="Aumentar altura da caixa de texto" data-testid="btn-expand"
+                        data-tooltip="Expandir caixa de texto">
                         <!-- Ícone Expandir -->
                         <svg id="icon-expand" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -210,8 +214,8 @@
 
                     <!-- Botões de Voz (STT/TTS) -->
                     <div class="voice-controls">
-                        <button type="button" id="mic-button" class="icon-button-small"
-                            aria-label="Ativar ditado por voz" data-testid="btn-mic" data-tooltip="Falar para digitar">
+                        <button type="button" id="mic-button" class="icon-button-small" tabindex="4"
+                            aria-label="Falar para digitar" data-testid="btn-mic" data-tooltip="Ditado por voz">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -220,9 +224,9 @@
                                 <line x1="8" y1="23" x2="16" y2="23"></line>
                             </svg>
                         </button>
-                        <button type="button" id="tts-toggle" class="icon-button-small"
-                            aria-label="Ativar leitura de respostas" aria-pressed="false" data-testid="btn-tts"
-                            data-tooltip="Ouvir respostas">
+                        <button type="button" id="tts-toggle" class="icon-button-small" tabindex="5"
+                            aria-label="Ouvir respostas em voz alta" aria-pressed="false" data-testid="btn-tts"
+                            data-tooltip="Leitura de respostas">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -231,11 +235,11 @@
                         </button>
                     </div>
 
-                    <textarea id="user-input" name="pergunta" data-testid="input-pergunta"
+                    <textarea id="user-input" name="pergunta" data-testid="input-pergunta" tabindex="2"
                         placeholder="Pergunte sobre WCAG, ARIA ou testes..." autocomplete="off" rows="1"
                         aria-label="Campo de texto para sua pergunta" aria-describedby="input-hint"></textarea>
 
-                    <button type="submit" id="send-button" class="send-button" data-testid="btn-enviar"
+                    <button type="submit" id="send-button" class="send-button" data-testid="btn-enviar" tabindex="3"
                         aria-label="Enviar mensagem" data-tooltip="Enviar sua pergunta">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -254,7 +258,7 @@
     </div>
 
     <!-- Toast Container -->
-    <div id="toast-container" class="toast-container" role="region" aria-live="assertive" aria-label="Notificações">
+    <div id="toast-container" class="toast-container" role="region" aria-live="assertive">
     </div>
 
     <!-- Modal Acessível (WCAG 2.4.3) -->

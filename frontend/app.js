@@ -247,6 +247,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 // =========================================
 // Inicialização de Acessibilidade
 // =========================================
+// =========================================
+// Função para Anúncios de Leitor de Tela
+// =========================================
+function announceToScreenReader(message) {
+    const liveRegion = document.getElementById('sr-announcements');
+    if (liveRegion) {
+        // Limpa primeiro para garantir que mudanças sejam detectadas
+        liveRegion.textContent = '';
+        // Pequeno delay para garantir que o leitor de tela detecte a mudança
+        setTimeout(() => {
+            liveRegion.textContent = message;
+        }, 100);
+    }
+}
+
+// =========================================
+// Inicialização de Acessibilidade
+// =========================================
 function initializeAccessibility() {
     // Carrega preferências salvas
     const savedFontSize = localStorage.getItem('fontSize');
@@ -310,8 +328,20 @@ function initializeAccessibility() {
             console.error('Erro no reconhecimento de fala:', event.error);
             isListening = false;
             updateMicIcon();
-            playSound('ERROR');
-            showToast('Erro ao ouvir. Tente novamente.', 'error');
+
+            // Se o erro for "not-allowed", desabilita o botão permanentemente
+            if (event.error === 'not-allowed') {
+                const micBtn = document.getElementById('mic-button');
+                if (micBtn) {
+                    micBtn.disabled = true;
+                    micBtn.style.opacity = '0.5';
+                    micBtn.title = 'Permissão de microfone negada';
+                }
+                showToast('Permissão de microfone negada. Habilite nas configurações do navegador.', 'error');
+            } else {
+                playSound('ERROR');
+                showToast('Erro ao ouvir. Tente novamente.', 'error');
+            }
         };
     } else {
         const micBtn = document.getElementById('mic-button');
@@ -338,8 +368,13 @@ function changeFontSize(direction) {
         applyFontSize();
         localStorage.setItem('fontSize', currentFontSize);
         playSound('ON');
+
+        // Anuncia mudança para leitor de tela
+        const action = direction > 0 ? 'aumentado' : 'diminuído';
+        announceToScreenReader(`Tamanho do texto ${action}`);
     } else {
         playSound('ERROR'); // Limite atingido
+        announceToScreenReader('Limite de tamanho atingido');
     }
 }
 
@@ -425,12 +460,25 @@ function updateSoundIcon() {
 // Lógica de Voz (STT/TTS)
 // =========================================
 function toggleDictation() {
-    if (!recognition) return;
+    console.log('toggleDictation chamado', { recognition, isListening });
+
+    if (!recognition) {
+        console.error('Recognition não está disponível');
+        showToast('Reconhecimento de voz não disponível neste navegador', 'error');
+        return;
+    }
 
     if (isListening) {
+        console.log('Parando reconhecimento...');
         recognition.stop();
     } else {
-        recognition.start();
+        console.log('Iniciando reconhecimento...');
+        try {
+            recognition.start();
+        } catch (error) {
+            console.error('Erro ao iniciar reconhecimento:', error);
+            showToast('Erro ao ativar microfone. Verifique as permissões do navegador.', 'error');
+        }
     }
 }
 
@@ -500,6 +548,10 @@ function toggleTheme() {
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeToggle();
+
+    // Anuncia mudança para leitor de tela
+    const themeName = newTheme === 'dark' ? 'escuro' : 'claro';
+    announceToScreenReader(`Tema ${themeName} ativado`);
 }
 
 function updateThemeToggle() {
@@ -576,7 +628,9 @@ function createUXElements() {
         charCounter.className = 'char-counter';
         charCounter.setAttribute('data-testid', 'char-counter');
         charCounter.setAttribute('aria-live', 'polite');
-        charCounter.setAttribute('aria-label', 'Contador de caracteres');
+        charCounter.setAttribute('role', 'status'); // Fix: aria-label requires role
+        charCounter.setAttribute('aria-label', '0 de 2000 caracteres');
+        charCounter.textContent = '0/2.000';
         // Adiciona após o form
         if (chatForm && chatForm.parentElement) {
             chatForm.parentElement.appendChild(charCounter);
@@ -793,35 +847,53 @@ function loadAdvancedSettings() {
 
 function openPersonaModal() {
     const content = `
-        <p class="modal-description" style="margin-bottom: 20px; color: var(--text-secondary);">
-            Teste como seu conteúdo é percebido por diferentes tecnologias e necessidades. 
-            Isso ajuda a identificar barreiras invisíveis para quem navega visualmente.
+        <p class="modal-description" style="margin-bottom: 16px; color: var(--text-secondary); line-height: 1.6;">
+            Selecione um perfil para que Ada adapte as respostas ao seu contexto de uso. 
+            Isso ajuda a receber orientações mais específicas para sua necessidade.
         </p>
+        
         <div class="persona-grid">
-            <button class="persona-btn" onclick="selectPersona('leitor-tela')">
-                <span class="persona-icon">🔈</span>
+            <button class="persona-btn" onclick="selectPersona('leitor-tela')" aria-label="Perfil: Uso com leitor de tela">
+                <span class="persona-icon" aria-hidden="true">🔈</span>
                 <span class="persona-name">Leitor de Tela</span>
-                <span class="persona-desc">Cenário de uso sem visão</span>
+                <span class="persona-desc"><strong>Uso com leitor de tela (NVDA, JAWS, VoiceOver)</strong><br>
+                Ada dará prioridade a explicações sobre ARIA, navegação por teclado e compatibilidade com leitores de tela.</span>
             </button>
-            <button class="persona-btn" onclick="selectPersona('zoom-contraste')">
-                <span class="persona-icon">🔍</span>
-                <span class="persona-name">Zoom e Contraste</span>
-                <span class="persona-desc">Cenário de baixa visão</span>
+            
+            <button class="persona-btn" onclick="selectPersona('zoom-contraste')" aria-label="Perfil: Baixa visão ou uso de ampliação">
+                <span class="persona-icon" aria-hidden="true">🔍</span>
+                <span class="persona-name">Baixa Visão</span>
+                <span class="persona-desc"><strong>Baixa visão ou uso de ampliação</strong><br>
+                Ada focará em contraste de cores, tamanho de texto, e uso de zoom sem perda de funcionalidade.</span>
             </button>
-            <button class="persona-btn" onclick="selectPersona('teclado')">
-                <span class="persona-icon">⌨️</span>
+            
+            <button class="persona-btn" onclick="selectPersona('teclado')" aria-label="Perfil: Navegação apenas por teclado">
+                <span class="persona-icon" aria-hidden="true">⌨️</span>
                 <span class="persona-name">Navegação por Teclado</span>
-                <span class="persona-desc">Cenário com limitações motoras</span>
+                <span class="persona-desc"><strong>Navegação apenas por teclado</strong><br>
+                Ada explicará como garantir que todos os elementos sejam acessíveis via Tab, Enter e setas.</span>
             </button>
-            <button class="persona-btn" onclick="selectPersona('linguagem-simples')">
-                <span class="persona-icon">🧩</span>
+            
+            <button class="persona-btn" onclick="selectPersona('linguagem-simples')" aria-label="Perfil: Preferência por linguagem simples">
+                <span class="persona-icon" aria-hidden="true">🧩</span>
                 <span class="persona-name">Linguagem Simples</span>
-                <span class="persona-desc">Cenário cognitivo/atenção</span>
+                <span class="persona-desc"><strong>Preferência por linguagem simples</strong><br>
+                Ada usará termos mais diretos e exemplos práticos, evitando jargão técnico.</span>
             </button>
+        </div>
+        
+        <div class="persona-instructions" role="note" style="margin-top: 20px; padding: 16px; background: rgba(108, 42, 221, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-color);">
+            <strong style="display: block; margin-bottom: 8px; color: var(--text-primary);">Como usar:</strong>
+            <ol style="margin: 0; padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
+                <li>Escolha o perfil que melhor descreve sua situação</li>
+                <li>Faça sua pergunta normalmente</li>
+                <li>Ada adaptará a resposta para seu contexto</li>
+                <li>Para desativar, feche este modal sem selecionar</li>
+            </ol>
         </div>
     `;
 
-    openModal('Escolha um Cenário de Acessibilidade', content, {
+    openModal('Escolha um Perfil de Acessibilidade', content, {
         hideConfirmButton: true,
         cancelText: 'Fechar'
     });
@@ -833,6 +905,13 @@ function selectPersona(persona) {
         'zoom-contraste': 'O texto cinza claro do rodapé fica ilegível quando aumento o zoom da página para 200%.',
         'teclado': 'Não consigo acessar o submenu "Configurações" usando apenas a tecla Tab; o foco pula direto para o próximo link.',
         'linguagem-simples': 'A mensagem de erro "Falha na validação do input X509" é muito técnica e não entendo o que preciso corrigir.'
+    };
+
+    const personaNames = {
+        'leitor-tela': 'Leitor de Tela',
+        'zoom-contraste': 'Baixa Visão',
+        'teclado': 'Navegação por Teclado',
+        'linguagem-simples': 'Linguagem Simples'
     };
 
     const exampleText = examples[persona] || '';
@@ -847,6 +926,9 @@ function selectPersona(persona) {
         userInput.selectionStart = userInput.selectionEnd = userInput.value.length;
     }, 150);
 
+    // Anuncia seleção para leitor de tela
+    const personaName = personaNames[persona] || persona;
+    announceToScreenReader(`Perfil ${personaName} selecionado. Exemplo carregado no campo de mensagem.`);
     showToast(`Cenário selecionado. Exemplo carregado.`, 'info');
 }
 
@@ -1457,7 +1539,8 @@ function renderMessages() {
 function createMessageElement(message, index) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.role}`;
-    messageDiv.setAttribute('role', message.role === 'user' ? 'user' : 'assistant');
+    messageDiv.className = `message ${message.role}`;
+    // messageDiv.setAttribute('role', message.role === 'user' ? 'user' : 'assistant'); // Removed invalid role
     messageDiv.setAttribute('data-testid', `chat-mensagem-${message.role}`);
     messageDiv.setAttribute('data-message-id', index);
     messageDiv.setAttribute('data-message-role', message.role);
@@ -1538,6 +1621,7 @@ function createMessageElement(message, index) {
             // Avatar já está configurado como THINKING acima
             bubble.className += ' typing-indicator';
             bubble.setAttribute('data-testid', 'typing-indicator');
+            bubble.setAttribute('role', 'status');
             bubble.setAttribute('aria-live', 'polite');
             bubble.setAttribute('aria-label', 'Bot está pesquisando resposta');
 
@@ -1612,7 +1696,7 @@ function createExpanderSection(title, content, isExpanded = false) {
     header.setAttribute('aria-expanded', isExpanded);
     header.setAttribute('aria-controls', uniqueId);
 
-    const titleHeading = document.createElement('h3');
+    const titleHeading = document.createElement('h2');
     titleHeading.className = 'expander-title';
     // Remove formatação markdown (asteriscos) do título
     const cleanTitle = title.replace(/\*\*/g, '').trim();
@@ -2236,3 +2320,17 @@ async function handleFormSubmit(e) {
 }
 
 // Test write
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    initializeAccessibility();
+    renderMessages();
+
+    // Foca no input ao carregar
+    if (userInput) userInput.focus();
+
+    // Handler do formulário
+    const chatForm = document.getElementById('chat-form');
+    if (chatForm) {
+        chatForm.addEventListener('submit', handleFormSubmit);
+    }
+});
