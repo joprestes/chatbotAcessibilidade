@@ -122,7 +122,7 @@ def test_high_contrast_mode(page: Page, base_url: str, axe):
     )
 
     # Verifica violações de contraste
-    contrast_violations = [v for v in results.violations if v.id == "color-contrast"]
+    contrast_violations = [v for v in results.response["violations"] if v["id"] == "color-contrast"]
 
     assert (
         len(contrast_violations) == 0

@@ -45,11 +45,13 @@ def test_contrast_ratio_aaa(page: Page, base_url: str, axe):
     )
 
     # Verifica violações de contraste AAA
-    contrast_violations = [v for v in results.violations if "contrast" in v.id.lower()]
+    contrast_violations = [
+        v for v in results.response["violations"] if "contrast" in v["id"].lower()
+    ]
 
     assert (
         len(contrast_violations) == 0
-    ), f"Violations de contraste AAA encontradas: {[v.id for v in contrast_violations]}"
+    ), f"Violations de contraste AAA encontradas: {[v['id'] for v in contrast_violations]}"
 
 
 def test_text_spacing_override(page: Page, base_url: str):
