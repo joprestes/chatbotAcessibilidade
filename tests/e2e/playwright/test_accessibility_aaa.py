@@ -39,7 +39,7 @@ def test_contrast_ratio_aaa(page: Page, base_url: str, axe):
                 "values": ["wcag2aaa", "wcag146"],
             },
             "rules": {
-                "color-contrast-enhanced": {"enabled": True},
+                "color-contrast-enhanced": {"enabled": 1},
             },
         },
     )
@@ -163,6 +163,10 @@ def test_no_text_images(page: Page, base_url: str):
 
         # Se não é logo nem avatar, verifica que não contém texto
         if not (is_logo or is_avatar):
+            # Ignora widget de libras (VLibras)
+            if "vlibras" in src.lower() or "vlibras" in alt.lower():
+                continue
+                
             # Imagens decorativas devem ter alt vazio
             assert alt == "" or len(alt) < 50, f"Imagem {src} pode conter texto"
 

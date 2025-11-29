@@ -116,7 +116,7 @@ def test_high_contrast_mode(page: Page, base_url: str, axe):
         page,
         options={
             "rules": {
-                "color-contrast": {"enabled": True},
+                "color-contrast": {"enabled": 1},
             }
         },
     )
