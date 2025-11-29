@@ -30,19 +30,13 @@ class TestAxePlaywrightContract:
             assert hasattr(results, "response"), "AxeResults deve ter atributo 'response'"
 
             # Contrato: response deve ser um dict
-            assert isinstance(
-                results.response, dict
-            ), "results.response deve ser um dict"
+            assert isinstance(results.response, dict), "results.response deve ser um dict"
 
             # Contrato: response deve ter chave 'violations'
-            assert (
-                "violations" in results.response
-            ), "results.response deve ter chave 'violations'"
+            assert "violations" in results.response, "results.response deve ter chave 'violations'"
 
             # Contrato: violations deve ser uma lista
-            assert isinstance(
-                results.response["violations"], list
-            ), "violations deve ser uma lista"
+            assert isinstance(results.response["violations"], list), "violations deve ser uma lista"
 
             browser.close()
 
@@ -67,9 +61,7 @@ class TestAxePlaywrightContract:
                 )
                 assert True, "axe.run() aceitou opções com valores inteiros"
             except Exception as e:
-                pytest.fail(
-                    f"axe.run() não aceitou opções com valores inteiros: {str(e)}"
-                )
+                pytest.fail(f"axe.run() não aceitou opções com valores inteiros: {str(e)}")
 
             browser.close()
 
@@ -86,9 +78,7 @@ class TestAxePlaywrightContract:
             # Contrato: response deve ter chaves esperadas
             expected_keys = ["violations", "passes", "incomplete", "inapplicable"]
             for key in expected_keys:
-                assert (
-                    key in results.response
-                ), f"results.response deve ter chave '{key}'"
+                assert key in results.response, f"results.response deve ter chave '{key}'"
 
             # Contrato: cada violation deve ter estrutura esperada
             if results.response["violations"]:
@@ -164,9 +154,7 @@ class TestPlaywrightContract:
                 page.emulate_media(forced_colors="active")
                 assert True, "page.emulate_media() aceitou forced_colors"
             except TypeError as e:
-                pytest.fail(
-                    f"page.emulate_media() não aceita forced_colors: {str(e)}"
-                )
+                pytest.fail(f"page.emulate_media() não aceita forced_colors: {str(e)}")
 
             browser.close()
 
