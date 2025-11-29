@@ -6,7 +6,7 @@ import asyncio
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional, List
+from typing import Optional
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -25,7 +25,7 @@ from chatbot_acessibilidade.core.constants import (
     ErrorMessages,
     LogMessages,
 )
-from chatbot_acessibilidade.core.metrics import record_fallback  # noqa: E402
+
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class LLMProvider(Enum):
     """Enum para identificar o provedor de LLM"""
 
     GOOGLE_GEMINI = "google_gemini"
-    HUGGINGFACE = "huggingface"
+
 
 
 class LLMClient(ABC):
@@ -291,92 +291,4 @@ class GoogleGeminiClient(LLMClient):
 
 
 
-async def generate_with_fallback(
-    primary_client: LLMClient,
-    prompt: str,
-    fallback_clients: Optional[List[LLMClient]] = None,
-    fallback_models: Optional[List[str]] = None,
-) -> tuple[str, str]:
-    """
-    Gera resposta com fallback automático.
 
-    Args:
-        primary_client: Cliente primário (Google Gemini)
-        prompt: Texto do prompt
-        fallback_clients: Lista de clientes de fallback (Hugging Face)
-        fallback_models: Lista de modelos para usar com fallback clients
-
-    Returns:
-        Tupla (resposta, provedor_usado)
-
-    Raises:
-        APIError: Se todos os provedores falharem
-    """
-    # Tenta o provedor primário primeiro
-    try:
-        logger.info(f"Tentando gerar resposta com {primary_client.get_provider_name()}")
-        resposta = await primary_client.generate(prompt)
-        logger.info(f"Resposta gerada com sucesso usando {primary_client.get_provider_name()}")
-        return resposta, primary_client.get_provider_name()
-    except Exception as e:
-        if not primary_client.should_fallback(e):
-            # Erro que não deve acionar fallback, re-lança
-            raise
-
-        logger.warning(
-            f"Falha no provedor primário ({primary_client.get_provider_name()}): {e}. "
-            f"Acionando fallback..."
-        )
-
-        # Se fallback está desabilitado ou não há clientes de fallback, re-lança o erro
-        if not settings.fallback_enabled or not fallback_clients:
-            raise APIError(f"Erro no provedor primário e fallback desabilitado: {e}")
-
-        # Registra que fallback será usado
-        record_fallback()
-
-        # Tenta cada cliente de fallback com seus modelos
-        for client in fallback_clients:
-            # Para clientes de fallback, tenta com modelos específicos se fornecidos
-            if fallback_models:
-                for model in fallback_models:
-                    try:
-                        logger.info(
-                            f"Tentando fallback com {client.get_provider_name()} modelo '{model}'"
-                        )
-                        resposta = await client.generate(prompt, model=model)
-                        logger.info(
-                            f"Fallback bem-sucedido usando {client.get_provider_name()} modelo '{model}'"
-                        )
-                        return resposta, f"{client.get_provider_name()} ({model})"
-                    except Exception as fallback_error:
-                        if client.should_fallback(fallback_error):
-                            logger.warning(
-                                f"Falha no modelo '{model}': {fallback_error}. "
-                                f"Tentando próximo modelo..."
-                            )
-                            continue
-                        else:
-                            # Erro que não deve acionar fallback, re-lança
-                            raise
-            else:
-                # Para outros clientes, tenta diretamente
-                try:
-                    logger.info(f"Tentando fallback com {client.get_provider_name()}")
-                    resposta = await client.generate(prompt)
-                    logger.info(f"Fallback bem-sucedido usando {client.get_provider_name()}")
-                    return resposta, client.get_provider_name()
-                except Exception as fallback_error:
-                    if client.should_fallback(fallback_error):
-                        logger.warning(
-                            f"Falha no {client.get_provider_name()}: {fallback_error}. "
-                            f"Tentando próximo cliente..."
-                        )
-                        continue
-                    else:
-                        raise
-
-        # Se chegou aqui, todos os fallbacks falharam
-        raise APIError(
-            "Todos os provedores e modelos disponíveis falharam. Por favor, tente novamente mais tarde."
-        )

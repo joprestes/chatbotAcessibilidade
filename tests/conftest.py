@@ -7,8 +7,7 @@ from pathlib import Path
 # Configura variáveis de ambiente para testes ANTES de importar qualquer módulo
 # Isso garante que Settings() possa ser inicializado corretamente
 os.environ.setdefault("GOOGLE_API_KEY", "test_key_for_pytest")
-os.environ.setdefault("OPENROUTER_API_KEY", "")
-os.environ.setdefault("FALLBACK_ENABLED", "false")
+
 # Desabilita rate limiting durante testes para evitar falhas por 429
 os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 

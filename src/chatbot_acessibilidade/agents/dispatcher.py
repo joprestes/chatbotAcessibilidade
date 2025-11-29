@@ -16,11 +16,8 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from chatbot_acessibilidade.agents.factory import criar_agentes
 from chatbot_acessibilidade.config import settings
 from chatbot_acessibilidade.core.exceptions import APIError, AgentError
+from chatbot_acessibilidade.core.llm_provider import GoogleGeminiClient
 from chatbot_acessibilidade.core.constants import ErrorMessages, MAX_RETRY_ATTEMPTS, LogMessages
-from chatbot_acessibilidade.core.llm_provider import (
-    GoogleGeminiClient,
-    generate_with_fallback,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -104,12 +101,8 @@ async def rodar_agente(agent: Agent, prompt: str, user_id="user", session_prefix
 
     try:
         # Usa apenas Google Gemini (com fallback automático entre chaves)
-        resposta, provedor_usado = await generate_with_fallback(
-            primary_client=primary_client,
-            prompt=prompt,
-            fallback_clients=None,
-            fallback_models=None,
-        )
+        resposta = await primary_client.generate(prompt)
+        provedor_usado = primary_client.get_provider_name()
 
         logger.info(f"Agente '{agent.name}' executado com sucesso usando {provedor_usado}")
         return str(resposta)

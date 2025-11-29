@@ -3,7 +3,7 @@ Testes para o módulo dispatcher.py
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 
 from google.adk.agents import Agent
 
@@ -31,24 +31,29 @@ def mock_evento():
     return evento
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_sucesso_com_fallback(mock_fallback):
-    """Testa get_agent_response com sucesso usando fallback"""
-    mock_fallback.return_value = ("Resposta de teste", "Google Gemini")
+async def test_get_agent_response_sucesso_com_fallback(mock_client_class):
+    """Testa get_agent_response com sucesso"""
+    # Setup mock instance
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(return_value="Resposta de teste")
+    mock_client.get_provider_name.return_value = "Google Gemini"
+    mock_client_class.return_value = mock_client
 
     resultado = await get_agent_response("assistente", "Teste", "prefixo")
 
     assert resultado == "Resposta de teste"
-    mock_fallback.assert_called_once()
+    mock_client.generate.assert_called_once()
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_com_erro_timeout(mock_fallback):
+async def test_get_agent_response_com_erro_timeout(mock_client_class):
     """Testa get_agent_response quando há timeout"""
-
-    mock_fallback.side_effect = APIError("Timeout: A requisição demorou mais de 60 segundos")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=APIError("Timeout: A requisição demorou mais de 60 segundos"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:
         await get_agent_response("assistente", "Teste", "prefixo")
@@ -56,12 +61,13 @@ async def test_get_agent_response_com_erro_timeout(mock_fallback):
     assert "timeout" in str(exc_info.value).lower() or "demorou" in str(exc_info.value).lower()
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_com_erro_quota(mock_fallback):
+async def test_get_agent_response_com_erro_quota(mock_client_class):
     """Testa get_agent_response quando há erro de quota"""
-
-    mock_fallback.side_effect = APIError("quota esgotada")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=APIError("quota esgotada"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:
         await get_agent_response("assistente", "Teste", "prefixo")
@@ -80,12 +86,14 @@ async def test_get_agent_response_agente_inexistente():
     assert resultado.startswith("Erro")
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_erro_google_api_call_503(mock_fallback):
+async def test_get_agent_response_erro_google_api_call_503(mock_client_class):
     """Testa get_agent_response quando há erro 503 (sobrecarga) - linha 58-66"""
     # Mock erro 503 (sobrecarga) - deve ser APIError
-    mock_fallback.side_effect = APIError("API sobrecarregada 503")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=APIError("API sobrecarregada 503"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:
         await get_agent_response("assistente", "Teste", "prefixo")
@@ -132,11 +140,13 @@ def test_should_retry_outra_excecao():
     assert _should_retry(exception) is False
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_erro_todos_provedores(mock_fallback):
+async def test_get_agent_response_erro_todos_provedores(mock_client_class):
     """Testa get_agent_response quando todos os provedores falham"""
-    mock_fallback.side_effect = APIError("todos os provedores falharam")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=APIError("todos os provedores falharam"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(APIError) as exc_info:
         await get_agent_response("assistente", "Teste", "prefixo")
@@ -147,13 +157,15 @@ async def test_get_agent_response_erro_todos_provedores(mock_fallback):
     )
 
 
-@patch("chatbot_acessibilidade.agents.dispatcher.generate_with_fallback")
+@patch("chatbot_acessibilidade.agents.dispatcher.GoogleGeminiClient")
 @pytest.mark.asyncio
-async def test_get_agent_response_erro_inesperado(mock_fallback):
+async def test_get_agent_response_erro_inesperado(mock_client_class):
     """Testa get_agent_response quando ocorre erro inesperado"""
     from chatbot_acessibilidade.core.exceptions import AgentError
 
-    mock_fallback.side_effect = Exception("Erro inesperado")
+    mock_client = MagicMock()
+    mock_client.generate = AsyncMock(side_effect=Exception("Erro inesperado"))
+    mock_client_class.return_value = mock_client
 
     with pytest.raises(AgentError):
         await get_agent_response("assistente", "Teste", "prefixo")
