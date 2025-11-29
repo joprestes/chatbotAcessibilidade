@@ -51,7 +51,7 @@ class TestAxePlaywrightContract:
 
             # Contrato: deve aceitar inteiros em vez de booleanos
             try:
-                results = axe.run(
+                axe.run(
                     page,
                     options={
                         "rules": {
@@ -59,7 +59,8 @@ class TestAxePlaywrightContract:
                         }
                     },
                 )
-                assert True, "axe.run() aceitou opções com valores inteiros"
+                # Se chegou aqui, aceitou as opções
+                assert True
             except Exception as e:
                 pytest.fail(f"axe.run() não aceitou opções com valores inteiros: {str(e)}")
 
@@ -163,9 +164,9 @@ class TestPlaywrightContract:
 @pytest.fixture(autouse=True)
 def skip_if_missing_dependencies():
     """Pula testes se dependências não estiverem instaladas"""
-    try:
-        import playwright
-        import axe_playwright_python
-        import google.generativeai
-    except ImportError as e:
-        pytest.skip(f"Dependência não instalada: {str(e)}")
+    import importlib.util
+
+    dependencies = ["playwright", "axe_playwright_python", "google.generativeai"]
+    for dep in dependencies:
+        if importlib.util.find_spec(dep.replace(".", "/")) is None:
+            pytest.skip(f"Dependência não instalada: {dep}")
