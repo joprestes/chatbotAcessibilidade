@@ -132,9 +132,9 @@ def test_keyboard_navigation_focus_visible(page: Page, base_url: str):
             focused_elements.append(focused_info)
             # Verifica que elemento é visível
             element_id = focused_info["id"]
-            assert focused_info[
-                "isVisible"
-            ], f"Elemento {element_id} deve ser visível quando focado"
+            assert focused_info["isVisible"], (
+                f"Elemento {element_id} deve ser visível quando focado"
+            )
 
     # Verifica que pelo menos alguns elementos receberam foco
     assert len(focused_elements) > 0, "Deve haver elementos focáveis na página"
@@ -239,6 +239,6 @@ def test_skip_link_focus(page: Page, base_url: str):
         # Verifica que foco mudou para o elemento alvo
         focused_after = page.evaluate("() => document.activeElement.id")
         expected_targets = ["user-input", "main-content"]
-        assert (
-            focused_after in expected_targets
-        ), f"Foco deve ir para elemento alvo do skip link, mas foi para: {focused_after}"
+        assert focused_after in expected_targets, (
+            f"Foco deve ir para elemento alvo do skip link, mas foi para: {focused_after}"
+        )

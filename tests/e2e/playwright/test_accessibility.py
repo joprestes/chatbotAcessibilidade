@@ -127,9 +127,9 @@ def test_keyboard_navigation_complete(page: Page, base_url: str):
             focused_elements.append(focused_info.get("tagName", "unknown"))
 
     # Verifica que pelo menos alguns elementos receberam foco
-    assert (
-        len(focused_elements) > 0
-    ), "Nenhum elemento focável encontrado durante navegação por teclado"
+    assert len(focused_elements) > 0, (
+        "Nenhum elemento focável encontrado durante navegação por teclado"
+    )
 
 
 def test_skip_links(page: Page, base_url: str):

@@ -49,9 +49,9 @@ def test_contrast_ratio_aaa(page: Page, base_url: str, axe):
         v for v in results.response["violations"] if "contrast" in v["id"].lower()
     ]
 
-    assert (
-        len(contrast_violations) == 0
-    ), f"Violations de contraste AAA encontradas: {[v['id'] for v in contrast_violations]}"
+    assert len(contrast_violations) == 0, (
+        f"Violations de contraste AAA encontradas: {[v['id'] for v in contrast_violations]}"
+    )
 
 
 def test_text_spacing_override(page: Page, base_url: str):
@@ -130,9 +130,9 @@ def test_focus_indicator_contrast(page: Page, base_url: str):
             outline_style = element.evaluate("el => window.getComputedStyle(el).outlineStyle")
 
             # Outline deve ter pelo menos 2px
-            assert (
-                outline_width and outline_width != "0px"
-            ), f"Elemento {selector} não tem outline visível ao focar"
+            assert outline_width and outline_width != "0px", (
+                f"Elemento {selector} não tem outline visível ao focar"
+            )
             assert outline_style != "none", f"Elemento {selector} tem outline-style: none"
 
 
@@ -228,9 +228,9 @@ def test_help_contextual(page: Page, base_url: str):
     # Se não há aria-describedby, deve haver placeholder descritivo
     if not described_by:
         placeholder = input_field.get_attribute("placeholder")
-        assert (
-            placeholder and len(placeholder) > 10
-        ), "Input não tem ajuda contextual (aria-describedby ou placeholder descritivo)"
+        assert placeholder and len(placeholder) > 10, (
+            "Input não tem ajuda contextual (aria-describedby ou placeholder descritivo)"
+        )
 
     # Verifica se há botão de ajuda ou sugestões visíveis
     chips = page.locator(".chip")
@@ -331,9 +331,9 @@ def test_consistent_identification(page: Page, base_url: str):
     # Verifica botão de enviar
     send_button = page.get_by_test_id("btn-enviar")
     send_label = send_button.get_attribute("aria-label")
-    assert (
-        send_label and "enviar" in send_label.lower()
-    ), "Botão de enviar não tem label consistente"
+    assert send_label and "enviar" in send_label.lower(), (
+        "Botão de enviar não tem label consistente"
+    )
 
     # Verifica botão de tema
     theme_button = page.get_by_test_id("btn-toggle-tema")
@@ -364,9 +364,9 @@ def test_target_size_minimum(page: Page, base_url: str):
             assert box is not None, f"Não foi possível obter bounding box de {selector}"
 
             # Verifica tamanho mínimo
-            assert (
-                box["width"] >= 44 and box["height"] >= 44
-            ), f"Elemento {selector} é muito pequeno: {box['width']}x{box['height']}px (mínimo 44x44px)"
+            assert box["width"] >= 44 and box["height"] >= 44, (
+                f"Elemento {selector} é muito pequeno: {box['width']}x{box['height']}px (mínimo 44x44px)"
+            )
 
 
 def test_visual_presentation_aaa(page: Page, base_url: str):

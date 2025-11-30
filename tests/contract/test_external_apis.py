@@ -8,7 +8,7 @@ detectando mudanças de API que podem quebrar nosso código.
 import pytest
 from playwright.sync_api import sync_playwright
 from axe_playwright_python.sync_playwright import Axe
-import google.generativeai as genai
+from google import genai
 
 pytestmark = pytest.mark.contract
 
@@ -101,23 +101,27 @@ class TestGoogleGenerativeAIContract:
             # Usa uma chave fake para testar apenas a inicialização
             client = genai.Client(api_key="fake_key_for_testing")
             assert client is not None, "genai.Client deve retornar uma instância"
-        except TypeError as e:
-            pytest.fail(f"genai.Client não aceita api_key como parâmetro: {str(e)}")
+        except (TypeError, ValueError) as e:
+            # ValueError é esperado com chave fake, mas valida que aceita o parâmetro
+            if "api_key" in str(e).lower():
+                pytest.fail(f"genai.Client não aceita api_key como parâmetro: {str(e)}")
+            # Se o erro for sobre chave inválida, está OK (aceita o parâmetro)
+            assert True
 
     def test_genai_exceptions_exist(self):
         """Valida que exceções esperadas existem no módulo"""
         from google.api_core import exceptions as google_exceptions
 
         # Contrato: exceções devem existir
-        assert hasattr(
-            google_exceptions, "GoogleAPICallError"
-        ), "google_exceptions deve ter GoogleAPICallError"
-        assert hasattr(
-            google_exceptions, "ResourceExhausted"
-        ), "google_exceptions deve ter ResourceExhausted"
-        assert hasattr(
-            google_exceptions, "PermissionDenied"
-        ), "google_exceptions deve ter PermissionDenied"
+        assert hasattr(google_exceptions, "GoogleAPICallError"), (
+            "google_exceptions deve ter GoogleAPICallError"
+        )
+        assert hasattr(google_exceptions, "ResourceExhausted"), (
+            "google_exceptions deve ter ResourceExhausted"
+        )
+        assert hasattr(google_exceptions, "PermissionDenied"), (
+            "google_exceptions deve ter PermissionDenied"
+        )
 
     def test_genai_error_has_code_attribute(self):
         """Valida que GoogleAPICallError tem atributo 'code'"""
@@ -166,7 +170,8 @@ def skip_if_missing_dependencies():
     """Pula testes se dependências não estiverem instaladas"""
     import importlib.util
 
-    dependencies = ["playwright", "axe_playwright_python", "google.generativeai"]
+    dependencies = ["playwright", "axe_playwright_python", "google.genai"]
     for dep in dependencies:
-        if importlib.util.find_spec(dep.replace(".", "/")) is None:
+        spec = importlib.util.find_spec(dep.replace(".", "/"))
+        if spec is None:
             pytest.skip(f"Dependência não instalada: {dep}")

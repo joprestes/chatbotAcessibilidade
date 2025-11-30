@@ -291,9 +291,9 @@ def test_chat_response_contract_backward_compatibility(client: TestClient):
     # Campos obrigatórios que clientes antigos esperam
     legacy_fields = ["introducao", "corpo", "conclusao"]
     for field in legacy_fields:
-        assert (
-            field in data["resposta"]
-        ), f"Campo '{field}' removido quebra compatibilidade com clientes antigos!"
+        assert field in data["resposta"], (
+            f"Campo '{field}' removido quebra compatibilidade com clientes antigos!"
+        )
 
 
 # ==================== TESTES DE CONTRATO DE ERROS ====================
