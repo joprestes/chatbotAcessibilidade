@@ -124,9 +124,9 @@ def test_high_contrast_mode(page: Page, base_url: str, axe):
     # Verifica violações de contraste
     contrast_violations = [v for v in results.response["violations"] if v["id"] == "color-contrast"]
 
-    assert len(contrast_violations) == 0, (
-        f"Violations de contraste encontradas: {contrast_violations}"
-    )
+    assert (
+        len(contrast_violations) == 0
+    ), f"Violations de contraste encontradas: {contrast_violations}"
 
 
 def test_screen_zoom_200_percent(page: Page, base_url: str):

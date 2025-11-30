@@ -113,15 +113,15 @@ class TestGoogleGenerativeAIContract:
         from google.api_core import exceptions as google_exceptions
 
         # Contrato: exceções devem existir
-        assert hasattr(google_exceptions, "GoogleAPICallError"), (
-            "google_exceptions deve ter GoogleAPICallError"
-        )
-        assert hasattr(google_exceptions, "ResourceExhausted"), (
-            "google_exceptions deve ter ResourceExhausted"
-        )
-        assert hasattr(google_exceptions, "PermissionDenied"), (
-            "google_exceptions deve ter PermissionDenied"
-        )
+        assert hasattr(
+            google_exceptions, "GoogleAPICallError"
+        ), "google_exceptions deve ter GoogleAPICallError"
+        assert hasattr(
+            google_exceptions, "ResourceExhausted"
+        ), "google_exceptions deve ter ResourceExhausted"
+        assert hasattr(
+            google_exceptions, "PermissionDenied"
+        ), "google_exceptions deve ter PermissionDenied"
 
     def test_genai_error_has_code_attribute(self):
         """Valida que GoogleAPICallError tem atributo 'code'"""

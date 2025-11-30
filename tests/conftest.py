@@ -21,7 +21,6 @@ except ImportError:
 warnings.filterwarnings("ignore", category=FutureWarning, module="google.api_core")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="google.genai")
 
-import asyncio  # noqa: E402
 import pytest  # noqa: E402
 import nest_asyncio  # noqa: E402
 
@@ -36,7 +35,7 @@ nest_asyncio.apply()
 def pytest_runtest_teardown(item):
     """
     Hook executado após cada teste.
-    
+
     Suprime RuntimeError de event loop que ocorre durante teardown
     de testes async quando exceções são lançadas.
     """
@@ -44,7 +43,9 @@ def pytest_runtest_teardown(item):
     if outcome.excinfo:
         exc_type, exc_value, traceback = outcome.excinfo
         # Verifica se é o erro de event loop específico
-        if isinstance(exc_value, RuntimeError) and "Cannot close a running event loop" in str(exc_value):
+        if isinstance(exc_value, RuntimeError) and "Cannot close a running event loop" in str(
+            exc_value
+        ):
             outcome.force_result(None)
         # Verifica se é um ExceptionGroup contendo o erro (comum em pytest 8+)
         elif hasattr(exc_value, "exceptions"):
