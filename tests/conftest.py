@@ -32,20 +32,39 @@ nest_asyncio.apply()
 # pytest_plugins = ("pytest_asyncio", "pytest_playwright")
 
 
-@pytest.fixture(scope="session")
-def event_loop():
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_teardown(item):
     """
-    Cria uma instância do event loop para toda a sessão de testes.
-    Isso resolve conflitos entre pytest-asyncio e pytest-playwright.
+    Hook executado após cada teste.
+    
+    Suprime RuntimeError de event loop que ocorre durante teardown
+    de testes async quando exceções são lançadas.
     """
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    yield loop
-    # Não fechamos o loop explicitamente para evitar conflitos entre pytest-asyncio e playwright
-    # O garbage collector ou o finalizador do pytest lidarão com isso
-    pass
+    outcome = yield
+    if outcome.excinfo:
+        exc_type, exc_value, traceback = outcome.excinfo
+        # Verifica se é o erro de event loop específico
+        if isinstance(exc_value, RuntimeError) and "Cannot close a running event loop" in str(exc_value):
+            outcome.force_result(None)
+        # Verifica se é um ExceptionGroup contendo o erro (comum em pytest 8+)
+        elif hasattr(exc_value, "exceptions"):
+            # Se for o único erro no grupo, suprime tudo
+            is_only_loop_error = all(
+                isinstance(e, RuntimeError) and "Cannot close a running event loop" in str(e)
+                for e in exc_value.exceptions
+            )
+            if is_only_loop_error:
+                outcome.force_result(None)
+
+
+def pytest_configure(config):
+    """Configuração executada uma vez no início da sessão de testes."""
+    # Suprime warnings específicos de event loop
+    warnings.filterwarnings(
+        "ignore",
+        message=".*Cannot close a running event loop.*",
+        category=RuntimeWarning,
+    )
 
 
 # Adiciona src ao path para imports
