@@ -11,7 +11,7 @@ from google.adk.agents import Agent
 from google.adk.tools import google_search
 
 # Modelo rápido e capaz de raciocínio complexo
-NOME_MODELO_ADK = "gemini-3.0-flash-001"
+NOME_MODELO_ADK = "gemini-2.5-flash"
 
 
 def criar_agentes():
