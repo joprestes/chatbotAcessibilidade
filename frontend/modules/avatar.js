@@ -166,6 +166,33 @@ export function playAvatar() {
 }
 
 /**
+ * Retorna o caminho da imagem estática para um estado
+ * @param {string} state - Estado do avatar
+ * @returns {string} Caminho da imagem
+ */
+export function getAvatarPath(state) {
+    // Mapeamento de estados para arquivos de imagem
+    // Ajuste conforme os nomes reais dos arquivos na pasta assets
+    const stateMap = {
+        [AVATAR_STATES.IDLE]: 'ada-idle.png',
+        [AVATAR_STATES.LISTENING]: 'ada-listening.png',
+        [AVATAR_STATES.THINKING]: 'ada-thinking.png',
+        [AVATAR_STATES.HAPPY]: 'ada-happy.png',
+        [AVATAR_STATES.SAD]: 'ada-sad.png',
+        [AVATAR_STATES.CONFUSED]: 'ada-confused.png',
+        [AVATAR_STATES.SURPRISED]: 'ada-surprised.png',
+        [AVATAR_STATES.EUREKA]: 'ada-eureka.png',
+        [AVATAR_STATES.ERROR]: 'ada-error.png',
+        [AVATAR_STATES.SLEEP]: 'ada-sleep.png',
+        [AVATAR_STATES.GREETING]: 'ada-greeting.png',
+        [AVATAR_STATES.BACK_SOON]: 'ada-back-soon.png'
+    };
+
+    const filename = stateMap[state] || 'ada-idle.png';
+    return `/assets/ada-states/${filename}`;
+}
+
+/**
  * Destrói a instância do avatar (limpeza)
  */
 export function destroyAvatar() {

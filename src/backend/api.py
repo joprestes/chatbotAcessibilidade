@@ -566,7 +566,7 @@ if frontend_path.exists():
     @app.get("/")
     async def read_root():
         """Serve a página principal do frontend"""
-        return FileResponse(str(frontend_path / "index.html"))
+        return FileResponse(str(frontend_path / "index_modular.html"))
 
 
 static_images_path = static_path / "images"

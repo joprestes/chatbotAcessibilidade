@@ -20,6 +20,11 @@ def test_homepage_loads(page: Page, base_url: str, server_running: bool):
 
     page.goto(base_url)
     page.wait_for_load_state("networkidle")
+    
+    # Limpa storage para garantir estado inicial
+    page.evaluate("localStorage.clear()")
+    page.reload()
+    page.wait_for_load_state("networkidle")
 
     # Verifica título (deve conter "Ada" ou "Acessibilidade")
     title = page.title()

@@ -198,7 +198,9 @@ export function loadDyslexiaFontPreference() {
  */
 export function saveDyslexiaFontPreference(enabled) {
     try {
-        localStorage.setItem(DYSLEXIA_FONT_KEY, enabled.toString());
+        if (enabled !== null && enabled !== undefined) {
+            localStorage.setItem(DYSLEXIA_FONT_KEY, enabled.toString());
+        }
     } catch (error) {
         console.error('Erro ao salvar preferência de fonte dislexia:', error);
     }

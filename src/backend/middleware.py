@@ -107,8 +107,9 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
         path = request.url.path
 
         if path.startswith("/static/"):
-            # CSS, JS, etc. - cache por 1 dia
-            response.headers["Cache-Control"] = f"public, max-age={self.STATIC_TTL}, immutable"
+            # CSS, JS, etc. - cache desabilitado para dev
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            # response.headers["Cache-Control"] = f"public, max-age={self.STATIC_TTL}, immutable"
             response.headers["Vary"] = "Accept-Encoding"
         elif path.startswith("/assets/"):
             # Imagens - cache por 7 dias

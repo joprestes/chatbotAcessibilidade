@@ -100,6 +100,15 @@ export function setTTSEnabled(enabled) {
     }
 }
 
+/**
+ * Alterna o estado do TTS
+ */
+export function toggleTTS() {
+    const newState = !isTTSEnabled;
+    setTTSEnabled(newState);
+    return newState;
+}
+
 // =========================================
 // Efeitos Sonoros
 // =========================================
