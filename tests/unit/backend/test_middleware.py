@@ -130,7 +130,8 @@ async def test_static_cache_middleware_static_files():
         response = await middleware.dispatch(mock_request, mock_call_next)
 
         assert "Cache-Control" in response.headers
-        assert "public, max-age=86400, immutable" in response.headers["Cache-Control"]
+        # Rollback: Cache desabilitado
+        assert "no-cache, no-store, must-revalidate" in response.headers["Cache-Control"]
         assert response.headers["Vary"] == "Accept-Encoding"
 
 
@@ -151,7 +152,8 @@ async def test_static_cache_middleware_assets():
         response = await middleware.dispatch(mock_request, mock_call_next)
 
         assert "Cache-Control" in response.headers
-        assert "public, max-age=604800, immutable" in response.headers["Cache-Control"]
+        # Rollback: Cache desabilitado
+        assert "no-cache, no-store, must-revalidate" in response.headers["Cache-Control"]
         assert response.headers["Vary"] == "Accept-Encoding"
 
 

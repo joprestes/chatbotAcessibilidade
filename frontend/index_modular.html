@@ -105,37 +105,38 @@
         </header>
 
         <main role="main" id="main-content">
-            <div id="chat-container" class="chat-container glass-chat" role="log" aria-live="polite">
-                <!-- Card de Introdução (aparece quando chat vazio) -->
-                <div id="intro-card" class="intro-card" data-testid="intro-card" role="region"
-                    aria-labelledby="intro-title">
-                    <div class="intro-card-content">
-                        <img src="/assets/ada-states/ada-greeting.png" alt="Ada saudando com a mão"
-                            class="intro-card-avatar" data-testid="intro-avatar">
-                        <div class="intro-card-text" role="article" aria-label="Mensagem de boas-vindas da Ada">
-                            <h2 id="intro-title">Olá! Eu sou a Ada 👋</h2>
-                            <p>Seu assistente de acessibilidade digital. Estou aqui para ajudar você a entender
-                                WCAG, ARIA, testes de acessibilidade e muito mais!</p>
-                            <p><strong>Comece fazendo uma pergunta ou escolha uma sugestão abaixo:</strong></p>
-                        </div>
-                    </div>
-                    <!-- Sugestões dentro do card de introdução -->
-                    <div id="suggestion-chips-empty" class="suggestion-chips-empty" data-testid="suggestion-chips-empty"
-                        role="group" aria-label="Sugestões de perguntas">
-                        <button class="chip" onclick="fillInput('Explique o critério 1.4.3 da WCAG')"
-                            aria-label="Perguntar sobre critério de contraste" data-testid="chip-contraste">
-                            <span aria-hidden="true">🎨</span> Explique WCAG 1.4.3
-                        </button>
-                        <button class="chip" onclick="fillInput('Quais são as roles ARIA para abas?')"
-                            aria-label="Perguntar sobre roles ARIA" data-testid="chip-aria">
-                            <span aria-hidden="true">🏷️</span> Roles ARIA para Abas
-                        </button>
-                        <button class="chip" onclick="fillInput('Como tornar um carrossel acessível?')"
-                            aria-label="Perguntar sobre carrossel acessível" data-testid="chip-carrossel">
-                            <span aria-hidden="true">🎠</span> Carrossel Acessível
-                        </button>
+            <!-- Card de Introdução (aparece quando chat vazio) -->
+            <div id="intro-card" class="intro-card" data-testid="intro-card" role="region"
+                aria-labelledby="intro-title">
+                <div class="intro-card-content">
+                    <img src="/assets/ada-states/ada-greeting.png" alt="Ada saudando com a mão"
+                        class="intro-card-avatar" data-testid="intro-avatar">
+                    <div class="intro-card-text" role="article" aria-label="Mensagem de boas-vindas da Ada">
+                        <h2 id="intro-title">Olá! Eu sou a Ada 👋</h2>
+                        <p>Seu assistente de acessibilidade digital. Estou aqui para ajudar você a entender
+                            WCAG, ARIA, testes de acessibilidade e muito mais!</p>
+                        <p><strong>Comece fazendo uma pergunta ou escolha uma sugestão abaixo:</strong></p>
                     </div>
                 </div>
+                <!-- Sugestões dentro do card de introdução -->
+                <div id="suggestion-chips-empty" class="suggestion-chips-empty" data-testid="suggestion-chips-empty"
+                    role="group" aria-label="Sugestões de perguntas">
+                    <button class="chip" onclick="fillInput('Explique o critério 1.4.3 da WCAG')"
+                        aria-label="Perguntar sobre critério de contraste" data-testid="chip-contraste">
+                        <span aria-hidden="true">🎨</span> Explique WCAG 1.4.3
+                    </button>
+                    <button class="chip" onclick="fillInput('Quais são as roles ARIA para abas?')"
+                        aria-label="Perguntar sobre roles ARIA" data-testid="chip-aria">
+                        <span aria-hidden="true">🏷️</span> Roles ARIA para Abas
+                    </button>
+                    <button class="chip" onclick="fillInput('Como tornar um carrossel acessível?')"
+                        aria-label="Perguntar sobre carrossel acessível" data-testid="chip-carrossel">
+                        <span aria-hidden="true">🎠</span> Carrossel Acessível
+                    </button>
+                </div>
+            </div>
+
+            <div id="chat-container" class="chat-container glass-chat" role="log" aria-live="polite">
             </div>
         </main>
 

@@ -112,8 +112,9 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
             # response.headers["Cache-Control"] = f"public, max-age={self.STATIC_TTL}, immutable"
             response.headers["Vary"] = "Accept-Encoding"
         elif path.startswith("/assets/"):
-            # Imagens - cache por 7 dias
-            response.headers["Cache-Control"] = f"public, max-age={self.ASSETS_TTL}, immutable"
+            # Imagens - cache desabilitado temporariamente
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            # response.headers["Cache-Control"] = f"public, max-age={self.ASSETS_TTL}, immutable"
             response.headers["Vary"] = "Accept-Encoding"
 
         return response

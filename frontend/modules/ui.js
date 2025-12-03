@@ -44,6 +44,33 @@ function setupGlobalUIListeners() {
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', toggleSidebar);
     }
+
+    // Search toggle
+    const searchToggle = document.getElementById('search-toggle');
+    if (searchToggle) {
+        searchToggle.addEventListener('click', toggleSearch);
+    }
+}
+
+/**
+ * Alterna visibilidade da busca
+ */
+export function toggleSearch() {
+    const searchWrapper = document.getElementById('search-wrapper');
+    const searchInput = document.getElementById('search-input');
+    const searchToggle = document.getElementById('search-toggle');
+
+    if (searchWrapper) {
+        const isHidden = searchWrapper.classList.contains('hidden');
+        if (isHidden) {
+            searchWrapper.classList.remove('hidden');
+            searchToggle?.setAttribute('aria-expanded', 'true');
+            searchInput?.focus();
+        } else {
+            searchWrapper.classList.add('hidden');
+            searchToggle?.setAttribute('aria-expanded', 'false');
+        }
+    }
 }
 
 // =========================================

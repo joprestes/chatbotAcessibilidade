@@ -51,7 +51,8 @@ def test_static_cache_headers_css(client):
 
     assert response.status_code == 200
     assert "Cache-Control" in response.headers
-    assert "public, max-age=86400, immutable" in response.headers["Cache-Control"]
+    # Rollback: Cache desabilitado para evitar problemas de atualização
+    assert "no-cache, no-store, must-revalidate" in response.headers["Cache-Control"]
     assert "Vary" in response.headers
     assert response.headers["Vary"] == "Accept-Encoding"
 
@@ -62,7 +63,8 @@ def test_static_cache_headers_js(client):
 
     assert response.status_code == 200
     assert "Cache-Control" in response.headers
-    assert "public, max-age=86400, immutable" in response.headers["Cache-Control"]
+    # Rollback: Cache desabilitado
+    assert "no-cache, no-store, must-revalidate" in response.headers["Cache-Control"]
 
 
 def test_assets_cache_headers_images(client):
@@ -71,7 +73,8 @@ def test_assets_cache_headers_images(client):
 
     assert response.status_code == 200
     assert "Cache-Control" in response.headers
-    assert "public, max-age=604800, immutable" in response.headers["Cache-Control"]
+    # Rollback: Cache desabilitado
+    assert "no-cache, no-store, must-revalidate" in response.headers["Cache-Control"]
     assert "Vary" in response.headers
     assert response.headers["Vary"] == "Accept-Encoding"
 
@@ -98,8 +101,6 @@ def test_static_cache_different_ttls(client):
     css_ttl = css_response.headers.get("Cache-Control", "")
     image_ttl = image_response.headers.get("Cache-Control", "")
 
-    # CSS deve ter TTL de 1 dia (86400)
-    assert "max-age=86400" in css_ttl
-
-    # Imagens devem ter TTL de 7 dias (604800)
-    assert "max-age=604800" in image_ttl
+    # Rollback: Tudo deve ser no-cache agora
+    assert "no-cache" in css_ttl
+    assert "no-cache" in image_ttl
